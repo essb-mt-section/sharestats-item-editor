@@ -2,12 +2,15 @@
 
 **Editor and validator for Rexam items in the ShareStats project**
 
-
 *Released under the MIT License*
 
 Oliver Lindemann, Erasmus University Rotterdam, NL
 
+
+![screenshot](picts/screenshot.png)
+
 ---
+
 
 ## Dependencies
 
