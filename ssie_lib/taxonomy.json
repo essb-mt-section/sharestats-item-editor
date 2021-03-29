@@ -1,0 +1,828 @@
+{
+  "name":"base",
+  "Statistics Taxonomy":{
+    "name":"Statistics Taxonomy",
+    "Measurement Level":{
+      "name":"Measurement Level",
+      "Nominal":{
+        "name":"Nominal"
+      },
+      "Ordinal":{
+        "name":"Ordinal"
+      },
+      "Interval":{
+        "name":"Interval"
+      },
+      "Ratio":{
+        "name":"Ratio"
+      }
+    },
+    "Variable type":{
+      "name":"Variable type",
+      "Discrete variable":{
+        "name":"Discrete variable"
+      },
+      "Continuous variable":{
+        "name":"Continuous variable"
+      }
+    },
+    "Descriptive statistics":{
+      "name":"Descriptive statistics",
+      "Summary Statistics":{
+        "name":"Summary Statistics",
+        "Measures of Location":{
+          "name":"Measures of Location",
+          "Mean":{
+            "name":"Mean"
+          },
+          "Median":{
+            "name":"Median"
+          },
+          "Mode":{
+            "name":"Mode"
+          }
+        },
+        "Measures of Spread":{
+          "name":"Measures of Spread",
+          "Range":{
+            "name":"Range"
+          },
+          "Standard Deviation":{
+            "name":"Standard Deviation"
+          },
+          "Variance":{
+            "name":"Variance"
+          },
+          "Interquartile Range":{
+            "name":"Interquartile Range"
+          }
+        },
+        "Bivariate statistics":{
+          "name":"Bivariate statistics",
+          "Correlation":{
+            "name":"Correlation"
+          },
+          "Covariance":{
+            "name":"Covariance"
+          }
+        },
+        "Outliers":{
+          "name":"Outliers"
+        },
+        "Odds ratio":{
+          "name":"Odds ratio"
+        },
+        "Proportion":{
+          "name":"Proportion"
+        },
+        "Conditional proportion":{
+          "name":"Conditional proportion"
+        }
+      },
+      "Score interpretation":{
+        "name":"Score interpretation",
+        "z-score":{
+          "name":"z-score"
+        },
+        "Percentile":{
+          "name":"Percentile"
+        }
+      },
+      "Data representation":{
+        "name":"Data representation",
+        "Graphs":{
+          "name":"Graphs",
+          "Histogram":{
+            "name":"Histogram"
+          },
+          "Bar graph":{
+            "name":"Bar graph"
+          },
+          "Boxplot":{
+            "name":"Boxplot"
+          },
+          "Scatterplot":{
+            "name":"Scatterplot"
+          },
+          "Pie chart":{
+            "name":"Pie chart"
+          },
+          "Venn diagram":{
+            "name":"Venn diagram"
+          },
+          "Stem and leaf plot":{
+            "name":"Stem and leaf plot"
+          }
+        },
+        "Tables":{
+          "name":"Tables",
+          "Frequency table":{
+            "name":"Frequency table"
+          },
+          "Contingency table":{
+            "name":"Contingency table"
+          }
+        }
+      }
+    },
+    "Inferential Statistics":{
+      "name":"Inferential Statistics",
+      "Sampling Distributions":{
+        "name":"Sampling Distributions",
+        "Sample mean":{
+          "name":"Sample mean"
+        },
+        "Sample proportion":{
+          "name":"Sample proportion"
+        },
+        "Difference two means":{
+          "name":"Difference two means"
+        },
+        "Correlation":{
+          "name":"Correlation"
+        }
+      },
+      "NHST":{
+        "name":"NHST",
+        "Hypothesis":{
+          "name":"Hypothesis",
+          "Null hypothesis":{
+            "name":"Null hypothesis"
+          },
+          "Alternative hypothesis":{
+            "name":"Alternative hypothesis"
+          },
+          "One sided hypothesis":{
+            "name":"One sided hypothesis"
+          },
+          "Two sided hypothesis":{
+            "name":"Two sided hypothesis"
+          }
+        },
+        "Test statistic":{
+          "name":"Test statistic",
+          "t-statistic":{
+            "name":"t-statistic"
+          },
+          "F-statistic":{
+            "name":"F-statistic"
+          },
+          "Chi-squared":{
+            "name":"Chi-squared"
+          },
+          "z-statistic":{
+            "name":"z-statistic"
+          }
+        },
+        "Statistical errors":{
+          "name":"Statistical errors",
+          "Type I error":{
+            "name":"Type I error"
+          },
+          "Type II error":{
+            "name":"Type II error"
+          }
+        },
+        "Power":{
+          "name":"Power"
+        },
+        "Significance level":{
+          "name":"Significance level",
+          "Critical value":{
+            "name":"Critical value"
+          }
+        },
+        "p-value":{
+          "name":"p-value"
+        }
+      },
+      "Effect size":{
+        "name":"Effect size",
+        "Cohen's d":{
+          "name":"Cohen's d"
+        },
+        "Cramer's V":{
+          "name":"Cramer's V"
+        },
+        "Phi coefficient":{
+          "name":"Phi coefficient"
+        },
+        "Eta squared":{
+          "name":"Eta squared"
+        },
+        "Omega squared":{
+          "name":"Omega squared"
+        }
+      },
+      "Confidence Intervals":{
+        "name":"Confidence Intervals",
+        "Confidence level":{
+          "name":"Confidence level"
+        },
+        "Testing":{
+          "name":"Testing"
+        },
+        "Width":{
+          "name":"Width"
+        },
+        "Margin of error":{
+          "name":"Margin of error"
+        }
+      },
+      "Parametric Techniques":{
+        "name":"Parametric Techniques",
+        "z-test":{
+          "name":"z-test",
+          "One sample mean":{
+            "name":"One sample mean"
+          },
+          "Independent samples means":{
+            "name":"Independent samples means"
+          },
+          "One proportion":{
+            "name":"One proportion"
+          },
+          "Two proportions":{
+            "name":"Two proportions"
+          }
+        },
+        "t-test":{
+          "name":"t-test",
+          "One sample mean":{
+            "name":"One sample mean"
+          },
+          "Independent samples means":{
+            "name":"Independent samples means"
+          },
+          "Paired samples":{
+            "name":"Paired samples"
+          },
+          "Test for correlation":{
+            "name":"Test for correlation"
+          }
+        },
+        "Correlations":{
+          "name":"Correlations",
+          "Pearson":{
+            "name":"Pearson"
+          },
+          "Spearman":{
+            "name":"Spearman"
+          },
+          "Point biserial":{
+            "name":"Point biserial"
+          },
+          "Biserial":{
+            "name":"Biserial"
+          },
+          "Phi":{
+            "name":"Phi"
+          }
+        },
+        "Cross tables":{
+          "name":"Cross tables",
+          "Chi-Squared for Independence":{
+            "name":"Chi-Squared for Independence"
+          },
+          "Chi-Squared for Homogeneity":{
+            "name":"Chi-Squared for Homogeneity"
+          },
+          "Chi-Squared Goodness of Fit":{
+            "name":"Chi-Squared Goodness of Fit"
+          },
+          "Fisher's Exact Test":{
+            "name":"Fisher's Exact Test"
+          }
+        },
+        "ANOVA":{
+          "name":"ANOVA",
+          "Oneway ANOVA":{
+            "name":"Oneway ANOVA"
+          },
+          "Twoway ANOVA":{
+            "name":"Twoway ANOVA"
+          },
+          "Oneway repeated measures ANOVA":{
+            "name":"Oneway repeated measures ANOVA"
+          },
+          "Twoway repeated measures ANOVA":{
+            "name":"Twoway repeated measures ANOVA"
+          },
+          "Mixed design ANOVA":{
+            "name":"Mixed design ANOVA"
+          },
+          "ANCOVA":{
+            "name":"ANCOVA"
+          },
+          "MANOVA":{
+            "name":"MANOVA"
+          },
+          "MANCOVA":{
+            "name":"MANCOVA"
+          },
+          "ANOVA F-test":{
+            "name":"ANOVA F-test"
+          },
+          "Post-hoc test":{
+            "name":"Post-hoc test"
+          }
+        },
+        "Variance":{
+          "name":"Variance",
+          "One variance":{
+            "name":"One variance"
+          },
+          "Two variances":{
+            "name":"Two variances"
+          }
+        }
+      },
+      "Regression":{
+        "name":"Regression",
+        "Simple linear regression":{
+          "name":"Simple linear regression"
+        },
+        "Equation":{
+          "name":"Equation"
+        },
+        "Slope":{
+          "name":"Slope"
+        },
+        "Intercept":{
+          "name":"Intercept"
+        },
+        "Prediction":{
+          "name":"Prediction"
+        },
+        "Residuals":{
+          "name":"Residuals"
+        },
+        "Sum of squares":{
+          "name":"Sum of squares"
+        },
+        "Regression F-test":{
+          "name":"Regression F-test"
+        },
+        "R squared":{
+          "name":"R squared"
+        },
+        "Standard error of the estimate":{
+          "name":"Standard error of the estimate"
+        },
+        "Standardized coefficient":{
+          "name":"Standardized coefficient"
+        },
+        "Dummies":{
+          "name":"Dummies"
+        },
+        "Confidence interval":{
+          "name":"Confidence interval"
+        },
+        "Prediction interval":{
+          "name":"Prediction interval"
+        },
+        "Coefficient t-test":{
+          "name":"Coefficient t-test"
+        },
+        "Multiple linear regression":{
+          "name":"Multiple linear regression",
+          "F-test for comparing (nested) models":{
+            "name":"F-test for comparing (nested) models"
+          },
+          "R squared change":{
+            "name":"R squared change"
+          },
+          "Moderation":{
+            "name":"Moderation"
+          },
+          "Mediation":{
+            "name":"Mediation"
+          },
+          "Suppression":{
+            "name":"Suppression"
+          }
+        },
+        "Principal axis regression":{
+          "name":"Principal axis regression"
+        },
+        "Logistic regression":{
+          "name":"Logistic regression",
+          "Odds":{
+            "name":"Odds"
+          },
+          "Odds ratio":{
+            "name":"Odds ratio"
+          }
+        },
+        "Probit regression":{
+          "name":"Probit regression"
+        },
+        "Multinomial logistic regression":{
+          "name":"Multinomial logistic regression"
+        }
+      },
+      "Non-parametric Techniques":{
+        "name":"Non-parametric Techniques",
+        "Sign test":{
+          "name":"Sign test"
+        },
+        "Rank Sum test":{
+          "name":"Rank Sum test"
+        },
+        "Signed Rank test":{
+          "name":"Signed Rank test"
+        },
+        "Kruskal-Wallis test":{
+          "name":"Kruskal-Wallis test"
+        },
+        "Friedman's test":{
+          "name":"Friedman's test"
+        },
+        "Permutation test":{
+          "name":"Permutation test"
+        }
+      },
+      "Bootstrap":{
+        "name":"Bootstrap"
+      },
+      "Bayesian Statistics":{
+        "name":"Bayesian Statistics",
+        "Prior":{
+          "name":"Prior"
+        },
+        "Likelihood":{
+          "name":"Likelihood"
+        },
+        "Posterior":{
+          "name":"Posterior"
+        },
+        "Credible intervals":{
+          "name":"Credible intervals"
+        },
+        "Hypothesis test":{
+          "name":"Hypothesis test"
+        },
+        "Bayes factor":{
+          "name":"Bayes factor"
+        },
+        "Parameter estimation":{
+          "name":"Parameter estimation"
+        },
+        "Informative hypothesis testing":{
+          "name":"Informative hypothesis testing"
+        }
+      },
+      "Time Series":{
+        "name":"Time Series",
+        "Descriptive methods":{
+          "name":"Descriptive methods"
+        },
+        "Autocorrelation":{
+          "name":"Autocorrelation"
+        },
+        "Runs test":{
+          "name":"Runs test"
+        },
+        "Seasonal variation":{
+          "name":"Seasonal variation"
+        },
+        "Arima models":{
+          "name":"Arima models"
+        },
+        "Forecasting":{
+          "name":"Forecasting"
+        },
+        "Frequency domain":{
+          "name":"Frequency domain"
+        }
+      },
+      "Multilevel Analysis":{
+        "name":"Multilevel Analysis"
+      }
+    },
+    "Probability":{
+      "name":"Probability",
+      "Elementary Probability":{
+        "name":"Elementary Probability",
+        "Sample Space":{
+          "name":"Sample Space"
+        },
+        "Events":{
+          "name":"Events"
+        },
+        "General Rules":{
+          "name":"General Rules",
+          "Intersection":{
+            "name":"Intersection"
+          },
+          "Union":{
+            "name":"Union"
+          },
+          "Addition rule":{
+            "name":"Addition rule"
+          },
+          "Multiplication rule":{
+            "name":"Multiplication rule"
+          },
+          "Independent events":{
+            "name":"Independent events"
+          }
+        },
+        "Combinations":{
+          "name":"Combinations"
+        },
+        "Permutations":{
+          "name":"Permutations"
+        },
+        "Conditional probability":{
+          "name":"Conditional probability"
+        },
+        "Random variables":{
+          "name":"Random variables",
+          "Expected value":{
+            "name":"Expected value"
+          },
+          "Variance":{
+            "name":"Variance"
+          },
+          "Rules for expected values":{
+            "name":"Rules for expected values"
+          },
+          "Random sample":{
+            "name":"Random sample"
+          }
+        }
+      }
+    },
+    "Distributions":{
+      "name":"Distributions",
+      "Discrete":{
+        "name":"Discrete",
+        "Binomial":{
+          "name":"Binomial"
+        },
+        "Normal approximation to Binomial":{
+          "name":"Normal approximation to Binomial"
+        },
+        "Bernoulli":{
+          "name":"Bernoulli"
+        },
+        "Geometric":{
+          "name":"Geometric"
+        },
+        "Negative Binomial":{
+          "name":"Negative Binomial"
+        },
+        "Poisson":{
+          "name":"Poisson"
+        },
+        "Hypergeometric":{
+          "name":"Hypergeometric"
+        },
+        "Multinominal":{
+          "name":"Multinominal"
+        }
+      },
+      "Continuous":{
+        "name":"Continuous",
+        "Normal":{
+          "name":"Normal"
+        },
+        "Uniform":{
+          "name":"Uniform"
+        },
+        "Exponential":{
+          "name":"Exponential"
+        },
+        "Gamma":{
+          "name":"Gamma"
+        },
+        "t-distribution":{
+          "name":"t-distribution"
+        },
+        "F-distribution":{
+          "name":"F-distribution"
+        },
+        "Chi-squared":{
+          "name":"Chi-squared"
+        },
+        "Beta":{
+          "name":"Beta"
+        }
+      },
+      "Limit Theorems":{
+        "name":"Limit Theorems",
+        "Central Limit Theorem":{
+          "name":"Central Limit Theorem"
+        },
+        "Law of Large Numbers":{
+          "name":"Law of Large Numbers"
+        }
+      }
+    },
+    "Assumptions":{
+      "name":"Assumptions",
+      "Homogeneity of variance":{
+        "name":"Homogeneity of variance",
+        "Levene's test":{
+          "name":"Levene's test"
+        },
+        "Ratio of sample size":{
+          "name":"Ratio of sample size"
+        },
+        "Ratio of variance":{
+          "name":"Ratio of variance"
+        }
+      },
+      "Sphericity":{
+        "name":"Sphericity",
+        "Mauchly's test":{
+          "name":"Mauchly's test"
+        },
+        "Epsilon":{
+          "name":"Epsilon"
+        }
+      },
+      "Normality":{
+        "name":"Normality",
+        "Shapiro-Wilks":{
+          "name":"Shapiro-Wilks"
+        },
+        "Kolmogorov-Smirnov":{
+          "name":"Kolmogorov-Smirnov"
+        },
+        "Q-Q plot":{
+          "name":"Q-Q plot"
+        }
+      },
+      "Linearity":{
+        "name":"Linearity"
+      },
+      "Homoscedasticity":{
+        "name":"Homoscedasticity",
+        "Residual plot":{
+          "name":"Residual plot"
+        }
+      },
+      "Multicolinearity":{
+        "name":"Multicolinearity",
+        "VIF":{
+          "name":"VIF"
+        },
+        "Tolerance":{
+          "name":"Tolerance"
+        }
+      }
+    },
+    "Factor analysis":{
+      "name":"Factor analysis",
+      "Principle component analysis":{
+        "name":"Principle component analysis"
+      },
+      "Exploratory factor analysis":{
+        "name":"Exploratory factor analysis"
+      },
+      "Confirmatory factor analysis":{
+        "name":"Confirmatory factor analysis"
+      },
+      "Rotations":{
+        "name":"Rotations"
+      },
+      "Eigenvalues":{
+        "name":"Eigenvalues"
+      },
+      "Factor loadings":{
+        "name":"Factor loadings"
+      },
+      "Explained variance":{
+        "name":"Explained variance"
+      },
+      "Compontent correlation matrix":{
+        "name":"Compontent correlation matrix"
+      },
+      "Scree plot":{
+        "name":"Scree plot"
+      },
+      "Pattern matrix":{
+        "name":"Pattern matrix"
+      },
+      "Structure matrix":{
+        "name":"Structure matrix"
+      },
+      "Factor correlation matrix":{
+        "name":"Factor correlation matrix"
+      },
+      "Communalities":{
+        "name":"Communalities"
+      },
+      "Factor scores":{
+        "name":"Factor scores"
+      }
+    },
+    "Reliability":{
+      "name":"Reliability",
+      "Analysis":{
+        "name":"Analysis",
+        "Cronbach's alpha":{
+          "name":"Cronbach's alpha"
+        },
+        "Split half":{
+          "name":"Split half"
+        },
+        "Test-retest":{
+          "name":"Test-retest"
+        },
+        "Parallel forms":{
+          "name":"Parallel forms"
+        }
+      },
+      "Descriptives":{
+        "name":"Descriptives",
+        "RIT":{
+          "name":"RIT"
+        },
+        "RIR":{
+          "name":"RIR"
+        },
+        "proportion correct":{
+          "name":"proportion correct"
+        }
+      }
+    }
+  },
+  "Tags":{
+    "name":"Tags",
+    "Calculation":{
+      "name":"Calculation"
+    },
+    "Case":{
+      "name":"Case"
+    },
+    "Conceptual":{
+      "name":"Conceptual"
+    },
+    "Creating graphs":{
+      "name":"Creating graphs"
+    },
+    "Data manipulation":{
+      "name":"Data manipulation"
+    },
+    "Interpretating graph":{
+      "name":"Interpretating graph"
+    },
+    "Interpretating output":{
+      "name":"Interpretating output"
+    },
+    "Performing analysis":{
+      "name":"Performing analysis"
+    },
+    "Test choice":{
+      "name":"Test choice"
+    },
+    "Program":{
+      "name":"Program",
+      "SPSS":{
+        "name":"SPSS"
+      },
+      "JASP":{
+        "name":"JASP"
+      },
+      "R":{
+        "name":"R"
+      },
+      "STATA":{
+        "name":"STATA"
+      },
+      "Excel":{
+        "name":"Excel"
+      },
+      "Calculator":{
+        "name":"Calculator"
+      },
+      "Jamovi":{
+        "name":"Jamovi"
+      }
+    },
+    "Language":{
+      "name":"Language",
+      "English":{
+        "name":"English"
+      },
+      "Dutch":{
+        "name":"Dutch"
+      }
+    },
+    "Level":{
+      "name":"Level",
+      "Statistical Literacy":{
+        "name":"Statistical Literacy"
+      },
+      "Statistical Reasoning":{
+        "name":"Statistical Reasoning"
+      },
+      "Statistical Thinking":{
+        "name":"Statistical Thinking"
+      }
+    }
+  }
+}

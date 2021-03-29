@@ -1,0 +1,32 @@
+Question
+========
+  
+replace-with-question-text
+  
+Answerlist
+----------
+* replace-with-answer-opton-A
+* replace-with-answer-opton-B
+* replace-with-answer-opton-C
+
+Solution
+========
+  
+replace-with-general-feedback
+
+Answerlist
+----------
+* replace-with-feedback-A
+* replace-with-feedback-B
+* replace-with-reedback-C
+
+Meta-information
+================
+exname: replace-with-itemname
+extype: mchoice
+exsolution: 
+exsection: 
+exextra[Type]: 
+exextra[Program]: 
+exextra[Language]: 
+exextra[Level]: 

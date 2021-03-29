@@ -1,0 +1,33 @@
+Question
+========
+  
+replace-with-question-text
+
+Answerlist
+----------
+
+* replace-with-question-text-A
+* replace-with-question-text-B
+
+Solution
+========
+  
+replace-with-general-feedback
+
+Answerlist
+----------
+* replace-with-feedback-A
+* replace-with-feedback-B
+
+Meta-information
+================
+exname: replace-with-itemname
+extype: cloze
+exclozetype: num|string
+exsolution: 5|"correct text"
+extol: 0.01
+exsection: 
+exextra[Type]: 
+exextra[Program]: 
+exextra[Language]: 
+exextra[Level]: 
