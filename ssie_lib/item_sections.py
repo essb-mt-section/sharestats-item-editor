@@ -6,8 +6,8 @@ class ItemSection(object):
 
     def __init__(self, parent, tag, underline_chr, min_underline_length=4,
                  has_answer_list=False):
-        from .statsshare_item import StatsShareItem
-        assert(isinstance(parent, (ItemSection, StatsShareItem)))
+        from .sharestats_item import ShareStatsItem
+        assert(isinstance(parent, (ItemSection, ShareStatsItem)))
 
         self._parent = parent
         self._underline_chr = underline_chr
@@ -111,8 +111,8 @@ class ItemMetaInfo(ItemSection):
 
     def __init__(self, parent):
         super().__init__(parent, "Meta-information", "=")
-        from .statsshare_item import StatsShareItem
-        assert(isinstance(self._parent, StatsShareItem))
+        from .sharestats_item import ShareStatsItem
+        assert(isinstance(self._parent, ShareStatsItem))
         self.parameter = OrderedDict()
 
 

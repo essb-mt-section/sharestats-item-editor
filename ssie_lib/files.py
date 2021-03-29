@@ -2,7 +2,7 @@ import os
 from os import path
 
 
-class StatsShareFilename(object):
+class ShareStatsFilename(object):
 
     def __init__(self, file_path):
         if file_path is None:
@@ -17,7 +17,7 @@ class StatsShareFilename(object):
             cnt_str = "{}".format(counter)
 
         name = "{}-{}-{}-{}".format(university, topic, cnt_str, language)
-        return StatsShareFilename(path.join(base_directory, name,
+        return ShareStatsFilename(path.join(base_directory, name,
                                             "{}.Rmd".format(name)))
 
     def get_language(self):
@@ -77,7 +77,7 @@ class StatsShareFilename(object):
         return filter(path.isfile, all)
 
     def __cmp__(self, other):
-        if not isinstance(other, StatsShareFilename):
+        if not isinstance(other, ShareStatsFilename):
             return False
         else:
             return self.path == other.path
@@ -93,8 +93,8 @@ class StatsShareFilename(object):
             else:
                 lang2 = "nl"
 
-            return StatsShareFilename.create(self.base_directory,
-                                parts[0], parts[1], parts[2], lang2)
+            return ShareStatsFilename.create(self.base_directory,
+                                             parts[0], parts[1], parts[2], lang2)
         else:
             return None
 
@@ -129,7 +129,7 @@ def rmd_file_list_bilingual(folder):
     rtn = []
     # check for matching languages
     while len(lst)>0:
-        first = StatsShareFilename(lst.pop(0))
+        first = ShareStatsFilename(lst.pop(0))
         second = first.get_other_language()
 
         while True: # remove all instance of second in lst

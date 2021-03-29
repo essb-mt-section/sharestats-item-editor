@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 
 from . import __version__, consts, files
-from . statsshare_item import StatsShareItem
+from . sharestats_item import ShareStatsItem
 from .windows import taxonomy_win
 
 
@@ -80,8 +80,8 @@ class _MainWin(object):
         self.lb_files.update(values=list_display)
 
     def run(self):
-        self.ss_item_nl = StatsShareItem("templates/TemplateMultipleChoice.Rmd")
-        self.ss_item_en = StatsShareItem("templates/TemplateMultipleChoice.Rmd")
+        self.ss_item_nl = ShareStatsItem("templates/TemplateMultipleChoice.Rmd")
+        self.ss_item_en = ShareStatsItem("templates/TemplateMultipleChoice.Rmd")
 
         self.update_files_list()
         self.update_item_gui(en=False)
@@ -126,11 +126,11 @@ class _MainWin(object):
                 fls = self.file_list_bilingual[sel[0]]
                 if fls[0] is not None:
                     if  fls[0].get_language()=="en":
-                        self.ss_item_en = StatsShareItem(fls[0])
-                        self.ss_item_nl = StatsShareItem(fls[1])
+                        self.ss_item_en = ShareStatsItem(fls[0])
+                        self.ss_item_nl = ShareStatsItem(fls[1])
                     else:
-                        self.ss_item_en = StatsShareItem(fls[1])
-                        self.ss_item_nl = StatsShareItem(fls[0])
+                        self.ss_item_en = ShareStatsItem(fls[1])
+                        self.ss_item_nl = ShareStatsItem(fls[0])
                     self.update_item_gui(en=True)
                     self.update_item_gui(en=False)
 
