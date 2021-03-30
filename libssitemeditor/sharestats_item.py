@@ -15,13 +15,17 @@ class ShareStatsItem(object):
         self.solution = ItemSection(self, "Solution", "=", has_answer_list=True)
         self.meta_info = ItemMetaInfo(self)
         self.header = []
+        self.text_array = []
 
         if path.isfile(self.filename.path):
-            with open(self.filename.path) as fl:
-                self.text_array = fl.readlines()
-        else:
-            self.text_array = []
+            self.import_file(self.filename.path)
 
+    def import_file(self, text_file):
+        """import a text file as content"""
+
+        self.header = []
+        with open(text_file, "r") as fl:
+            self.text_array = fl.readlines()
         self.parse()
 
     def parse(self):
@@ -36,6 +40,9 @@ class ShareStatsItem(object):
         return rtn
 
     def save(self):
-        self.filename.make_dirs()
-        # TODO
+        if len(self.filename.path):
+            self.filename.make_dirs()
+            with open(self.filename.path, "w") as fl:
+                fl.writelines(str(self))
+
 

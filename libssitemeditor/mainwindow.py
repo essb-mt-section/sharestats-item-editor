@@ -1,10 +1,13 @@
 import PySimpleGUI as sg
 
+from  os import path
 from . import __version__, consts, files
 from .sharestats_item import ShareStatsItem
 from . import windows
 
 class MainWindow(object):
+
+    _EMPTY_ITEM = ShareStatsItem(None)
 
     def __init__(self):
         sg.theme('SystemDefault1')
@@ -38,8 +41,10 @@ class MainWindow(object):
 
         self.ss_item_nl = None
         self.ss_item_en = None
-        self.base_folder = "demo" # todo settings & window
+        self.base_directory = "demo" # todo settings & window
         self.file_list_bilingual = []
+        self.unsaved_changes = False
+
 
     def update_item_gui(self, en):
 
@@ -49,6 +54,9 @@ class MainWindow(object):
         else:
             ig = self.ig_nl
             item = self.ss_item_nl
+
+        if item is None:
+            item = MainWindow._EMPTY_ITEM
 
         ig.ml_metainfo.update(value=
                                 item.meta_info.str_parameter +
@@ -71,54 +79,68 @@ class MainWindow(object):
                         item.solution.answer_list.str_text)
 
     def update_files_list(self):
-        self.file_list_bilingual = files.rmd_file_list_bilingual(self.base_folder)
+        self.file_list_bilingual = files.rmd_file_list_bilingual(self.base_directory)
         list_display = list(map(files.bilinguar_list_name, self.file_list_bilingual))
         self.lb_files.update(values=list_display)
 
-    def run(self):
-        self.ss_item_nl = ShareStatsItem("templates/TemplateMultipleChoice.Rmd")
-        self.ss_item_en = ShareStatsItem("templates/TemplateMultipleChoice.Rmd")
 
+    def run(self):
         self.update_files_list()
         self.update_item_gui(en=False)
         self.update_item_gui(en=True)
-        unsaved_changes = False
+        self.unsaved_changes = False
+
         while True:
             self.window.refresh()
             event, values = self.window.read()
             if event is None:
                 break
 
-            if not unsaved_changes and (event.startswith("nl_") or
+            if not self.unsaved_changes and (event.startswith("nl_") or
                                         event.startswith("en_")):
-                unsaved_changes = True
+                self.unsaved_changes = True
 
             if event == "close":
                 break
+
             elif event == "nl_btn_change_meta":
-                new_tax = windows.taxonomy(self.ss_item_nl.meta_info)
-                if new_tax is not None:
-                    self.ss_item_nl.meta_info = new_tax
-                    self.update_item_gui(en=False)
+                if self.ss_item_nl is not None:
+                    new_tax = windows.taxonomy(self.ss_item_nl.meta_info)
+                    if new_tax is not None:
+                        self.ss_item_nl.meta_info = new_tax
+                        self.update_item_gui(en=False)
 
             elif event == "en_btn_change_meta":
-                new_tax = windows.taxonomy(self.ss_item_en.meta_info)
-                if new_tax is not None:
-                    self.ss_item_en.meta_info = new_tax
-                    self.update_item_gui(en=True)
+                if self.ss_item_en is not None:
+                    new_tax = windows.taxonomy(self.ss_item_en.meta_info)
+                    if new_tax is not None:
+                        self.ss_item_en.meta_info = new_tax
+                        self.update_item_gui(en=True)
 
             elif event== "save":
-                # save TODO
-                unsaved_changes=False
+                self.save_items(ask=False)
 
             elif event=="new":
-                if unsaved_changes:
-                    pass
+                self.save_items() # TODO allow canceling new at this point
+                self.ss_item_nl, self.ss_item_en = \
+                        windows.new_item(self.base_directory)
+                # TODO check existing file and overriding
+                self.unsaved_changes = True
+                if self.ss_item_nl is not None and \
+                        self.ss_item_nl.filename.get_language()== "en":
+                    self.ss_item_nl, self.ss_item_en = \
+                        self.ss_item_en, self.ss_item_nl
+                self.save_items(ask=False)
+                self.update_item_gui(en=True)
+                self.update_item_gui(en=False)
+                self.update_files_list()
 
             elif event=="lb_files":
+                self.save_items()
+
+                self.ss_item_nl = None
+                self.ss_item_en = None
                 sel = self.lb_files.get_indexes()
-                if unsaved_changes:
-                    pass
                 fls = self.file_list_bilingual[sel[0]]
                 if fls[0] is not None:
                     if  fls[0].get_language()=="en":
@@ -131,12 +153,22 @@ class MainWindow(object):
                     self.update_item_gui(en=False)
 
         # processing
-        if unsaved_changes:
-            pass # ToDo warning
-
+        self.save_items()
         self.window.close()
 
-
+    def save_items(self, ask=False):
+        # FIXME import gui content to self.ss_item
+        if ask:
+            # resp = windows.ask_save()
+            #if resp == False:
+            #    return
+            pass # TODO
+        if self.unsaved_changes:
+            if self.ss_item_en is not None:
+                self.ss_item_en.save()
+            if self.ss_item_nl is not None:
+                self.ss_item_nl.save()
+            self.unsaved_changes = False
 
 
 class _ItemGUI(object):

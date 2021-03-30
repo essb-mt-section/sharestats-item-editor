@@ -1,8 +1,10 @@
+from os import path
 import PySimpleGUI as sg
 
 from . import consts
 from .taxonomy import Taxonomy
 from .item_sections import ItemMetaInfo
+from .sharestats_item import ShareStatsItem
 
 def splitstrip(text, sep):
     return list(map(lambda x: x.strip(), text.split(sep)))
@@ -138,7 +140,7 @@ def taxonomy(meta_info):
     else:
         return None
 
-def new_item():
+def new_item(base_directory):
     sg.theme('SystemDefault1')
 
     txt_flname1 = sg.Text("", size=(43, 1))
@@ -175,10 +177,8 @@ def new_item():
                                               key="create")])
     window = sg.Window("New Item(s)", layout, finalize=True)
 
-    fln_name1 = ""
-    fln_name2 = ""
-    selected = lb_type.get_indexes()
-
+    name1 = ""
+    name2 = ""
     while True:
         window.refresh()
         event, v = window.read()
@@ -187,39 +187,51 @@ def new_item():
             tmp = tuple(map(lambda x:x.lower().strip(),
                                             (v["fln0"], v["fln1"]) ))
 
-            fln_name1 = "-".join(filter(len, (tmp[:2])))
-            fln_name2 = ""
+            name1 = "-".join(filter(len, (tmp[:2])))
+            name2 = ""
 
-            if len(fln_name1):
+            if len(name1):
                 try:
-                    fln_name1 += "-" + str(int(v["fln2"])).zfill(3)
+                    name1 += "-" + str(int(v["fln2"])).zfill(3)
                 except:
                     pass
 
-            if len(fln_name1)>0:
+            if len(name1)>0:
                 lang = v["fln3"]
                 if lang == "Dutch":
-                    fln_name1 = fln_name1 + "-nl"
+                    name1 = name1 + "-nl"
                 elif lang == "English":
-                    fln_name1 = fln_name1 + "-en"
+                    name1 = name1 + "-en"
                 elif lang == "Bilingual":
-                    fln_name2 = fln_name1 + "-en"
-                    fln_name1 = fln_name1 + "-nl"
-            txt_flname1.update(value=fln_name1)
-            txt_flname2.update(value=fln_name2)
+                    name2 = name1 + "-en"
+                    name1 = name1 + "-nl"
+            txt_flname1.update(value=name1)
+            txt_flname2.update(value=name2)
 
         else:
             break
 
-    rtn = None
-    if event == "create" and len(fln_name1):
-        s = lb_type.get_indexes()[0]
-        if s > 0:
-            selected = list(consts.EXTYPES.keys())[s - 1]
+    item1, item2 = (None, None)
+    if event == "create":
+        # template
+        sel = lb_type.get_indexes()[0]
+        if sel > 0:
+            template_key = list(consts.EXTYPES.keys())[sel - 1]
         else:
-            selected = None
-        rtn = (fln_name1, fln_name2, selected)
+            template_key = None
+
+        if len(name1):
+            item1 = ShareStatsItem(path.join(base_directory, name1,
+                                        "{}.Rmd".format(name1)))
+            if template_key is not None:
+                item1.import_file(consts.TEMPLATES[template_key])
+        if len(name2):
+            item2 = ShareStatsItem(path.join(base_directory, name2,
+                                        "{}.Rmd".format(name2)))
+            if template_key is not None:
+                item2.import_file(consts.TEMPLATES[template_key])
 
     window.close()
-    return rtn
+
+    return item1, item2
 

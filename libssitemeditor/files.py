@@ -16,7 +16,8 @@ class ShareStatsFilename(object):
         except:
             cnt_str = "{}".format(counter)
 
-        name = "{}-{}-{}-{}".format(university, topic, cnt_str, language)
+        name = "{}-{}-{}-{}".format(university.lower(), topic.lower(), cnt_str,
+                                    language.lower())
         return ShareStatsFilename(path.join(base_directory, name,
                                             "{}.Rmd".format(name)))
 
@@ -68,7 +69,7 @@ class ShareStatsFilename(object):
         all = map(lambda x:path.join(self.directory, x), os.listdir(self.directory))
         return filter(path.isfile, all)
 
-    def __cmp__(self, other):
+    def __eq__(self, other):
         if not isinstance(other, ShareStatsFilename):
             return False
         else:
