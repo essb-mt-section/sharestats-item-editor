@@ -58,19 +58,11 @@ class ShareStatsFilename(object):
     def base_directory(self):
         return path.split(self.directory)[0]
 
-    def make_file(self):
-        if path.isfile(self.path):
-            return False
+    def make_dirs(self):
         try:
             os.makedirs(self.directory)
         except:
             pass
-
-        try:
-            open(self.path, "w").close()
-            return True
-        except:
-            return False
 
     def get_axillary_files(self):
         all = map(lambda x:path.join(self.directory, x), os.listdir(self.directory))

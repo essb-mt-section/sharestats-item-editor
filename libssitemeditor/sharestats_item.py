@@ -34,3 +34,8 @@ class ShareStatsItem(object):
         rtn = "".join(self.header)
         rtn += str(self.question) + str(self.solution) + str(self.meta_info)
         return rtn
+
+    def save(self):
+        self.filename.make_dirs()
+        # TODO
+

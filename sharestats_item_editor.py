@@ -1,4 +1,3 @@
 
-from ssie_lib import gui
-
-gui.run()
+from libssitemeditor.mainwindow import MainWindow
+MainWindow().run()

@@ -4,11 +4,7 @@ from . import __version__, consts, files
 from . sharestats_item import ShareStatsItem
 from .windows import taxonomy_win
 
-
-def run():
-    _MainWin().run()
-
-class _MainWin(object):
+class MainWindow(object):
 
     def __init__(self):
         sg.theme('SystemDefault1')

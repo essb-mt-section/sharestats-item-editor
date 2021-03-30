@@ -9,6 +9,8 @@ Oliver Lindemann, Erasmus University Rotterdam, NL
 
 ![screenshot](picts/screenshot.png)
 
+see also [ShareStats Porject](https://github.com/ShareStats)
+
 ---
 
 
