@@ -1,8 +1,8 @@
 import PySimpleGUI as sg
 
 from . import __version__, consts, files
-from . sharestats_item import ShareStatsItem
-from .windows import taxonomy_win
+from .sharestats_item import ShareStatsItem
+from . import windows
 
 class MainWindow(object):
 
@@ -96,13 +96,13 @@ class MainWindow(object):
             if event == "close":
                 break
             elif event == "nl_btn_change_meta":
-                new_tax = taxonomy_win(self.ss_item_nl.meta_info)
+                new_tax = windows.taxonomy(self.ss_item_nl.meta_info)
                 if new_tax is not None:
                     self.ss_item_nl.meta_info = new_tax
                     self.update_item_gui(en=False)
 
             elif event == "en_btn_change_meta":
-                new_tax = taxonomy_win(self.ss_item_en.meta_info)
+                new_tax = windows.taxonomy(self.ss_item_en.meta_info)
                 if new_tax is not None:
                     self.ss_item_en.meta_info = new_tax
                     self.update_item_gui(en=True)

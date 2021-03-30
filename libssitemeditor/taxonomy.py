@@ -40,7 +40,7 @@ class Taxonomy(object):
 
 
 def _subdict(d, nested_keys=None):
-    """:return the dict nested hierarchically indicated nested_keys
+    """:return the dict nested hierarchically indicated by nested_keys
     or None if key list is incorrect
     :param nested_keys list of keys or a single keys
 

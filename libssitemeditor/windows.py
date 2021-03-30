@@ -1,13 +1,14 @@
 import PySimpleGUI as sg
+
+from . import consts
 from .taxonomy import Taxonomy
 from .item_sections import ItemMetaInfo
-
 
 def splitstrip(text, sep):
     return list(map(lambda x: x.strip(), text.split(sep)))
 
 
-def taxonomy_win(meta_info):
+def taxonomy(meta_info):
     """default_taxonomy needs to be comma seperated as specified Rmd file
     """
     assert (isinstance(meta_info, ItemMetaInfo))
@@ -136,3 +137,89 @@ def taxonomy_win(meta_info):
 
     else:
         return None
+
+def new_item():
+    sg.theme('SystemDefault1')
+
+    txt_flname1 = sg.Text("", size=(43, 1))
+    txt_flname2 = sg.Text("", size=(30, 1))
+    fr_names = sg.Frame("", [[sg.Text("a:", size=(2,1)), txt_flname1],
+                                  [sg.Text("b:" , size=(2,1)),txt_flname2]],
+                        border_width=0)
+
+    lb_type = sg.Listbox(values=["None"] + list(consts.EXTYPES.values()),
+                            default_values=["None"],
+                         select_mode=sg.LISTBOX_SELECT_MODE_SINGLE,
+                         size=(26, 6), no_scrollbar=True,
+                         key="lb_type")
+
+    fr_filename = sg.Frame("Item Name(s)",[
+                           [sg.Text("Uni"+" "*11 + "Topic"+" "*24 +
+                                    "Counter"+" "*7 + "Language")],
+                            [sg.InputText(size=(5,1), key="fln0",
+                                          enable_events=True), sg.Text("-"),
+                            sg.InputText(size=(15,1), key="fln1",
+                                          enable_events=True), sg.Text("-"),
+                            sg.InputText(size=(4,1), key="fln2",
+                                          enable_events=True), sg.Text("-"),
+                            sg.DropDown(values=["Dutch", "English",
+                                                "Bilingual"], key="fln3",
+                                            enable_events=True),
+                            ], [fr_names]
+                        ])
+
+    layout=[[fr_filename]]
+    layout.append([sg.Frame("Template", [[lb_type]]),
+                                    sg.Cancel(size=(10, 2)),
+                                    sg.Button("Create", size=(10, 2),
+                                              key="create")])
+    window = sg.Window("New Item(s)", layout, finalize=True)
+
+    fln_name1 = ""
+    fln_name2 = ""
+    selected = lb_type.get_indexes()
+
+    while True:
+        window.refresh()
+        event, v = window.read()
+
+        if event.startswith("fln"):
+            tmp = tuple(map(lambda x:x.lower().strip(),
+                                            (v["fln0"], v["fln1"]) ))
+
+            fln_name1 = "-".join(filter(len, (tmp[:2])))
+            fln_name2 = ""
+
+            if len(fln_name1):
+                try:
+                    fln_name1 += "-" + str(int(v["fln2"])).zfill(3)
+                except:
+                    pass
+
+            if len(fln_name1)>0:
+                lang = v["fln3"]
+                if lang == "Dutch":
+                    fln_name1 = fln_name1 + "-nl"
+                elif lang == "English":
+                    fln_name1 = fln_name1 + "-en"
+                elif lang == "Bilingual":
+                    fln_name2 = fln_name1 + "-en"
+                    fln_name1 = fln_name1 + "-nl"
+            txt_flname1.update(value=fln_name1)
+            txt_flname2.update(value=fln_name2)
+
+        else:
+            break
+
+    rtn = None
+    if event == "create" and len(fln_name1):
+        s = lb_type.get_indexes()[0]
+        if s > 0:
+            selected = list(consts.EXTYPES.keys())[s - 1]
+        else:
+            selected = None
+        rtn = (fln_name1, fln_name2, selected)
+
+    window.close()
+    return rtn
+
