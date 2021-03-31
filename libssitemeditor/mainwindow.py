@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 
-from  os import path
-from . import __version__, consts, files
+from os import path, getcwd
+from . import __version__, consts, files, settings
 from .sharestats_item import ShareStatsItem
 from . import windows
 
@@ -11,6 +11,7 @@ class MainWindow(object):
 
     def __init__(self):
         sg.theme('SystemDefault1')
+
         # LAYOUT
         self.ig_nl = _ItemGUI("nl")
         self.ig_en = _ItemGUI("en")
@@ -29,22 +30,42 @@ class MainWindow(object):
             [sg.Button(button_text="Save", size=(28, 2), key="save")],
             [sg.CloseButton(button_text="Close", size=(28, 2))]])
 
+
+        self.it_base_directory = sg.InputText(self.base_directory, size=(80, 1),
+                                            key="it_base_dir",  disabled=True,
+                                            enable_events=True)
+        top_frame = sg.Frame("Top Frame",
+                             [[sg.Text("Item Folder"),
+                               self.it_base_directory,
+                              sg.FolderBrowse(initial_folder=self.base_directory)]])
+
         left_frame = sg.Frame("", [[fr_files], [fr_btns]],
                               border_width=0)
 
-        layout = [[left_frame,
+        layout = [[top_frame],
+                  [left_frame,
                    self.ig_nl.get_frame("Dutch"),
                    self.ig_en.get_frame("English")]]
+
+        self.ss_item_nl = None
+        self.ss_item_en = None
+        self.file_list_bilingual = []
+        self.unsaved_changes = False
 
         self.window = sg.Window("{} ({})".format(consts.APPNAME, __version__),
                                 layout, finalize=True)
 
-        self.ss_item_nl = None
-        self.ss_item_en = None
-        self.base_directory = "demo" # todo settings & window
-        self.file_list_bilingual = []
-        self.unsaved_changes = False
+    @property
+    def base_directory(self):
+        if settings.base_directory is None:
+            settings.base_directory = getcwd()
+        return settings.base_directory
 
+    @base_directory.setter
+    def base_directory(self, v):
+        if v != settings.base_directory:
+            settings.base_directory = v
+            self.update_files_list()
 
     def update_item_gui(self, en):
 
@@ -79,6 +100,13 @@ class MainWindow(object):
                         item.solution.answer_list.str_text)
 
     def update_files_list(self):
+        if not path.isdir(self.base_directory):
+            self.base_directory = sg.PopupGetFolder("Please select item directory:",
+                title="{} ({})".format(consts.APPNAME, __version__))
+            if not path.isdir(self.base_directory):
+                sg.PopupError("No valid item directory selected.")
+                exit()
+
         self.file_list_bilingual = files.rmd_file_list_bilingual(self.base_directory)
         list_display = list(map(files.bilinguar_list_name, self.file_list_bilingual))
         self.lb_files.update(values=list_display)
@@ -92,12 +120,16 @@ class MainWindow(object):
 
     @selected_file_index.setter
     def selected_file_index(self, index):
-        n = len(self.lb_files.get_list_values())-1
-        if index<0:
+        n = len(self.lb_files.get_list_values())
+        if n<=0:
+            return
+        elif index<0:
            index = 0
-        elif index>n:
-            index=n
+        elif index > n-1:
+            index = n-1
         self.lb_files.update(set_to_index=index)
+
+
 
 
     def run(self):
@@ -133,6 +165,9 @@ class MainWindow(object):
                         self.ss_item_en.meta_info = new_tax
                         self.update_item_gui(en=True)
 
+            elif event=="it_base_dir":
+                self.base_directory = values[event]
+
             elif event== "save":
                 self.save_items(ask=False)
 
@@ -163,8 +198,10 @@ class MainWindow(object):
                     else:
                         self.selected_file_index -= 1
 
-                self.save_items()
+                if self.selected_file_index is None:
+                    continue
 
+                self.save_items()
                 self.ss_item_nl = None
                 self.ss_item_en = None
                 fls = self.file_list_bilingual[self.selected_file_index]
@@ -181,6 +218,7 @@ class MainWindow(object):
         # processing
         self.save_items()
         self.window.close()
+        settings.save()
 
     def save_items(self, ask=False):
         # FIXME import gui content to self.ss_item
