@@ -4,8 +4,7 @@ from . import consts
 
 class ItemSection(object):
 
-    def __init__(self, parent, tag, underline_chr, min_underline_length=4,
-                 has_answer_list=False):
+    def __init__(self, parent, tag, underline_chr, min_underline_length=4):
         from .sharestats_item import ShareStatsItem
         assert(isinstance(parent, (ItemSection, ShareStatsItem)))
 
@@ -16,14 +15,10 @@ class ItemSection(object):
         self.tag = tag
         self.text_array = []
         self.line_range = [None, None]
-        if has_answer_list:
-            self.answer_list = AnswerList(self)
-        else:
-            self.answer_list = None
+        self.answer_list = None
 
     def parse(self):
         # find the section and copy content to object
-
         prev = ""
         is_section = False
         self.text_array = []
@@ -46,13 +41,22 @@ class ItemSection(object):
                     self.text_array.append(line)
             prev = line
 
-        self.line_range[1] = cnt
+        if self.line_range[0] is not None:
+            self.line_range[1] = cnt
 
-        if self.answer_list is not None:
-            self.answer_list.parse()
-            a, b = self.answer_list.line_range
+        if not isinstance(self, AnswerList):
+            answer_list = AnswerList(self)
+            answer_list.parse()
+            a, b = answer_list.line_range
             if a is not None and b is not None:
                 self.text_array = self.text_array[:a] + self.text_array[b + 1:]
+                self.answer_list = answer_list
+            else:
+                self.answer_list = None
+
+    @property
+    def has_answer_list(self):
+        return self.answer_list is not None
 
     @property
     def str_markdown_heading(self):

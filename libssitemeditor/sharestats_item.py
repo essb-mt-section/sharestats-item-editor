@@ -11,8 +11,8 @@ class ShareStatsItem(object):
             self.filename = filename
         else:
             self.filename = ShareStatsFilename(filename)
-        self.question = ItemSection(self, "Question", "=", has_answer_list=True)
-        self.solution = ItemSection(self, "Solution", "=", has_answer_list=True)
+        self.question = ItemSection(self, "Question", "=")
+        self.solution = ItemSection(self, "Solution", "=")
         self.meta_info = ItemMetaInfo(self)
         self.header = []
         self.text_array = []

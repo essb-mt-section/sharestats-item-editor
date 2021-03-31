@@ -5,6 +5,10 @@ from . import __version__, consts, files, settings
 from .sharestats_item import ShareStatsItem
 from . import windows
 
+BGK_COLOR_INACTIVE = "#8A8A8A"
+BGK_COLOR_ACTIVE = "#FFFFFF"
+
+
 class MainWindow(object):
 
     _EMPTY_ITEM = ShareStatsItem(None)
@@ -34,9 +38,8 @@ class MainWindow(object):
         self.it_base_directory = sg.InputText(self.base_directory, size=(80, 1),
                                             key="it_base_dir",  disabled=True,
                                             enable_events=True)
-        top_frame = sg.Frame("Top Frame",
-                             [[sg.Text("Item Folder"),
-                               self.it_base_directory,
+        top_frame = sg.Frame("Item Directory",
+                             [[self.it_base_directory,
                               sg.FolderBrowse(initial_folder=self.base_directory)]])
 
         left_frame = sg.Frame("", [[fr_files], [fr_btns]],
@@ -79,27 +82,29 @@ class MainWindow(object):
         if item is None:
             item = MainWindow._EMPTY_ITEM
 
-        ig.ml_metainfo.update(value=
-                                item.meta_info.str_parameter +
+        ig.ml_metainfo.update(value=item.meta_info.str_parameter +
                                 item.meta_info.str_text)
 
         ig.ml_folder_info(value="") #TODO
         ig.ml_quest.update(value=item.question.str_text)
         ig.ml_solution.update(value=item.solution.str_text)
+
         if item.question.answer_list is None:
             ig.ml_answer.update(value="")
+            ig.set_answer_list(False)
         else:
+            ig.set_answer_list(True)
             ig.ml_answer.update(value=
                         item.question.answer_list.str_answers +
-                        item.question.answer_list.str_text)
+                        item.question.answer_list.str_text, disabled=True)
         if item.solution.answer_list is None:
             ig.ml_solution_feedback.update(value="")
         else:
             ig.ml_solution_feedback.update(value=
                         item.solution.answer_list.str_answers +
-                        item.solution.answer_list.str_text)
+                        item.solution.answer_list.str_text, disabled=False)
 
-    def update_files_list(self):
+    def update_files_list(self, select_item=None):
         if not path.isdir(self.base_directory):
             self.base_directory = sg.PopupGetFolder("Please select item directory:",
                 title="{} ({})".format(consts.APPNAME, __version__))
@@ -110,6 +115,11 @@ class MainWindow(object):
         self.file_list_bilingual = files.rmd_file_list_bilingual(self.base_directory)
         list_display = list(map(files.bilinguar_list_name, self.file_list_bilingual))
         self.lb_files.update(values=list_display)
+        try:
+            self.selected_file_index = list_display.index(select_item)
+        except:
+            pass
+
 
     @property
     def selected_file_index(self):
@@ -128,9 +138,6 @@ class MainWindow(object):
         elif index > n-1:
             index = n-1
         self.lb_files.update(set_to_index=index)
-
-
-
 
     def run(self):
         self.update_files_list()
@@ -172,19 +179,30 @@ class MainWindow(object):
                 self.save_items(ask=False)
 
             elif event=="new":
-                self.save_items() # TODO allow canceling new at this point
-                self.ss_item_nl, self.ss_item_en = \
-                        windows.new_item(self.base_directory)
-                # TODO check existing file and overriding
-                self.unsaved_changes = True
-                if self.ss_item_nl is not None and \
-                        self.ss_item_nl.filename.get_language()== "en":
-                    self.ss_item_nl, self.ss_item_en = \
-                        self.ss_item_en, self.ss_item_nl
-                self.save_items(ask=False)
-                self.update_item_gui(en=True)
-                self.update_item_gui(en=False)
-                self.update_files_list()
+                new_items = windows.new_item(self.base_directory)
+                if new_items[0] is not None:
+                    self.save_items()  # TODO allow canceling new at this point
+                    # TODO check existing file and  overriding
+                    self.ss_item_nl, self.ss_item_en = new_items
+                    self.unsaved_changes = True
+                    fl_name = self.ss_item_nl.filename.filename
+                    if self.ss_item_nl.filename.get_language()== "en":
+                        #swap
+                        self.ss_item_nl, self.ss_item_en = \
+                                        self.ss_item_en, self.ss_item_nl
+                    self.save_items(ask=False) # create folder and file
+                    self.update_item_gui(en=True)
+                    self.update_item_gui(en=False)
+                    self.update_files_list()
+
+                    #find filename in new bilingual file list
+                    tmp = list(map(lambda x:x[0].filename==fl_name,
+                                   self.file_list_bilingual))
+                    try:
+                        self.selected_file_index = tmp.index(True)
+                    except:
+                        pass
+
 
             elif event in ("lb_files", "btn_next", "btn_previous"):
                 if event=="btn_next":
@@ -245,6 +263,8 @@ class _ItemGUI(object):
                                      key="{}_quest".format(key_prefix))
         self.ml_answer = sg.Multiline(default_text="", enable_events=True,
                                       size=(80, answer_length),
+                                      background_color=BGK_COLOR_INACTIVE,
+                                      disabled=True,
                                       key="{}_answer".format(key_prefix))
         self.ml_solution = sg.Multiline(default_text="", enable_events=True,
                                         size=(80, solution_length),
@@ -252,6 +272,8 @@ class _ItemGUI(object):
 
         self.ml_solution_feedback = sg.Multiline(default_text="",  enable_events=True,
                                                  size=(80, answer_length),
+                                                 background_color=BGK_COLOR_INACTIVE,
+                                                 disabled=True,
                                                  key="{}_solution_feedback".format(key_prefix))
         self.ml_metainfo = sg.Multiline(default_text="",
                                         size=(80, 10),  enable_events=True,
@@ -263,8 +285,17 @@ class _ItemGUI(object):
         self.ml_folder_info =sg.Multiline(default_text="",
                          size=(80, 5),
                          background_color="#DADADA",
+                         disabled=True,
                          key="{}_folder_info".format(key_prefix))
 
+    def set_answer_list(self, enable):
+        if enable:
+            bkg_color = BGK_COLOR_ACTIVE
+        else:
+            bkg_color = BGK_COLOR_INACTIVE
+
+        self.ml_answer.update(disabled=enable, background_color=bkg_color)
+        self.ml_solution_feedback.update(disabled=enable, background_color=bkg_color)
 
     def get_frame(self, heading):
         q_colour = "#BBBBDD"
