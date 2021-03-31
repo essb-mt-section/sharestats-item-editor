@@ -21,8 +21,8 @@ class MainWindow(object):
 
         fr_files = sg.Frame("Files", [
             [self.lb_files],
-            [sg.Button(button_text="<<", size=(11, 1)),
-             sg.Button(button_text=">>", size=(11, 1))]])
+            [sg.Button(button_text="<<", size=(11, 1), key="btn_previous"),
+             sg.Button(button_text=">>", size=(11, 1), key="btn_next")]])
 
         fr_btns =sg.Frame("", [
             [sg.Button(button_text="New", size=(28, 2), key="new")],
@@ -83,6 +83,22 @@ class MainWindow(object):
         list_display = list(map(files.bilinguar_list_name, self.file_list_bilingual))
         self.lb_files.update(values=list_display)
 
+    @property
+    def selected_file_index(self):
+        try:
+            return self.lb_files.get_indexes()[0]
+        except:
+            return None
+
+    @selected_file_index.setter
+    def selected_file_index(self, index):
+        n = len(self.lb_files.get_list_values())-1
+        if index<0:
+           index = 0
+        elif index>n:
+            index=n
+        self.lb_files.update(set_to_index=index)
+
 
     def run(self):
         self.update_files_list()
@@ -135,13 +151,23 @@ class MainWindow(object):
                 self.update_item_gui(en=False)
                 self.update_files_list()
 
-            elif event=="lb_files":
+            elif event in ("lb_files", "btn_next", "btn_previous"):
+                if event=="btn_next":
+                    if self.selected_file_index is None:
+                        self.selected_file_index = 0
+                    else:
+                        self.selected_file_index +=1
+                elif event=="btn_previous":
+                    if self.selected_file_index is None:
+                        self.selected_file_index = 0
+                    else:
+                        self.selected_file_index -= 1
+
                 self.save_items()
 
                 self.ss_item_nl = None
                 self.ss_item_en = None
-                sel = self.lb_files.get_indexes()
-                fls = self.file_list_bilingual[sel[0]]
+                fls = self.file_list_bilingual[self.selected_file_index]
                 if fls[0] is not None:
                     if  fls[0].get_language()=="en":
                         self.ss_item_en = ShareStatsItem(fls[0])
