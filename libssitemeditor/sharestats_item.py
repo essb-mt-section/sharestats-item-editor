@@ -48,6 +48,7 @@ class ShareStatsItem(object):
     def save(self):
         if len(self.filename.path):
             self.filename.make_dirs()
+            #print("Save {}".format(self.filename.path))
             with open(self.filename.path, "w") as fl:
                 fl.writelines(str(self))
 

@@ -48,7 +48,7 @@ class MainWindow(object):
         self.ss_item_nl = None
         self.ss_item_en = None
         self.file_list_bilingual = []
-        self.unsaved_changes = False
+        self.unsaved_item = None
 
         self.window = sg.Window("{} ({})".format(consts.APPNAME, __version__),
                                 layout, finalize=True)
@@ -143,7 +143,7 @@ class MainWindow(object):
         self.update_files_list()
         self.update_item_gui(en=False)
         self.update_item_gui(en=True)
-        self.unsaved_changes = False
+        self.unsaved_item = None
 
         while True:
             self.window.refresh()
@@ -151,10 +151,10 @@ class MainWindow(object):
             if event is None:
                 break
 
-            if not self.unsaved_changes and (event.startswith("nl_") or
-                                          event.startswith("en_")):
+            if self.unsaved_item is None and \
+                    (event.startswith("nl_") or event.startswith("en_")):
                 # if change in any text boxes
-                self.unsaved_changes = True
+                self.unsaved_item = self.selected_file_index
 
             if event == "close":
                 break
@@ -200,6 +200,7 @@ class MainWindow(object):
                                       self.ss_item_en.meta_info.str_text)
 
             elif event in ("lb_files", "btn_next", "btn_previous"):
+                self.save_items(ask=True)
                 if event=="btn_next":
                     if self.selected_file_index is None:
                         self.selected_file_index = 0
@@ -213,7 +214,7 @@ class MainWindow(object):
                 self.load_selected_item()
 
         # processing
-        self.save_items()
+        self.save_items(ask=True)
         self.window.close()
         settings.save()
 
@@ -221,7 +222,6 @@ class MainWindow(object):
         if self.selected_file_index is None:
             return
 
-        self.save_items()
         self.ss_item_nl = None
         self.ss_item_en = None
         fls = self.file_list_bilingual[self.selected_file_index]
@@ -236,13 +236,10 @@ class MainWindow(object):
             self.update_item_gui(en=False)
 
     def save_items(self, ask=False):
-        if self.unsaved_changes:
-            if ask:
-                # resp = windows.ask_save()
-                #if resp == False:
-                #    return
-                pass # TODO
-
+        if self.unsaved_item is not None:
+            item_name = self.lb_files.get_list_values()[self.unsaved_item]
+            if ask and not windows.ask_save(item_name):
+                return
             if self.ss_item_nl is not None:
                 txt = self.ig_nl.as_markdown_file()
                 self.ss_item_nl.parse(txt)
@@ -253,7 +250,8 @@ class MainWindow(object):
                 self.ss_item_en.parse(txt)
                 self.ss_item_en.save()
                 self.update_item_gui(en=True)
-            self.unsaved_changes = False
+
+            self.unsaved_item = None
 
     def new_item(self):
         new_items = windows.new_item(self.base_directory)
@@ -261,11 +259,11 @@ class MainWindow(object):
             self.save_items()  # TODO allow canceling new at this point
             # TODO check existing file and overriding
             self.ss_item_nl, self.ss_item_en = new_items
-            self.unsaved_changes = True
             fl_name = self.ss_item_nl.filename.filename
             if self.ss_item_nl.filename.get_language() == "en":
                 self.ss_item_nl, self.ss_item_en = \
                                     self.ss_item_en, self.ss_item_nl # swap
+            self.unsaved_item = -1 # any to force saving
             self.save_items(ask=False)  # create folder and file
             self.update_item_gui(en=True)
             self.update_item_gui(en=False)

@@ -235,3 +235,19 @@ def new_item(base_directory):
 
     return item1, item2
 
+
+def ask_save(item_name):
+    sg.theme('SystemDefault1')
+
+    layout = [[sg.Text("Unsave changes in '{}'".format(item_name))]]
+    layout.append([sg.Save("Save item", key="save"),
+                   sg.Cancel("Dismiss changes")])
+    window = sg.Window("Save?", layout, finalize=True)
+    while True:
+        window.refresh()
+        event, v = window.read()
+        break
+
+    window.close()
+
+    return event == "save"
