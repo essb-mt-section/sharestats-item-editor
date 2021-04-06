@@ -11,13 +11,13 @@ def splitstrip(text, sep):
 
 
 def taxonomy(meta_info):
-    """default_taxonomy needs to be comma seperated as specified Rmd file
+    """default_taxonomy needs to be comma separated as specified Rmd file
     """
     assert (isinstance(meta_info, ItemMetaInfo))
 
     tax = Taxonomy()
     default_taxonomy = "\n".join(splitstrip(meta_info.taxonomy, ","))
-    default_type = "\n".join(splitstrip(meta_info.type, ","))
+    default_type = "\n".join(splitstrip(meta_info.type_tag, ","))
 
     # LAYOUT
     layout = []
@@ -128,10 +128,9 @@ def taxonomy(meta_info):
 
     if event == "ok":
         tmp = splitstrip(value["result_tax"].strip(), "\n")
-        meta_info.taxonomy = ", ".join(
-            filter(len, tmp))  # remove empty lines and csv
+        meta_info.taxonomy = ", ".join(filter(len, tmp))  # remove empty lines and csv
         tmp = splitstrip(value["result_types"].strip(), "\n")
-        meta_info.type = ", ".join(filter(len, tmp))
+        meta_info.type_tag = ", ".join(filter(len, tmp))
         meta_info.program = value["dd_progam"]
         meta_info.level = value["dd_level"]
         meta_info.language = value["dd_lang"]
@@ -139,6 +138,7 @@ def taxonomy(meta_info):
 
     else:
         return None
+
 
 def new_item(base_directory):
     sg.theme('SystemDefault1')

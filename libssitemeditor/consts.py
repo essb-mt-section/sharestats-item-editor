@@ -9,6 +9,8 @@ EXTYPES = {"schoice": "Multiple choice",
            "string": "Fill in the blank text/essay",
            "cloze": "Combinations"}
 
+UNKNOWN_TYPE = "unknown"
+
 TEMPLATES = {"schoice":
                  _path.join(_LIB_DIR, "templates/TemplateMultipleChoice.Rmd"),
            "mchoice":
@@ -19,5 +21,11 @@ TEMPLATES = {"schoice":
                  _path.join(_LIB_DIR, "templates/TemplateBlankTextEssay.Rmd"),
            "cloze":
                  _path.join(_LIB_DIR, "templates/TemplateBlankCombination.Rmd")}
+
+COLOR_BKG_INACTIVE = "#8A8A8A"
+COLOR_BKG_ACTIVE = "#FFFFFF"
+COLOR_QUEST = "#BBBBDD"
+COLOR_SOLUTION = "#BBDDBB"
+COLOR_MATA_INFO = "#DDBBBB"
 
 

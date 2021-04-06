@@ -54,7 +54,6 @@ class ItemSection(object):
             else:
                 self.answer_list = None
 
-    @property
     def has_answer_list(self):
         return self.answer_list is not None
 
@@ -65,7 +64,7 @@ class ItemSection(object):
 
     @property
     def str_text(self):
-        return "".join(self.text_array)
+        return "\n".join(self.text_array)
 
     def __str__(self):
         # section as string
@@ -122,7 +121,6 @@ class ItemMetaInfo(ItemSection):
 
     def parse(self):
         super().parse()
-
         additional_content = []
         while len(self.text_array)>0:
             para = self.text_array.pop(0).split(":", maxsplit=1)
@@ -173,10 +171,18 @@ class ItemMetaInfo(ItemSection):
 
     @property
     def type(self):
-        return self._try_parameter("exextra[Type]")
+        return self._try_parameter("extype")
 
     @type.setter
     def type(self, v):
+        self.parameter["extype"] = v
+
+    @property
+    def type_tag(self):
+        return self._try_parameter("exextra[Type]")
+
+    @type_tag.setter
+    def type_tag(self, v):
         self.parameter["exextra[Type]"] = v
 
     @property
@@ -205,14 +211,9 @@ class ItemMetaInfo(ItemSection):
 
 
     def check_type(self):
-        """:returns tuple(good type [boolen], the type)
+        """:returns True if known type
         """
 
-        try:
-            t = self.parameter["extype"]
-        except:
-            return (False, "")
-
-        return t in consts.EXTYPES.keys(), t
+        return self.type in consts.EXTYPES.keys()
 
 

@@ -1,17 +1,15 @@
-import PySimpleGUI as sg
-
 from os import path, getcwd
 from . import __version__, consts, files, settings
 from .sharestats_item import ShareStatsItem
+from .item_sections import AnswerList
+from .windows import sg
 from . import windows
 
-BGK_COLOR_INACTIVE = "#8A8A8A"
-BGK_COLOR_ACTIVE = "#FFFFFF"
-
+_EMPTY_ITEM = ShareStatsItem(None)
+_EMPTY_ANSWERLIST = AnswerList(_EMPTY_ITEM)
 
 class MainWindow(object):
 
-    _EMPTY_ITEM = ShareStatsItem(None)
 
     def __init__(self):
         sg.theme('SystemDefault1')
@@ -19,10 +17,8 @@ class MainWindow(object):
         # LAYOUT
         self.ig_nl = _ItemGUI("nl")
         self.ig_en = _ItemGUI("en")
-        self.lb_files = sg.Listbox(values=['File 1', 'File 2',
-                                            'File 3'],
-                                   enable_events=True, key="lb_files",
-                                   size=(30, 37))
+        self.lb_files = sg.Listbox(values=[], enable_events=True,
+                                   key="lb_files", size=(30, 37))
 
         fr_files = sg.Frame("Files", [
             [self.lb_files],
@@ -33,7 +29,6 @@ class MainWindow(object):
             [sg.Button(button_text="New", size=(28, 2), key="new")],
             [sg.Button(button_text="Save", size=(28, 2), key="save")],
             [sg.CloseButton(button_text="Close", size=(28, 2))]])
-
 
         self.it_base_directory = sg.InputText(self.base_directory, size=(80, 1),
                                             key="it_base_dir",  disabled=True,
@@ -80,16 +75,22 @@ class MainWindow(object):
             item = self.ss_item_nl
 
         if item is None:
-            item = MainWindow._EMPTY_ITEM
+            item = _EMPTY_ITEM
 
-        ig.ml_metainfo.update(value=item.meta_info.str_parameter +
-                                item.meta_info.str_text)
-
-        ig.ml_folder_info(value="") #TODO
         ig.ml_quest.update(value=item.question.str_text)
         ig.ml_solution.update(value=item.solution.str_text)
 
-        if item.question.answer_list is None:
+        ig.ml_metainfo.update(value=item.meta_info.str_parameter +
+                                item.meta_info.str_text)
+        ig.ml_info_validation(value="") # TODO VALIDATION SOMEWHEN LATER
+
+        if not item.meta_info.check_type():
+            t = consts.UNKNOWN_TYPE
+        else:
+            t = item.meta_info.type
+        ig.dd_types.update(value=t)
+
+        if not item.question.has_answer_list():
             ig.ml_answer.update(value="")
             ig.set_answer_list(False)
         else:
@@ -97,10 +98,10 @@ class MainWindow(object):
             ig.ml_answer.update(value=
                         item.question.answer_list.str_answers +
                         item.question.answer_list.str_text, disabled=True)
-        if item.solution.answer_list is None:
-            ig.ml_solution_feedback.update(value="")
+        if not item.solution.has_answer_list():
+            ig.ml_solution_answ_lst.update(value="")
         else:
-            ig.ml_solution_feedback.update(value=
+            ig.ml_solution_answ_lst.update(value=
                         item.solution.answer_list.str_answers +
                         item.solution.answer_list.str_text, disabled=False)
 
@@ -119,7 +120,6 @@ class MainWindow(object):
             self.selected_file_index = list_display.index(select_item)
         except:
             pass
-
 
     @property
     def selected_file_index(self):
@@ -152,7 +152,8 @@ class MainWindow(object):
                 break
 
             if not self.unsaved_changes and (event.startswith("nl_") or
-                                        event.startswith("en_")):
+                                          event.startswith("en_")):
+                # if change in any text boxes
                 self.unsaved_changes = True
 
             if event == "close":
@@ -163,14 +164,18 @@ class MainWindow(object):
                     new_tax = windows.taxonomy(self.ss_item_nl.meta_info)
                     if new_tax is not None:
                         self.ss_item_nl.meta_info = new_tax
-                        self.update_item_gui(en=False)
+                        self.ig_nl.ml_metainfo.update(value=
+                                          new_tax.str_parameter +
+                                          new_tax.str_text)
 
             elif event == "en_btn_change_meta":
                 if self.ss_item_en is not None:
                     new_tax = windows.taxonomy(self.ss_item_en.meta_info)
                     if new_tax is not None:
                         self.ss_item_en.meta_info = new_tax
-                        self.update_item_gui(en=True)
+                        self.ig_en.ml_metainfo.update(value=
+                                        new_tax.str_parameter +
+                                        new_tax.str_text)
 
             elif event=="it_base_dir":
                 self.base_directory = values[event]
@@ -179,30 +184,20 @@ class MainWindow(object):
                 self.save_items(ask=False)
 
             elif event=="new":
-                new_items = windows.new_item(self.base_directory)
-                if new_items[0] is not None:
-                    self.save_items()  # TODO allow canceling new at this point
-                    # TODO check existing file and  overriding
-                    self.ss_item_nl, self.ss_item_en = new_items
-                    self.unsaved_changes = True
-                    fl_name = self.ss_item_nl.filename.filename
-                    if self.ss_item_nl.filename.get_language()== "en":
-                        #swap
-                        self.ss_item_nl, self.ss_item_en = \
-                                        self.ss_item_en, self.ss_item_nl
-                    self.save_items(ask=False) # create folder and file
-                    self.update_item_gui(en=True)
-                    self.update_item_gui(en=False)
-                    self.update_files_list()
+                self.new_item()
 
-                    #find filename in new bilingual file list
-                    tmp = list(map(lambda x:x[0].filename==fl_name,
-                                   self.file_list_bilingual))
-                    try:
-                        self.selected_file_index = tmp.index(True)
-                    except:
-                        pass
+            elif event.endswith("dd_types"):
+                if event.startswith("nl"):
+                    self.ss_item_nl.meta_info.type = values[event]
+                    self.ig_nl.ml_metainfo.update(value=
+                                self.ss_item_nl.meta_info.str_parameter +
+                                self.ss_item_nl.meta_info.str_text)
 
+                if event.startswith("en"):
+                    self.ss_item_en.meta_info.type = values[event]
+                    self.ig_en.ml_metainfo.update(value=
+                                      self.ss_item_en.meta_info.str_parameter +
+                                      self.ss_item_en.meta_info.str_text)
 
             elif event in ("lb_files", "btn_next", "btn_previous"):
                 if event=="btn_next":
@@ -215,109 +210,173 @@ class MainWindow(object):
                         self.selected_file_index = 0
                     else:
                         self.selected_file_index -= 1
-
-                if self.selected_file_index is None:
-                    continue
-
-                self.save_items()
-                self.ss_item_nl = None
-                self.ss_item_en = None
-                fls = self.file_list_bilingual[self.selected_file_index]
-                if fls[0] is not None:
-                    if  fls[0].get_language()=="en":
-                        self.ss_item_en = ShareStatsItem(fls[0])
-                        self.ss_item_nl = ShareStatsItem(fls[1])
-                    else:
-                        self.ss_item_en = ShareStatsItem(fls[1])
-                        self.ss_item_nl = ShareStatsItem(fls[0])
-                    self.update_item_gui(en=True)
-                    self.update_item_gui(en=False)
+                self.load_selected_item()
 
         # processing
         self.save_items()
         self.window.close()
         settings.save()
 
+    def load_selected_item(self):
+        if self.selected_file_index is None:
+            return
+
+        self.save_items()
+        self.ss_item_nl = None
+        self.ss_item_en = None
+        fls = self.file_list_bilingual[self.selected_file_index]
+        if fls[0] is not None:
+            if fls[0].get_language() == "en":
+                self.ss_item_en = ShareStatsItem(fls[0])
+                self.ss_item_nl = ShareStatsItem(fls[1])
+            else:
+                self.ss_item_en = ShareStatsItem(fls[1])
+                self.ss_item_nl = ShareStatsItem(fls[0])
+            self.update_item_gui(en=True)
+            self.update_item_gui(en=False)
+
     def save_items(self, ask=False):
-        # FIXME import gui content to self.ss_item
-        if ask:
-            # resp = windows.ask_save()
-            #if resp == False:
-            #    return
-            pass # TODO
         if self.unsaved_changes:
-            if self.ss_item_en is not None:
-                self.ss_item_en.save()
+            if ask:
+                # resp = windows.ask_save()
+                #if resp == False:
+                #    return
+                pass # TODO
+
             if self.ss_item_nl is not None:
+                txt = self.ig_nl.as_markdown_file()
+                self.ss_item_nl.parse(txt)
                 self.ss_item_nl.save()
+                self.update_item_gui(en=False)
+            if self.ss_item_en is not None:
+                txt = self.ig_en.as_markdown_file()
+                self.ss_item_en.parse(txt)
+                self.ss_item_en.save()
+                self.update_item_gui(en=True)
             self.unsaved_changes = False
 
+    def new_item(self):
+        new_items = windows.new_item(self.base_directory)
+        if new_items[0] is not None:
+            self.save_items()  # TODO allow canceling new at this point
+            # TODO check existing file and overriding
+            self.ss_item_nl, self.ss_item_en = new_items
+            self.unsaved_changes = True
+            fl_name = self.ss_item_nl.filename.filename
+            if self.ss_item_nl.filename.get_language() == "en":
+                self.ss_item_nl, self.ss_item_en = \
+                                    self.ss_item_en, self.ss_item_nl # swap
+            self.save_items(ask=False)  # create folder and file
+            self.update_item_gui(en=True)
+            self.update_item_gui(en=False)
+            self.update_files_list()
+
+            # find filename in first item of bilingual file list
+            tmp = list(map(lambda x: x[0].filename == fl_name,
+                           self.file_list_bilingual))
+            try:
+                self.selected_file_index = tmp.index(True)
+            except:
+                pass
+
+LEN_LARGE_ML = 12
+LEN_SMALL_ML = 6
+LEN_ANSWER_ML = 5
+WIDTH_ML = 80 # multi line field for text input
 
 class _ItemGUI(object):
 
     def __init__(self, key_prefix):
-        answer_length = 5
-        solution_length = 3
         self.ml_quest = sg.Multiline(default_text="",
-                                     size=(80, 8), enable_events=True,
+                                     size=(WIDTH_ML, LEN_SMALL_ML), enable_events=True,
                                      key="{}_quest".format(key_prefix))
         self.ml_answer = sg.Multiline(default_text="", enable_events=True,
-                                      size=(80, answer_length),
-                                      background_color=BGK_COLOR_INACTIVE,
-                                      disabled=True,
+                                      size=(WIDTH_ML, LEN_ANSWER_ML),
                                       key="{}_answer".format(key_prefix))
-        self.ml_solution = sg.Multiline(default_text="", enable_events=True,
-                                        size=(80, solution_length),
-                                        key="{}_solution".format(key_prefix))
 
-        self.ml_solution_feedback = sg.Multiline(default_text="",  enable_events=True,
-                                                 size=(80, answer_length),
-                                                 background_color=BGK_COLOR_INACTIVE,
-                                                 disabled=True,
+        self.txt_answer_list = sg.Text("Answer list", size=(10, 1),
+                                       background_color=consts.COLOR_QUEST)
+
+        self.ml_solution = sg.Multiline(default_text="", enable_events=True,
+                                        size=(WIDTH_ML, LEN_SMALL_ML),
+                                        key="{}_solution".format(key_prefix))
+        self.ml_solution_answ_lst = sg.Multiline(default_text="", enable_events=True,
+                                                 size=(WIDTH_ML, LEN_ANSWER_ML),
                                                  key="{}_solution_feedback".format(key_prefix))
+        self.txt_solution_answ_lst = sg.Text("Answer list", size=(10, 1),
+                                             background_color=consts.COLOR_SOLUTION)
+
         self.ml_metainfo = sg.Multiline(default_text="",
-                                        size=(80, 10),  enable_events=True,
+                                        size=(WIDTH_ML, 10),  enable_events=True,
                                         key="{}_meta".format(key_prefix))
 
         self.btn_change_meta = sg.Button("Edit Meta Information",  enable_events=True,
                                          key="{}_btn_change_meta".format(key_prefix))
 
-        self.ml_folder_info =sg.Multiline(default_text="",
-                         size=(80, 5),
-                         background_color="#DADADA",
-                         disabled=True,
-                         key="{}_folder_info".format(key_prefix))
+        self.ml_info_validation =sg.Multiline(default_text="",
+                                              size=(WIDTH_ML, 5),
+                                              background_color="#DADADA",
+                                              disabled=True)
+
+        self.dd_types = sg.DropDown(values=[consts.UNKNOWN_TYPE] +
+                                           list(consts.EXTYPES.keys()),
+                                    size=(10,1),  enable_events=True,
+                                    key="{}_dd_types".format(key_prefix))
 
     def set_answer_list(self, enable):
         if enable:
-            bkg_color = BGK_COLOR_ACTIVE
+            bkg_color = consts.COLOR_BKG_ACTIVE
         else:
-            bkg_color = BGK_COLOR_INACTIVE
+            bkg_color = consts.COLOR_BKG_INACTIVE
 
-        self.ml_answer.update(disabled=enable, background_color=bkg_color)
-        self.ml_solution_feedback.update(disabled=enable, background_color=bkg_color)
+        self.ml_answer.update(disabled=enable,
+                              background_color=bkg_color,
+                              visible=enable)
+        self.ml_solution_answ_lst.update(disabled=enable,
+                                         background_color=bkg_color,
+                                         visible=enable)
+        self.txt_solution_answ_lst.update(visible=enable)
+        self.txt_answer_list.update(visible=enable)
 
     def get_frame(self, heading):
-        q_colour = "#BBBBDD"
-        s_colour = "#BBDDBB"
-        m_colour = "#DDBBBB"
         return sg.Frame(heading, [
                     [sg.Frame("Question", [
                         [self.ml_quest],
-                        [sg.Text("Answers", size=(10, 1),
-                                 background_color=q_colour)],
-                        [self.ml_answer]], background_color=q_colour)],
+                        [self.txt_answer_list],
+                        [self.ml_answer]], background_color=consts.COLOR_QUEST)],
 
-                    [sg.Frame("Solution", [
+                    [sg.Frame("Solution (feedback)", [
                         [self.ml_solution],
-                        [sg.Text("Answer feedback", size=(30, 1),
-                                 background_color=s_colour)],
-                        [self.ml_solution_feedback]],
-                              background_color=s_colour)],
+                        [self.txt_solution_answ_lst],
+                        [self.ml_solution_answ_lst]],
+                              background_color=consts.COLOR_SOLUTION)],
                     [sg.Frame("Meta-Information", [
-                        [self.ml_metainfo], [self.btn_change_meta]
-                        ], background_color=m_colour)],
-                    [sg.Frame("", [[self.ml_folder_info] ])]
+                        [self.ml_metainfo],
+                        [self.dd_types, self.btn_change_meta]
+                        ], background_color=consts.COLOR_MATA_INFO)],
+                    [sg.Frame("", [[self.ml_info_validation]])]
         ])
+
+    def as_markdown_file(self):
+        rtn = _EMPTY_ITEM.question.str_markdown_heading
+        rtn += self.ml_quest.get().strip() + "\n\n"
+
+        if len(self.ml_answer.get().strip())>0:
+            rtn += _EMPTY_ANSWERLIST.str_markdown_heading
+            rtn += self.ml_answer.get().strip() + "\n\n"
+
+        rtn += _EMPTY_ITEM.solution.str_markdown_heading
+        rtn += self.ml_solution.get().strip() + "\n\n"
+        if len(self.ml_solution_answ_lst.get().strip())>0:
+            rtn += _EMPTY_ANSWERLIST.str_markdown_heading
+            rtn += self.ml_solution_answ_lst.get().strip() + "\n\n"
+
+        rtn += _EMPTY_ITEM.meta_info.str_markdown_heading
+        rtn += self.ml_metainfo.get().strip() + "\n"
+        return rtn
+
+
+
+
 
 
