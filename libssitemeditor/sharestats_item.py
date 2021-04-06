@@ -31,7 +31,9 @@ class ShareStatsItem(object):
     def parse(self, source_text):
         """parse file or source text is specified"""
         if isinstance(source_text, str):
-            self.text_array = source_text.split("\n")
+            self.text_array = list(map(lambda x: x+"\n",
+                                       source_text.split("\n")))
+                # array of text lines ending with \n (like readlines)
         else:
             self.text_array = source_text
         self.question.parse()
@@ -50,7 +52,7 @@ class ShareStatsItem(object):
             self.filename.make_dirs()
             #print("Save {}".format(self.filename.path))
             with open(self.filename.path, "w") as fl:
-                fl.writelines(str(self))
+                fl.write(str(self))
 
     def validate_meta_info(self):
         rtn =""

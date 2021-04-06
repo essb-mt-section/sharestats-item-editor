@@ -13,7 +13,7 @@ class ItemSection(object):
         self._underline_string = underline_chr * min_underline_length
 
         self.tag = tag
-        self.text_array = []
+        self.text_array = [] # array of text lines ending with \n (like readlines)
         self.line_range = [None, None]
         self.answer_list = None
 
@@ -64,7 +64,7 @@ class ItemSection(object):
 
     @property
     def str_text(self):
-        return "\n".join(self.text_array)
+        return "".join(self.text_array)
 
     def __str__(self):
         # section as string
