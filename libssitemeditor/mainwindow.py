@@ -63,6 +63,7 @@ class MainWindow(object):
     def base_directory(self, v):
         if v != settings.base_directory:
             settings.base_directory = v
+
             self.update_files_list()
 
     def update_item_gui(self, en):
@@ -144,19 +145,24 @@ class MainWindow(object):
             index = n-1
         self.lb_files.update(set_to_index=index)
 
-    def run(self):
+    def resit_gui(self):
         self.update_files_list()
+        self.ss_item_nl = None
+        self.ss_item_en = None
         self.update_item_gui(en=False)
         self.update_item_gui(en=True)
         self.unsaved_item = None
+
+
+    def run(self):
+        self.resit_gui()
         self.selected_file_index = 0
         self.load_selected_item()
-
         while True:
             self.window.refresh()
             event, values = self.window.read()
             if event is None:
-                break
+                break #fixme crash: close window unchanged item
 
             if self.unsaved_item is None and \
                     (event.startswith("nl_") or event.startswith("en_")):
@@ -185,7 +191,9 @@ class MainWindow(object):
                                         new_tax.str_text)
 
             elif event=="it_base_dir":
+                self.save_items(ask=True)
                 self.base_directory = values[event]
+                self.resit_gui()
 
             elif event== "save":
                 self.save_items(ask=False)
@@ -258,9 +266,11 @@ class MainWindow(object):
 
     def save_items(self, ask=False):
         if self.unsaved_item is not None:
-            item_name = self.lb_files.get_list_values()[self.unsaved_item]
-            if ask and not windows.ask_save(item_name):
-                return
+            if ask:
+                item_name = self.lb_files.get_list_values()[self.unsaved_item]
+                if not windows.ask_save(item_name):
+                    return
+
             if self.ss_item_nl is not None:
                 txt = self.ig_nl.as_markdown_file()
                 self.ss_item_nl.parse(txt)
@@ -284,10 +294,10 @@ class MainWindow(object):
             if self.ss_item_nl.filename.get_language() == "en":
                 self.ss_item_nl, self.ss_item_en = \
                                     self.ss_item_en, self.ss_item_nl # swap
-            self.unsaved_item = -1 # any to force saving
-            self.save_items(ask=False)  # create folder and file
             self.update_item_gui(en=True)
             self.update_item_gui(en=False)
+            self.unsaved_item = -1 # any to force saving
+            self.save_items(ask=False)  # create folder and file
             self.update_files_list()
 
             # find filename in first item of bilingual file list

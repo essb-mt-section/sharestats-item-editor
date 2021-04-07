@@ -68,13 +68,13 @@ class ItemSection(object):
 
     @property
     def str_text(self):
-        return "".join(self.text_array)
+        return "".join(self.text_array).rstrip()
 
     def __str__(self):
         # section as string
         rtn = self.str_markdown_heading + self.str_text
         if self.answer_list is not None:
-            return rtn + str(self.answer_list)
+            return rtn + "\n\n" + str(self.answer_list)
         else:
             return rtn
 
@@ -94,7 +94,7 @@ class AnswerList(ItemSection):
         while len(self.text_array)>0:
             answer = self.text_array.pop(0)
             if answer.strip().startswith("* "):
-                self.answers.append(answer.strip()[2:])
+                self.answers.append(answer[2:].strip())
             else:
                 additional_content.append(answer)
         self.correct = [False] * len(self.answers) # default all are wrong
@@ -111,8 +111,8 @@ class AnswerList(ItemSection):
         return "".join(map(lambda x: str(int(x)), self.correct))
 
     def __str__(self):
-        return self.str_markdown_heading + self.str_answers + self.str_text
-
+        rtn =  self.str_markdown_heading + self.str_answers + "\n" + self.str_text
+        return rtn.strip()
 
 class ItemMetaInfo(ItemSection):
 
@@ -142,7 +142,9 @@ class ItemMetaInfo(ItemSection):
         return rtn
 
     def __str__(self):
-        return self.str_markdown_heading + self.str_parameter + self.str_text
+        rtn = self.str_markdown_heading + self.str_parameter + "\n" \
+             + self.str_text
+        return rtn.strip()
 
     def _try_parameter(self, label):
         try:
