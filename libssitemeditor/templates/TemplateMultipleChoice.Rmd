@@ -5,9 +5,9 @@ replace-with-question-text
   
 Answerlist
 ----------
-* replace-with-answer-opton-A
-* replace-with-answer-opton-B
-* replace-with-answer-opton-C
+* replace-with-answer-option-A
+* replace-with-answer-option-B
+* replace-with-answer-option-C
 
 Solution
 ========
@@ -18,12 +18,12 @@ Answerlist
 ----------
 * replace-with-feedback-A
 * replace-with-feedback-B
-* replace-with-reedback-C
+* replace-with-feedback-C
 
 Meta-information
 ================
 exname: replace-with-itemname
-extype: mchoice
+extype: schoice
 exsolution: 
 exsection: 
 exextra[Type]: 
