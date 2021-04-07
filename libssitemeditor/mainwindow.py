@@ -74,8 +74,10 @@ class MainWindow(object):
             ig = self.ig_nl
             item = self.ss_item_nl
 
+        ig.set_enable(enable=item is not None)
         if item is None:
             item = _EMPTY_ITEM
+
 
         ig.ml_quest.update(value=item.question.str_text)
         ig.ml_solution.update(value=item.solution.str_text)
@@ -92,9 +94,9 @@ class MainWindow(object):
 
         if not item.question.has_answer_list():
             ig.ml_answer.update(value="")
-            ig.set_answer_list(False)
+            ig.set_enable_answer_list(False)
         else:
-            ig.set_answer_list(True)
+            ig.set_enable_answer_list(True)
             ig.ml_answer.update(value=
                         item.question.answer_list.str_answers +
                         item.question.answer_list.str_text, disabled=True)
@@ -225,15 +227,16 @@ class MainWindow(object):
         self.ss_item_nl = None
         self.ss_item_en = None
         fls = self.file_list_bilingual[self.selected_file_index]
+        if fls[0] is not None and fls[0].get_language() == "en":
+            fls = (fls[1], fls[0]) # swap
+
         if fls[0] is not None:
-            if fls[0].get_language() == "en":
-                self.ss_item_en = ShareStatsItem(fls[0])
-                self.ss_item_nl = ShareStatsItem(fls[1])
-            else:
-                self.ss_item_en = ShareStatsItem(fls[1])
-                self.ss_item_nl = ShareStatsItem(fls[0])
-            self.update_item_gui(en=True)
-            self.update_item_gui(en=False)
+            self.ss_item_nl = ShareStatsItem(fls[0])
+        if fls[1] is not None:
+            self.ss_item_en = ShareStatsItem(fls[1])
+
+        self.update_item_gui(en=True)
+        self.update_item_gui(en=False)
 
     def save_items(self, ask=False):
         if self.unsaved_item is not None:
@@ -321,20 +324,29 @@ class _ItemGUI(object):
                                     size=(10,1),  enable_events=True,
                                     key="{}_dd_types".format(key_prefix))
 
-    def set_answer_list(self, enable):
+    def set_enable_answer_list(self, enable):
         if enable:
-            bkg_color = consts.COLOR_BKG_ACTIVE
+            col =  consts.COLOR_BKG_ACTIVE
         else:
-            bkg_color = consts.COLOR_BKG_INACTIVE
+            col = consts.COLOR_BKG_INACTIVE
 
-        self.ml_answer.update(disabled=enable,
-                              background_color=bkg_color,
-                              visible=enable)
-        self.ml_solution_answ_lst.update(disabled=enable,
-                                         background_color=bkg_color,
-                                         visible=enable)
-        self.txt_solution_answ_lst.update(visible=enable)
-        self.txt_answer_list.update(visible=enable)
+        self.ml_answer.update(disabled=not enable, background_color=col)
+        self.ml_solution_answ_lst.update(disabled=not enable,
+                                         background_color=col)
+
+    def set_enable(self, enable):
+        if enable:
+            col =  consts.COLOR_BKG_ACTIVE
+        else:
+            col = consts.COLOR_BKG_INACTIVE
+        self.ml_quest.update(disabled=not enable, background_color=col)
+        self.ml_answer.update(disabled=not enable, background_color=col)
+        self.ml_solution.update(disabled=not enable, background_color=col)
+        self.ml_solution_answ_lst.update(disabled=not enable,
+                                         background_color=col)
+        self.ml_metainfo.update(disabled=not enable, background_color=col)
+        self.dd_types.update(disabled=not enable)
+        self.btn_change_meta.update(disabled=not enable)
 
     def get_frame(self, heading):
         return sg.Frame(heading, [
