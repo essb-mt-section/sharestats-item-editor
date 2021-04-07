@@ -1,5 +1,6 @@
 from os import path
 
+from . import consts
 from .item_sections import ItemSection, ItemMetaInfo
 from .files import ShareStatsFilename
 
@@ -40,6 +41,9 @@ class ShareStatsItem(object):
         self.solution.parse()
         self.meta_info.parse()
 
+    def requires_answer_list(self):
+
+        return self.meta_info.type in consts.HAVE_ANSWER_LIST
 
     def __str__(self):
         rtn = "".join(self.header)
@@ -56,10 +60,34 @@ class ShareStatsItem(object):
 
     def validate_meta_info(self):
         rtn =""
-        if self.filename.stats_share_name != self.meta_info.name:
-            rtn += "* Exname does not match filename."
+        issues = 0
 
-        #if self.meta_info. TODo
+        if not self.meta_info.check_type():
+            issues += 1
+            rtn += "* Unknown/undefined  item type(extype))\n"
+
+
+        if self.filename.stats_share_name != self.meta_info.name:
+            issues += 1
+            rtn += "* Item name (exname) does not match filename\n"
+
+        if self.requires_answer_list():
+            if not self.question.has_answer_list_section():
+                issues += 1
+                rtn += "* no answer list defined\n"
+            if not self.solution.has_answer_list_section():
+                issues += 1
+                rtn += "* no feedback answer list defined\n"
+        else:
+            if self.question.has_answer_list_section():
+                issues += 1
+                rtn += "* answer list not required\n" #TODO or even allowed?
+            if  self.solution.has_answer_list_section():
+                issues += 1
+                rtn += "* feedback answer list not required\n"
+
+        if len(rtn):
+            rtn = "{} issues found!\n".format(issues) + rtn
 
         return rtn
 

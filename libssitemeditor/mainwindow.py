@@ -74,7 +74,7 @@ class MainWindow(object):
             ig = self.ig_nl
             item = self.ss_item_nl
 
-        ig.set_enable(enable=item is not None)
+        ig.enable=item is not None
         if item is None:
             item = _EMPTY_ITEM
 
@@ -84,7 +84,7 @@ class MainWindow(object):
 
         ig.ml_metainfo.update(value=item.meta_info.str_parameter +
                                 item.meta_info.str_text)
-        ig.ml_info_validation(value="") # TODO VALIDATION SOMEWHEN LATER
+        ig.ml_info_validation(value=item.validate_meta_info())
 
         if not item.meta_info.check_type():
             t = consts.UNKNOWN_TYPE
@@ -92,20 +92,23 @@ class MainWindow(object):
             t = item.meta_info.type
         ig.dd_types.update(value=t)
 
-        if not item.question.has_answer_list():
+        if not item.question.has_answer_list_section():
             ig.ml_answer.update(value="")
-            ig.set_enable_answer_list(False)
         else:
-            ig.set_enable_answer_list(True)
             ig.ml_answer.update(value=
                         item.question.answer_list.str_answers +
-                        item.question.answer_list.str_text, disabled=True)
-        if not item.solution.has_answer_list():
+                        item.question.answer_list.str_text)
+
+        if not item.solution.has_answer_list_section():
             ig.ml_solution_answ_lst.update(value="")
         else:
             ig.ml_solution_answ_lst.update(value=
                         item.solution.answer_list.str_answers +
-                        item.solution.answer_list.str_text, disabled=False)
+                        item.solution.answer_list.str_text)
+        ig.set_enable_answer_list(item.question.has_answer_list_section())
+        ig.set_enable_feedback_list(item.solution.has_answer_list_section())
+
+        item.validate_meta_info()
 
     def update_files_list(self, select_item=None):
         if not path.isdir(self.base_directory):
@@ -146,6 +149,8 @@ class MainWindow(object):
         self.update_item_gui(en=False)
         self.update_item_gui(en=True)
         self.unsaved_item = None
+        self.selected_file_index = 0
+        self.load_selected_item()
 
         while True:
             self.window.refresh()
@@ -191,15 +196,11 @@ class MainWindow(object):
             elif event.endswith("dd_types"):
                 if event.startswith("nl"):
                     self.ss_item_nl.meta_info.type = values[event]
-                    self.ig_nl.ml_metainfo.update(value=
-                                self.ss_item_nl.meta_info.str_parameter +
-                                self.ss_item_nl.meta_info.str_text)
+                    self.update_item_gui(en=False)
 
                 if event.startswith("en"):
                     self.ss_item_en.meta_info.type = values[event]
-                    self.ig_en.ml_metainfo.update(value=
-                                      self.ss_item_en.meta_info.str_parameter +
-                                      self.ss_item_en.meta_info.str_text)
+                    self.update_item_gui(en=True)
 
             elif event in ("lb_files", "btn_next", "btn_previous"):
                 self.save_items(ask=True)
@@ -214,6 +215,23 @@ class MainWindow(object):
                     else:
                         self.selected_file_index -= 1
                 self.load_selected_item()
+
+            elif event.endswith("btn_add_answer_list"):
+                if event.startswith("nl"):
+                    self.ss_item_nl.question.add_answer_list_section()
+                    self.update_item_gui(en=False)
+                if event.startswith("en"):
+                    self.ss_item_en.question.add_answer_list_section()
+                    self.update_item_gui(en=True)
+
+            elif event.endswith("btn_add_feedback_list"):
+                if event.startswith("nl"):
+                    self.ss_item_nl.solution.add_answer_list_section()
+                    self.update_item_gui(en=False)
+                if event.startswith("en"):
+                    self.ss_item_en.solution.add_answer_list_section()
+                    self.update_item_gui(en=True)
+
 
         # processing
         self.save_items(ask=True)
@@ -324,40 +342,69 @@ class _ItemGUI(object):
                                     size=(10,1),  enable_events=True,
                                     key="{}_dd_types".format(key_prefix))
 
+        self.btn_add_answer_list = sg.Button("+", enable_events=True,
+                                             size=(2, 1),
+                      key="{}_btn_add_answer_list".format(key_prefix))
+        self.btn_add_feedback_list = sg.Button("+", enable_events=True,
+                                            size=(2,1),
+                    key="{}_btn_add_feedback_list".format(key_prefix))
+
+        self._enable = False
+
+    @property
+    def enable(self):
+        return self._enable
+
+    @enable.setter
+    def enable(self, value):
+        self._enable = value
+        if value:
+            col =  consts.COLOR_BKG_ACTIVE
+        else:
+            col = consts.COLOR_BKG_INACTIVE
+        self.ml_quest.update(disabled=not value, background_color=col)
+        self.ml_answer.update(disabled=not value, background_color=col)
+        self.ml_solution.update(disabled=not value, background_color=col)
+        self.ml_solution_answ_lst.update(disabled=not value,
+                                         background_color=col)
+        self.ml_metainfo.update(disabled=not value, background_color=col)
+        self.dd_types.update(disabled=not value)
+        self.btn_change_meta.update(disabled=not value)
+        self.btn_add_answer_list.update(visible=value)
+        self.btn_add_feedback_list.update(visible=value)
+
     def set_enable_answer_list(self, enable):
         if enable:
             col =  consts.COLOR_BKG_ACTIVE
         else:
             col = consts.COLOR_BKG_INACTIVE
-
         self.ml_answer.update(disabled=not enable, background_color=col)
-        self.ml_solution_answ_lst.update(disabled=not enable,
-                                         background_color=col)
 
-    def set_enable(self, enable):
+        if self._enable:
+            self.btn_add_answer_list.update(visible=not enable)
+
+    def set_enable_feedback_list(self, enable):
         if enable:
             col =  consts.COLOR_BKG_ACTIVE
         else:
             col = consts.COLOR_BKG_INACTIVE
-        self.ml_quest.update(disabled=not enable, background_color=col)
-        self.ml_answer.update(disabled=not enable, background_color=col)
-        self.ml_solution.update(disabled=not enable, background_color=col)
         self.ml_solution_answ_lst.update(disabled=not enable,
                                          background_color=col)
-        self.ml_metainfo.update(disabled=not enable, background_color=col)
-        self.dd_types.update(disabled=not enable)
-        self.btn_change_meta.update(disabled=not enable)
+        if self._enable:
+            self.btn_add_feedback_list.update(visible=not enable)
+
 
     def get_frame(self, heading):
         return sg.Frame(heading, [
                     [sg.Frame("Question", [
                         [self.ml_quest],
-                        [self.txt_answer_list],
-                        [self.ml_answer]], background_color=consts.COLOR_QUEST)],
+                        [self.txt_answer_list, self.btn_add_answer_list],
+                        [self.ml_answer]],
+                              background_color=consts.COLOR_QUEST)],
 
                     [sg.Frame("Solution (feedback)", [
                         [self.ml_solution],
-                        [self.txt_solution_answ_lst],
+                        [self.txt_solution_answ_lst, self.btn_add_feedback_list],
                         [self.ml_solution_answ_lst]],
                               background_color=consts.COLOR_SOLUTION)],
                     [sg.Frame("Meta-Information", [

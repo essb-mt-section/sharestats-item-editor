@@ -3,13 +3,14 @@ from os  import path as _path
 APPNAME = "ShareStats Item Editor"
 _LIB_DIR = _path.dirname(__file__)
 
+UNKNOWN_TYPE = "unknown"
 EXTYPES = {"schoice": "Multiple choice",
            "mchoice": "Multiple answer",
            "num": "Fill in the blank numbers",
            "string": "Fill in the blank text/essay",
            "cloze": "Combinations"}
 
-UNKNOWN_TYPE = "unknown"
+HAVE_ANSWER_LIST = ["schoice", "mchoice", "cloze"]
 
 TEMPLATES = {"schoice":
                  _path.join(_LIB_DIR, "templates/TemplateMultipleChoice.Rmd"),

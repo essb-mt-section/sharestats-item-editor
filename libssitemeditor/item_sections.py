@@ -54,7 +54,11 @@ class ItemSection(object):
             else:
                 self.answer_list = None
 
-    def has_answer_list(self):
+    def add_answer_list_section(self):
+        if not self.has_answer_list_section():
+            self.answer_list = AnswerList(self)
+
+    def has_answer_list_section(self):
         return self.answer_list is not None
 
     @property
