@@ -23,6 +23,10 @@ TEMPLATES = {"schoice":
            "cloze":
                  _path.join(_LIB_DIR, "templates/TemplateBlankCombination.Rmd")}
 
+TAG_NL = "-nl"
+TAG_ENG = "-eng"
+TAG_BILINGUAL = "-[BL]"
+
 COLOR_BKG_INACTIVE = "#8A8A8A"
 COLOR_BKG_ACTIVE = "#FFFFFF"
 COLOR_QUEST = "#BBBBDD"

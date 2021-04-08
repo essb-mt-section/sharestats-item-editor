@@ -1,4 +1,4 @@
-from os import path, getcwd
+from os import path, getcwd, listdir
 from . import __version__, consts, files, settings
 from .sharestats_item import ShareStatsItem
 from .item_sections import AnswerList
@@ -30,24 +30,32 @@ class MainWindow(object):
             [sg.Button(button_text="Save", size=(28, 2), key="save")],
             [sg.CloseButton(button_text="Close", size=(28, 2))]])
 
-        self.it_base_directory = sg.InputText(self.base_directory, size=(80, 1),
+        self.it_base_directory = sg.InputText(self.base_directory, size=(60, 1),
                                             key="it_base_dir",  disabled=True,
                                             enable_events=True)
         top_frame = sg.Frame("Item Directory",
                              [[self.it_base_directory,
                               sg.FolderBrowse(initial_folder=self.base_directory)]])
 
+        self.it_name = sg.InputText("", size=(30, 1), disabled=False,
+                                    key="it_name", enable_events=False)
+
+        top_frame2 = sg.Frame("Item Name",
+                             [[self.it_name,
+                              sg.Button(button_text="Rename", size=(10, 1),
+                                        key="rename")]])
+
         left_frame = sg.Frame("", [[fr_files], [fr_btns]],
                               border_width=0)
 
-        layout = [[top_frame],
+        layout = [[top_frame, top_frame2],
                   [left_frame,
                    self.ig_nl.get_frame("Dutch"),
                    self.ig_en.get_frame("English")]]
 
         self.ss_item_nl = None
         self.ss_item_en = None
-        self.file_list_bilingual = []
+        self.fl_list_bilingual = files.FileListBilingual()
         self.unsaved_item = None
 
         self.window = sg.Window("{} ({})".format(consts.APPNAME, __version__),
@@ -78,6 +86,9 @@ class MainWindow(object):
         ig.enable=item is not None
         if item is None:
             item = _EMPTY_ITEM
+        else:
+            names = self.fl_list_bilingual.get_shared_names(bilingual_tag=False)
+            self.it_name.update(value=names[self.selected_file_index])
 
 
         ig.ml_quest.update(value=item.question.str_text)
@@ -85,7 +96,6 @@ class MainWindow(object):
 
         ig.ml_metainfo.update(value=item.meta_info.str_parameter +
                                 item.meta_info.str_text)
-        ig.ml_info_validation(value=item.validate_meta_info())
 
         if not item.meta_info.check_type():
             t = consts.UNKNOWN_TYPE
@@ -109,7 +119,17 @@ class MainWindow(object):
         ig.set_enable_answer_list(item.question.has_answer_list_section())
         ig.set_enable_feedback_list(item.solution.has_answer_list_section())
 
-        item.validate_meta_info()
+        # info window
+        txt = ""
+        if len(item.filename.directory):
+            x = listdir(item.filename.directory)
+            x.remove(item.filename.filename)
+            if len(x):
+                txt += "Files: {}\n\n".format(", ".join(x))
+
+        txt += item.validate_meta_info()
+        ig.ml_info_validation(value=txt)
+
 
     def update_files_list(self, select_item=None):
         if not path.isdir(self.base_directory):
@@ -119,8 +139,8 @@ class MainWindow(object):
                 sg.PopupError("No valid item directory selected.")
                 exit()
 
-        self.file_list_bilingual = files.rmd_file_list_bilingual(self.base_directory)
-        list_display = list(map(files.bilinguar_list_name, self.file_list_bilingual))
+        self.fl_list_bilingual = files.FileListBilingual(self.base_directory)
+        list_display = self.fl_list_bilingual.get_shared_names()
         self.lb_files.update(values=list_display)
         try:
             self.selected_file_index = list_display.index(select_item)
@@ -252,7 +272,7 @@ class MainWindow(object):
 
         self.ss_item_nl = None
         self.ss_item_en = None
-        fls = self.file_list_bilingual[self.selected_file_index]
+        fls = self.fl_list_bilingual.files[self.selected_file_index]
         if fls[0] is not None and fls[0].get_language() == "en":
             fls = (fls[1], fls[0]) # swap
 
@@ -294,19 +314,16 @@ class MainWindow(object):
             if self.ss_item_nl.filename.get_language() == "en":
                 self.ss_item_nl, self.ss_item_en = \
                                     self.ss_item_en, self.ss_item_nl # swap
-            self.update_item_gui(en=True)
-            self.update_item_gui(en=False)
             self.unsaved_item = -1 # any to force saving
             self.save_items(ask=False)  # create folder and file
+            self.update_item_gui(en=True)
+            self.update_item_gui(en=False)
             self.update_files_list()
 
-            # find filename in first item of bilingual file list
-            tmp = list(map(lambda x: x[0].filename == fl_name,
-                           self.file_list_bilingual))
-            try:
-                self.selected_file_index = tmp.index(True)
-            except:
-                pass
+            idx = self.fl_list_bilingual.find_filename(fl_name)
+            if idx is not None:
+                self.selected_file_index = idx
+
 
 LEN_LARGE_ML = 12
 LEN_SMALL_ML = 6
@@ -442,6 +459,7 @@ class _ItemGUI(object):
         rtn += self.ml_metainfo.get().strip() + "\n"
         return rtn
 
+#TODO renaming files
 
 
 

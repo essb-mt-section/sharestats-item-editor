@@ -2,16 +2,16 @@ from os import path
 
 from . import consts
 from .item_sections import ItemSection, ItemMetaInfo
-from .files import ShareStatsFilename
+from .files import ShareStatsFile
 
 
 class ShareStatsItem(object):
 
     def __init__(self, filename=None):
-        if isinstance(filename, ShareStatsFilename):
+        if isinstance(filename, ShareStatsFile):
             self.filename = filename
         else:
-            self.filename = ShareStatsFilename(filename)
+            self.filename = ShareStatsFile(filename)
         self.question = ItemSection(self, "Question", "=")
         self.solution = ItemSection(self, "Solution", "=")
         self.meta_info = ItemMetaInfo(self)

@@ -5,6 +5,7 @@ from . import consts
 from .taxonomy import Taxonomy
 from .item_sections import ItemMetaInfo
 from .sharestats_item import ShareStatsItem
+from .files import ShareStatsFile
 
 def splitstrip(text, sep):
     return list(map(lambda x: x.strip(), text.split(sep)))
@@ -139,15 +140,99 @@ def taxonomy(meta_info):
     else:
         return None
 
+class _FrameMakeSSName(object):
+
+    def __init__(self, default_name=""):
+
+        default_name = path.splitext(default_name)[0] # remove extension
+        is_bilingual = default_name.endswith(consts.TAG_BILINGUAL)
+        if is_bilingual:
+            default_name = default_name.replace(
+                                        consts.TAG_BILINGUAL,
+                                        consts.TAG_NL)
+
+        if ShareStatsFile.is_good_name(default_name):
+            defaults = default_name.split("-")
+            if is_bilingual:
+                defaults[3] = "Bilingual"
+            else:
+                if defaults[3][0:] == consts.TAG_NL:
+                    defaults[3] == "Dutch"
+                elif defaults[3][0:] == consts.TAG_ENG:
+                    defaults[3] == "English"
+                else:
+                    defaults[3] == ""
+
+        else:
+            defaults = [""]*4
+            defaults[1] =  default_name
+
+        self.txt_name1 = sg.Text("", size=(43, 1), key="txt_name1")
+        self.txt_name2 = sg.Text("", size=(43, 1), key="txt_name2")
+        fr_names = sg.Frame("", [[sg.Text("a:", size=(2,1)),
+                                  self.txt_name1],
+                                 [sg.Text("b:" , size=(2,1)),
+                                  self.txt_name2]],
+                            border_width=0)
+
+        self.fln0 = sg.InputText(default_text=defaults[0],size=(5,1),
+                                        key="fln0", enable_events=True)
+        self.fln1 = sg.InputText(default_text=defaults[1], size=(15,1),
+                                 key="fln1",enable_events=True)
+        self.fln2 = sg.InputText(default_text=str(defaults[2]), size=(4,1),
+                                 key="fln2",enable_events=True)
+        self.fln3 = sg.DropDown(default_value=defaults[3],
+                                values=["Dutch", "English", "Bilingual"],
+                                key="fln3", enable_events=True)
+
+        self.frame = sg.Frame("Item Name(s)",[
+                               [sg.Text("Uni"+" "*11 + "Topic"+" "*24 +
+                                        "Counter"+" "*7 + "Language")],
+                                [self.fln0, sg.Text("-"),
+                                self.fln1, sg.Text("-"),
+                                self.fln2, sg.Text("-"),
+                                self.fln3], [fr_names]
+                            ])
+
+    def update_names(self):
+        # call me once after window created
+        fln0 = self.fln0.get().strip().lower()
+        fln1 = self.fln1.get().strip().lower()
+        fln2 = self.fln2.get().strip()
+
+        name1 = "-".join(filter(len, (fln0, fln1)))
+        name2 = ""
+
+        if len(name1):
+            try:
+                name1 += "-" + str(int(fln2)).zfill(3)
+            except:
+                pass
+
+        if len(name1) > 0:
+            lang = self.fln3.get()
+            if lang == "Dutch":
+                name1 = name1 + consts.TAG_NL
+            elif lang == "English":
+                name1 = name1 + consts.TAG_ENG
+            elif lang == "Bilingual":
+                name2 = name1 + consts.TAG_ENG
+                name1 = name1 + consts.TAG_NL
+
+        self.txt_name1.update(value=name1)
+        self.txt_name2.update(value=name2)
+
+    @property
+    def name1(self):
+        return self.txt_name1.get()
+
+    @property
+    def name2(self):
+        return self.txt_name2.get()
+
 
 def new_item(base_directory):
     sg.theme('SystemDefault1')
-
-    txt_flname1 = sg.Text("", size=(43, 1))
-    txt_flname2 = sg.Text("", size=(30, 1))
-    fr_names = sg.Frame("", [[sg.Text("a:", size=(2,1)), txt_flname1],
-                                  [sg.Text("b:" , size=(2,1)),txt_flname2]],
-                        border_width=0)
 
     lb_type = sg.Listbox(values=["None"] + list(consts.EXTYPES.values()),
                             default_values=["None"],
@@ -155,59 +240,20 @@ def new_item(base_directory):
                          size=(26, 6), no_scrollbar=True,
                          key="lb_type")
 
-    fr_filename = sg.Frame("Item Name(s)",[
-                           [sg.Text("Uni"+" "*11 + "Topic"+" "*24 +
-                                    "Counter"+" "*7 + "Language")],
-                            [sg.InputText(size=(5,1), key="fln0",
-                                          enable_events=True), sg.Text("-"),
-                            sg.InputText(size=(15,1), key="fln1",
-                                          enable_events=True), sg.Text("-"),
-                            sg.InputText(size=(4,1), key="fln2",
-                                          enable_events=True), sg.Text("-"),
-                            sg.DropDown(values=["Dutch", "English",
-                                                "Bilingual"], key="fln3",
-                                            enable_events=True),
-                            ], [fr_names]
-                        ])
-
-    layout=[[fr_filename]]
+    fr_make_name = _FrameMakeSSName()
+    layout = [[fr_make_name.frame]]
     layout.append([sg.Frame("Template", [[lb_type]]),
                                     sg.Cancel(size=(10, 2)),
                                     sg.Button("Create", size=(10, 2),
                                               key="create")])
     window = sg.Window("New Item(s)", layout, finalize=True)
-
-    name1 = ""
-    name2 = ""
+    fr_make_name.update_names()
     while True:
         window.refresh()
         event, v = window.read()
 
-        if event.startswith("fln"):
-            tmp = tuple(map(lambda x:x.lower().strip(),
-                                            (v["fln0"], v["fln1"]) ))
-
-            name1 = "-".join(filter(len, (tmp[:2])))
-            name2 = ""
-
-            if len(name1):
-                try:
-                    name1 += "-" + str(int(v["fln2"])).zfill(3)
-                except:
-                    pass
-
-            if len(name1)>0:
-                lang = v["fln3"]
-                if lang == "Dutch":
-                    name1 = name1 + "-nl"
-                elif lang == "English":
-                    name1 = name1 + "-en"
-                elif lang == "Bilingual":
-                    name2 = name1 + "-en"
-                    name1 = name1 + "-nl"
-            txt_flname1.update(value=name1)
-            txt_flname2.update(value=name2)
-
+        if event is not None and event.startswith("fln"):
+            fr_make_name.update_names()
         else:
             break
 
@@ -220,20 +266,43 @@ def new_item(base_directory):
         else:
             template_key = None
 
-        if len(name1):
-            item1 = ShareStatsItem(path.join(base_directory, name1,
-                                        "{}.Rmd".format(name1)))
+        if len(fr_make_name.name1):
+            item1 = ShareStatsItem(path.join(base_directory, fr_make_name.name1,
+                                        "{}.Rmd".format(fr_make_name.name1)))
             if template_key is not None:
                 item1.import_file(consts.TEMPLATES[template_key])
-        if len(name2):
-            item2 = ShareStatsItem(path.join(base_directory, name2,
-                                        "{}.Rmd".format(name2)))
+        if len(fr_make_name.name2):
+            item2 = ShareStatsItem(path.join(base_directory, fr_make_name.name2,
+                                        "{}.Rmd".format(fr_make_name.name2)))
             if template_key is not None:
                 item2.import_file(consts.TEMPLATES[template_key])
 
     window.close()
 
     return item1, item2
+
+def rename_item(item_name): #FIXME include in GUI
+    sg.theme('SystemDefault1')
+
+    fr_make_name = _FrameMakeSSName(item_name)
+    layout = [[fr_make_name.frame]]
+    layout.append([sg.Cancel(size=(10, 2)),
+                  sg.Button("Rename", size=(10, 2), key="rename")])
+    window = sg.Window("New Item(s)", layout, finalize=True)
+    fr_make_name.update_names()
+
+    while True:
+        window.refresh()
+        event, _ = window.read()
+        if event is not None and event.startswith("fln"):
+            fr_make_name.update_names()
+        else:
+            break
+
+    if event=="rename":
+        return fr_make_name.name1, fr_make_name.name2
+    else:
+        return None
 
 
 def ask_save(item_name):
