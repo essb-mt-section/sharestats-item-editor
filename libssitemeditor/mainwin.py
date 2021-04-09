@@ -6,7 +6,6 @@ from .windows import sg
 from . import windows
 
 _EMPTY_ITEM = ShareStatsItem(None)
-_EMPTY_ANSWERLIST = AnswerList(_EMPTY_ITEM)
 
 class MainWin(object):
 
@@ -173,7 +172,8 @@ class MainWin(object):
 
     def run(self):
         win = sg.Window("{} ({})".format(consts.APPNAME, __version__),
-                                self.layout, finalize=True)
+                        self.layout, finalize=True,
+                        enable_close_attempted_event=True)
 
         self.resit_gui()
         self.selected_file_index = 0
@@ -182,8 +182,8 @@ class MainWin(object):
         while True:
             win.refresh()
             event, values = win.read()
-            if event ==sg.WINDOW_CLOSE_ATTEMPTED_EVENT:
-                self.save_items()
+            if event == sg.WINDOW_CLOSE_ATTEMPTED_EVENT or event is None:
+                self.save_items(ask=True)
                 break
 
             if self.unsaved_item is None and \
@@ -447,13 +447,13 @@ class _ItemGUI(object):
         rtn += self.ml_quest.get().strip() + "\n\n"
 
         if len(self.ml_answer.get().strip())>0:
-            rtn += _EMPTY_ANSWERLIST.str_markdown_heading
+            rtn += AnswerList(_EMPTY_ITEM).str_markdown_heading
             rtn += self.ml_answer.get().strip() + "\n\n"
 
         rtn += _EMPTY_ITEM.solution.str_markdown_heading
         rtn += self.ml_solution.get().strip() + "\n\n"
         if len(self.ml_solution_answ_lst.get().strip())>0:
-            rtn += _EMPTY_ANSWERLIST.str_markdown_heading
+            rtn += AnswerList(_EMPTY_ITEM).str_markdown_heading
             rtn += self.ml_solution_answ_lst.get().strip() + "\n\n"
 
         rtn += _EMPTY_ITEM.meta_info.str_markdown_heading
