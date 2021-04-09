@@ -1,3 +1,3 @@
 if __name__ == "__main__":
-    from .mainwindow import MainWindow
-    MainWindow().run()
+    from .mainwin import MainWin
+    MainWin().run()

@@ -1,3 +1,3 @@
 
-from libssitemeditor.mainwindow import MainWindow
-MainWindow().run()
+from libssitemeditor.mainwin import MainWin
+MainWin().run()

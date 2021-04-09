@@ -8,7 +8,7 @@ from . import windows
 _EMPTY_ITEM = ShareStatsItem(None)
 _EMPTY_ANSWERLIST = AnswerList(_EMPTY_ITEM)
 
-class MainWindow(object):
+class MainWin(object):
 
 
     def __init__(self):
