@@ -16,7 +16,8 @@ see also [ShareStats Porject](https://github.com/ShareStats)
 
 ## Dependencies
 
-Python 3.5+ and the following libraries:
+Python 3.5+ and the following libraries 
+(see [requirements.txt](requirements.txt)):
 * PySimpleGUI
 * appdirs
 

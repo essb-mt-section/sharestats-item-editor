@@ -48,7 +48,7 @@ class MainWin(object):
         left_frame = sg.Frame("", [[fr_files], [fr_btns]],
                               border_width=0)
 
-        layout = [[top_frame, top_frame2],
+        self.layout = [[top_frame, top_frame2],
                   [left_frame,
                    self.ig_nl.get_frame("Dutch"),
                    self.ig_en.get_frame("English")]]
@@ -57,9 +57,6 @@ class MainWin(object):
         self.ss_item_en = None
         self.fl_list_bilingual = files.FileListBilingual()
         self.unsaved_item = None
-
-        self.window = sg.Window("{} ({})".format(consts.APPNAME, __version__),
-                                layout, finalize=True)
 
     @property
     def base_directory(self):
@@ -175,14 +172,19 @@ class MainWin(object):
 
 
     def run(self):
+        win = sg.Window("{} ({})".format(consts.APPNAME, __version__),
+                                self.layout, finalize=True)
+
         self.resit_gui()
         self.selected_file_index = 0
         self.load_selected_item()
+
         while True:
-            self.window.refresh()
-            event, values = self.window.read()
-            if event is None:
-                break #fixme crash: close window unchanged item
+            win.refresh()
+            event, values = win.read()
+            if event ==sg.WINDOW_CLOSE_ATTEMPTED_EVENT:
+                self.save_items()
+                break
 
             if self.unsaved_item is None and \
                     (event.startswith("nl_") or event.startswith("en_")):
@@ -262,8 +264,7 @@ class MainWin(object):
 
 
         # processing
-        self.save_items(ask=True)
-        self.window.close()
+        win.close()
         settings.save()
 
     def load_selected_item(self):
