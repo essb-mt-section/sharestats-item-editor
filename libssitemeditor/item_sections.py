@@ -152,13 +152,6 @@ class ItemMetaInfo(ItemSection):
         except:
             return ""
 
-
-    def check_name(self):
-        """:returns tuple(good type [boolen], the type)
-        """
-        p = self.parameter["exname"]
-        return p == self._parent.filename.stats_share_name, p
-
     @property
     def name(self):
        return self._try_parameter("exname")

@@ -18,8 +18,8 @@ class ShareStatsItem(object):
         self.header = []
         self.text_array = []
 
-        if path.isfile(self.filename.path):
-            self.import_file(self.filename.path)
+        if path.isfile(self.filename.full_path):
+            self.import_file(self.filename.full_path)
 
     def import_file(self, text_file):
         """import a text file as content"""
@@ -52,10 +52,10 @@ class ShareStatsItem(object):
         return rtn
 
     def save(self):
-        if len(self.filename.path):
+        if len(self.filename.full_path):
             self.filename.make_dirs()
             #print("Save {}".format(self.filename.path))
-            with open(self.filename.path, "w") as fl:
+            with open(self.filename.full_path, "w") as fl:
                 fl.write(str(self))
 
     def validate_meta_info(self):
@@ -66,8 +66,7 @@ class ShareStatsItem(object):
             issues += 1
             rtn += "* Unknown/undefined  item type(extype))\n"
 
-
-        if self.filename.stats_share_name != self.meta_info.name:
+        if self.filename.name != self.meta_info.name: #FIXME
             issues += 1
             rtn += "* Item name (exname) does not match filename\n"
 

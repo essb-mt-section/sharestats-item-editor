@@ -1,4 +1,4 @@
-from os import path, getcwd, listdir
+import os
 from . import __version__, consts, files, settings
 from .sharestats_item import ShareStatsItem
 from .item_sections import AnswerList
@@ -32,7 +32,7 @@ class MainWin(object):
         self.it_base_directory = sg.InputText(self.base_directory, size=(60, 1),
                                             key="it_base_dir",  disabled=True,
                                             enable_events=True)
-        top_frame = sg.Frame("Item Directory",
+        top_frame = sg.Frame("Directory",
                              [[self.it_base_directory,
                               sg.FolderBrowse(initial_folder=self.base_directory)]])
 
@@ -60,7 +60,7 @@ class MainWin(object):
     @property
     def base_directory(self):
         if settings.base_directory is None:
-            settings.base_directory = getcwd()
+            settings.base_directory = os.getcwd()
         return settings.base_directory
 
     @base_directory.setter
@@ -118,7 +118,7 @@ class MainWin(object):
         # info window
         txt = ""
         if len(item.filename.directory):
-            x = listdir(item.filename.directory)
+            x = os.listdir(item.filename.directory)
             x.remove(item.filename.filename)
             if len(x):
                 txt += "Files: {}\n\n".format(", ".join(x))
@@ -128,10 +128,10 @@ class MainWin(object):
 
 
     def update_files_list(self, select_item=None):
-        if not path.isdir(self.base_directory):
+        if not os.path.isdir(self.base_directory):
             self.base_directory = sg.PopupGetFolder("Please select item directory:",
                 title="{} ({})".format(consts.APPNAME, __version__))
-            if not path.isdir(self.base_directory):
+            if not os.path.isdir(self.base_directory):
                 sg.PopupError("No valid item directory selected.")
                 exit()
 
@@ -167,8 +167,8 @@ class MainWin(object):
         self.ss_item_en = None
         self.update_item_gui(en=False)
         self.update_item_gui(en=True)
+        self.it_name.update(value="")
         self.unsaved_item = None
-
 
     def run(self):
         win = sg.Window("{} ({})".format(consts.APPNAME, __version__),
@@ -222,6 +222,22 @@ class MainWin(object):
 
             elif event=="new":
                 self.new_item()
+
+            elif event=="rename":
+                n1, n2, fix_dir= windows.rename_item(self.lb_files.get()[0])
+                if n1 is not None:
+                    self.save_items(ask=True)
+
+                for new_name, old in zip( (n1, n2),
+                        self.fl_list_bilingual.files[self.selected_file_index]):
+                    if new_name is not None and old is not None:
+                        new = old.copy()
+                        new.name = new_name
+                        os.rename(old.full_path, new.full_path)
+                        if fix_dir:
+                            new.fix_directory_name()
+                            os.rename(old.directory, new.directory)
+                self.resit_gui()
 
             elif event.endswith("dd_types"):
                 if event.startswith("nl"):
@@ -459,9 +475,6 @@ class _ItemGUI(object):
         rtn += _EMPTY_ITEM.meta_info.str_markdown_heading
         rtn += self.ml_metainfo.get().strip() + "\n"
         return rtn
-
-#TODO renaming files
-
 
 
 

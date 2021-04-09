@@ -144,28 +144,31 @@ class _FrameMakeSSName(object):
 
     def __init__(self, default_name=""):
 
-        default_name = path.splitext(default_name)[0] # remove extension
-        is_bilingual = default_name.endswith(consts.TAG_BILINGUAL)
-        if is_bilingual:
-            default_name = default_name.replace(
-                                        consts.TAG_BILINGUAL,
-                                        consts.TAG_NL)
-
-        if ShareStatsFile.is_good_name(default_name):
-            defaults = default_name.split("-")
-            if is_bilingual:
-                defaults[3] = "Bilingual"
-            else:
-                if defaults[3][0:] == consts.TAG_NL:
-                    defaults[3] == "Dutch"
-                elif defaults[3][0:] == consts.TAG_ENG:
-                    defaults[3] == "English"
-                else:
-                    defaults[3] == ""
-
+        default_name = path.splitext(default_name)[0] # remove possible extension
+        defaults = [""] * 4
+        if default_name.endswith(consts.TAG_BILINGUAL):
+            defaults[3] = "Bilingual"
+            default_name = default_name[:-1*len(consts.TAG_BILINGUAL)]
+        elif default_name.endswith(consts.TAG_NL):
+            defaults[3] = "Dutch"
+            default_name = default_name[:-1*len(consts.TAG_NL)]
+        elif default_name.endswith(consts.TAG_ENG):
+            defaults[3] = "English"
+            default_name = default_name[:-1*len(consts.TAG_ENG)]
         else:
-            defaults = [""]*4
-            defaults[1] =  default_name
+            defaults[3] = ""
+
+        for c, txt in enumerate(default_name.split("-", maxsplit=2)):
+            if c == 2: # cast number
+                try:
+                    defaults[c] = str(int(txt))
+                except:
+                    defaults[c-1] += "-" + txt
+            else:
+                defaults[c] = txt
+
+        if len(defaults[1])==0 and len(defaults[0])>0:
+            defaults[1], defaults[0] = defaults[0], defaults[1]
 
         self.txt_name1 = sg.Text("", size=(43, 1), key="txt_name1")
         self.txt_name2 = sg.Text("", size=(43, 1), key="txt_name2")
@@ -177,7 +180,7 @@ class _FrameMakeSSName(object):
 
         self.fln0 = sg.InputText(default_text=defaults[0],size=(5,1),
                                         key="fln0", enable_events=True)
-        self.fln1 = sg.InputText(default_text=defaults[1], size=(15,1),
+        self.fln1 = sg.InputText(default_text=defaults[1], size=(25,1),
                                  key="fln1",enable_events=True)
         self.fln2 = sg.InputText(default_text=str(defaults[2]), size=(4,1),
                                  key="fln2",enable_events=True)
@@ -243,9 +246,8 @@ def new_item(base_directory):
     fr_make_name = _FrameMakeSSName()
     layout = [[fr_make_name.frame]]
     layout.append([sg.Frame("Template", [[lb_type]]),
-                                    sg.Cancel(size=(10, 2)),
-                                    sg.Button("Create", size=(10, 2),
-                                              key="create")])
+                            sg.Cancel(size=(10, 2)),
+                            sg.Button("Create", size=(10, 2), key="create")])
     window = sg.Window("New Item(s)", layout, finalize=True)
     fr_make_name.update_names()
     while True:
@@ -281,14 +283,17 @@ def new_item(base_directory):
 
     return item1, item2
 
-def rename_item(item_name): #FIXME include in GUI
+def rename_item(item_name):
     sg.theme('SystemDefault1')
 
     fr_make_name = _FrameMakeSSName(item_name)
+    fix_dir = sg.Checkbox(text="Adapt directory name", default=True)
     layout = [[fr_make_name.frame]]
-    layout.append([sg.Cancel(size=(10, 2)),
+    layout.append([sg.Frame("", [[fix_dir]]),
+                  sg.Text(" "*10),
+                  sg.Cancel(size=(10, 2)),
                   sg.Button("Rename", size=(10, 2), key="rename")])
-    window = sg.Window("New Item(s)", layout, finalize=True)
+    window = sg.Window("Rename", layout, finalize=True)
     fr_make_name.update_names()
 
     while True:
@@ -299,10 +304,12 @@ def rename_item(item_name): #FIXME include in GUI
         else:
             break
 
+    window.close()
     if event=="rename":
-        return fr_make_name.name1, fr_make_name.name2
+        return fr_make_name.name1, fr_make_name.name2, bool(fix_dir.get())
     else:
-        return None
+        return None, None, None
+
 
 
 def ask_save(item_name):

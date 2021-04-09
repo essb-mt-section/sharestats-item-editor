@@ -21,18 +21,21 @@ class ShareStatsFile(object):
         return ShareStatsFile(path.join(base_directory, name,
                                             "{}.Rmd".format(name)))
 
+    def copy(self):
+        return ShareStatsFile(file_path=self.full_path)
+
     def get_language(self):
         try:
-            return self.get_parts()[3]
+            return self.get_ss_name_parts()[3]
         except:
             return ""
 
-    def get_parts(self):
+    def get_ss_name_parts(self):
         """None, if filename/path is not in good shape or returns a list of the
          filename parts [University, Topic, Count, Language]
         """
 
-        rtn = self.stats_share_name.split("-")
+        rtn = self.name.split("-")
         if len(rtn) != 4:
             return None
         else:
@@ -42,9 +45,8 @@ class ShareStatsFile(object):
                 pass
             return rtn
 
-    @staticmethod
-    def is_good_name(item_name):
-        x = item_name.split("-")
+    def is_good_name(self):
+        x = self.name.split("-")
         if len(x) != 4:
             return False
         else:
@@ -54,18 +56,33 @@ class ShareStatsFile(object):
             except:
                 return False
 
-    @property
-    def stats_share_name(self):
-        file_name = path.splitext(self.filename)[0]
-        if file_name == path.split(self.directory)[1] and \
-                ShareStatsFile.is_good_name(file_name):
-            # file name == folder name
-            return file_name
+    def is_good_directory_name(self):
+        return self.name == path.split(self.directory)[1]
+
+    def fix_directory_name(self, add_directory_level=False):
+        # changes name of sub folder
+        if add_directory_level:
+            self.directory = path.join(self.directory, self.name)
         else:
-            return ""
+            d = path.split(self.directory)
+            self.directory = path.join(d[0], self.name)
+
+        return self.directory
+
 
     @property
-    def path(self):
+    def name(self):
+        return path.splitext(self.filename)[0]
+
+    @name.setter
+    def name(self, value):
+        # changes name (and keeps extension)
+        ext = path.splitext(self.filename)[1]
+        self.filename = value + ext
+
+
+    @property
+    def full_path(self):
         return path.join(self.directory, self.filename)
 
     @property
@@ -86,13 +103,13 @@ class ShareStatsFile(object):
         if not isinstance(other, ShareStatsFile):
             return False
         else:
-            return self.path == other.path
+            return self.full_path == other.full_path
 
     def __str__(self):
-        return str(self.path)
+        return str(self.full_path)
 
     def get_other_language(self):
-        parts = self.get_parts()
+        parts = self.get_ss_name_parts()
         if parts is not None: # file path in good shape
             if parts[3] == "nl":
                 lang2 = "en"
@@ -120,12 +137,12 @@ class FileListBilingual(object):
 
             while True:  # remove all instance of second in lst
                 try:
-                    lst.remove(second.path)
+                    lst.remove(second.full_path)
                 except:
                     break
 
             if second is not None:
-                if path.isfile(second.path):
+                if path.isfile(second.full_path):
                     if second.get_language() == "nl":
                         second, first = first, second  # swap
                 else:
@@ -140,21 +157,18 @@ class FileListBilingual(object):
     def shared_name(bilingual_file_names, add_bilingual_tag=True):
         """bilingual_file_list_entry: tuple of two entries"""
 
-        try:
-            name = bilingual_file_names[0].stats_share_name
-        except:
-            return ""
+        name = bilingual_file_names[0].name
+        if len(name):
+            if bilingual_file_names[1] is not None:
+                if name.endswith(consts.TAG_NL) or \
+                        name.endswith(consts.TAG_ENG):
+                    name = name[:-3]
+                if add_bilingual_tag:
+                    name = name + consts.TAG_BILINGUAL
+            return name
 
-        if len(name) == 0:
-            name = bilingual_file_names[0].filename
-
-        if bilingual_file_names[1] is not None:
-            if name.endswith(consts.TAG_NL) or \
-                    name.endswith(consts.TAG_ENG):
-                name = name[:-3]
-            if add_bilingual_tag:
-                name = name + consts.TAG_BILINGUAL
-        return name
+        else:
+            return bilingual_file_names[0].filename
 
     def get_shared_names(self, bilingual_tag=True):
         return [FileListBilingual.shared_name(x, bilingual_tag)
