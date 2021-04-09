@@ -103,8 +103,9 @@ class MainWin(object):
             ig.ml_answer.update(value="")
         else:
             ig.ml_answer.update(value=
-                        item.question.answer_list.str_answers +
+                        item.question.answer_list.get_str_answers_marked() +
                         item.question.answer_list.str_text)
+
 
         if not item.solution.has_answer_list_section():
             ig.ml_solution_answ_lst.update(value="")
@@ -114,6 +115,7 @@ class MainWin(object):
                         item.solution.answer_list.str_text)
         ig.set_enable_answer_list(item.question.has_answer_list_section())
         ig.set_enable_feedback_list(item.solution.has_answer_list_section())
+        self.update_answer_list_button(en)
 
         # info window
         txt = ""
@@ -125,6 +127,7 @@ class MainWin(object):
 
         txt += item.validate_meta_info()
         ig.ml_info_validation(value=txt)
+
 
 
     def update_files_list(self, select_item=None):
@@ -191,28 +194,9 @@ class MainWin(object):
                 # if change in any text boxes
                 self.unsaved_item = self.selected_file_index
 
-            if event == "close":
-                break
+            is_nl_event = event.startswith("nl_")
 
-            elif event == "nl_btn_change_meta":
-                if self.ss_item_nl is not None:
-                    new_tax = windows.taxonomy(self.ss_item_nl.meta_info)
-                    if new_tax is not None:
-                        self.ss_item_nl.meta_info = new_tax
-                        self.ig_nl.ml_metainfo.update(value=
-                                          new_tax.str_parameter +
-                                          new_tax.str_text)
-
-            elif event == "en_btn_change_meta":
-                if self.ss_item_en is not None:
-                    new_tax = windows.taxonomy(self.ss_item_en.meta_info)
-                    if new_tax is not None:
-                        self.ss_item_en.meta_info = new_tax
-                        self.ig_en.ml_metainfo.update(value=
-                                        new_tax.str_parameter +
-                                        new_tax.str_text)
-
-            elif event=="it_base_dir":
+            if event=="it_base_dir":
                 self.save_items(ask=True)
                 self.base_directory = values[event]
                 self.resit_gui()
@@ -240,11 +224,11 @@ class MainWin(object):
                 self.resit_gui()
 
             elif event.endswith("dd_types"):
-                if event.startswith("nl"):
+                if is_nl_event:
                     self.ss_item_nl.meta_info.type = values[event]
                     self.update_item_gui(en=False)
 
-                if event.startswith("en"):
+                else:
                     self.ss_item_en.meta_info.type = values[event]
                     self.update_item_gui(en=True)
 
@@ -262,26 +246,70 @@ class MainWin(object):
                         self.selected_file_index -= 1
                 self.load_selected_item()
 
+            elif event.endswith("btn_change_meta"):
+                if is_nl_event:
+                    item = self.ss_item_nl
+                    ig = self.ig_nl
+                else:
+                    item = self.ss_item_en
+                    ig = self.ig_en
+
+                if item is not None:
+                    new_meta = windows.taxonomy(item.meta_info)
+                    if new_meta is not None:
+                        item.meta_info = new_meta
+                        ig.ml_metainfo.update(value= new_meta.str_parameter +
+                                          new_meta.str_text)
+
             elif event.endswith("btn_add_answer_list"):
-                if event.startswith("nl"):
+                if is_nl_event:
                     self.ss_item_nl.question.add_answer_list_section()
                     self.update_item_gui(en=False)
-                if event.startswith("en"):
+                else:
                     self.ss_item_en.question.add_answer_list_section()
                     self.update_item_gui(en=True)
 
             elif event.endswith("btn_add_feedback_list"):
-                if event.startswith("nl"):
+                if is_nl_event:
                     self.ss_item_nl.solution.add_answer_list_section()
                     self.update_item_gui(en=False)
-                if event.startswith("en"):
+                else:
                     self.ss_item_en.solution.add_answer_list_section()
                     self.update_item_gui(en=True)
 
+            elif event.endswith("_answer"):
+                self.update_answer_list_button(en=not is_nl_event)
+
+            elif event.endswith("btn_update_exsolution"):
+                if is_nl_event:
+                    self.ss_item_nl.update_solution(solution_str=\
+                        AnswerList.extract_solution(self.ig_nl.ml_answer.get()))
+                else:
+                    self.ss_item_en.update_solution(solution_str=\
+                        AnswerList.extract_solution(self.ig_en.ml_answer.get()))
+                self.update_item_gui(en = not is_nl_event)
 
         # processing
         win.close()
         settings.save()
+
+    def update_answer_list_button(self, en):
+        # extract solution and switch visibility
+
+        if en:
+            item = self.ss_item_en
+            ig = self.ig_en
+        else:
+            item = self.ss_item_nl
+            ig = self.ig_nl
+
+        if item is None or not item.question.has_answer_list_section():
+            ig.btn_update_exsolution.update(visible=False)
+            return
+
+        solution = AnswerList.extract_solution(ig.ml_answer.get())
+        ig.btn_update_exsolution.update(visible=
+                                        item.meta_info.solution != solution)
 
     def load_selected_item(self):
         if self.selected_file_index is None:
@@ -303,9 +331,11 @@ class MainWin(object):
 
     def save_items(self, ask=False):
         if self.unsaved_item is not None:
+
             if ask:
                 item_name = self.lb_files.get_list_values()[self.unsaved_item]
                 if not windows.ask_save(item_name):
+                    self.unsaved_item = None
                     return
 
             if self.ss_item_nl is not None:
@@ -393,6 +423,11 @@ class _ItemGUI(object):
                                             size=(2,1),
                     key="{}_btn_add_feedback_list".format(key_prefix))
 
+        self.btn_update_exsolution = sg.Button("update 'exsolution'",
+                                            enable_events=True,
+                                            size=(15,1),
+                    key="{}_btn_update_exsolution".format(key_prefix))
+
         self._enable = False
 
     @property
@@ -414,8 +449,10 @@ class _ItemGUI(object):
         self.ml_metainfo.update(disabled=not value, background_color=col)
         self.dd_types.update(disabled=not value)
         self.btn_change_meta.update(disabled=not value)
-        self.btn_add_answer_list.update(visible=value)
-        self.btn_add_feedback_list.update(visible=value)
+        if not value:
+            self.btn_add_answer_list.update(visible=False)
+            self.btn_update_exsolution.update(visible=False)
+            self.btn_add_feedback_list.update(visible=False)
 
     def set_enable_answer_list(self, enable):
         if enable:
@@ -442,7 +479,8 @@ class _ItemGUI(object):
         return sg.Frame(heading, [
                     [sg.Frame("Question", [
                         [self.ml_quest],
-                        [self.txt_answer_list, self.btn_add_answer_list],
+                        [self.txt_answer_list, self.btn_add_answer_list,
+                         self.btn_update_exsolution],
                         [self.ml_answer]],
                               background_color=consts.COLOR_QUEST)],
 

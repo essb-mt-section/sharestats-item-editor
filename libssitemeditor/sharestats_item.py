@@ -41,6 +41,10 @@ class ShareStatsItem(object):
         self.solution.parse()
         self.meta_info.parse()
 
+        # overide answer_list correctness with meta info solution
+        self.update_solution(self.meta_info.solution)
+
+
     def requires_answer_list(self):
 
         return self.meta_info.type in consts.HAVE_ANSWER_LIST
@@ -66,7 +70,7 @@ class ShareStatsItem(object):
             issues += 1
             rtn += "* Unknown/undefined  item type(extype))\n"
 
-        if self.filename.name != self.meta_info.name: #FIXME
+        if self.filename.name != self.meta_info.name: #FIXME use good folder
             issues += 1
             rtn += "* Item name (exname) does not match filename\n"
 
@@ -90,4 +94,11 @@ class ShareStatsItem(object):
 
         return rtn
 
+    def update_solution(self, solution_str):
+        self.meta_info.solution = solution_str
+        if self.question.has_answer_list_section():
+            self.question.answer_list.solution_str = solution_str
+
+#FIXME: if exsolution is updated in meta info and not save, new taxonimie override exsolution chages
+#FIXME exsolution appears in meta info for new item, although not defined
 

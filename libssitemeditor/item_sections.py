@@ -82,36 +82,74 @@ class ItemSection(object):
 
 class AnswerList(ItemSection):
 
+    TAG_CORRECT = "# "
+    TAG_ITEM = "* "
+
     def __init__(self, parent):
         super().__init__(parent, "Answerlist", "-")
         self.answers = []
-        self.correct = []
+        self._correct = []
 
     def parse(self):
         super().parse()
         self.answers = []
+        self._correct = []
         additional_content = []
         while len(self.text_array)>0:
             answer = self.text_array.pop(0)
-            if answer.strip().startswith("* "):
+            if answer.strip().startswith(AnswerList.TAG_ITEM):
                 self.answers.append(answer[2:].strip())
+                self._correct.append(False)
+            elif answer.strip().startswith(AnswerList.TAG_CORRECT):
+                self.answers.append(answer[2:].strip())
+                self._correct.append(True)
             else:
                 additional_content.append(answer)
-        self.correct = [False] * len(self.answers) # default all are wrong
-        self.text_array = additional_content
+
+        self.text_array = additional_content # TODO What do with that content?
+
+    @staticmethod
+    def extract_solution(markdown):
+        """extracts solution from markdown string that used TAG_CORRECT"""
+
+        solution = ""
+        for l in markdown.split("\n"):
+            if l.startswith(AnswerList.TAG_ITEM):
+                solution += "0"
+            elif l.startswith(AnswerList.TAG_CORRECT):
+                solution += "1"
+        return solution
+
+    @property
+    def solution_str(self):
+        return "".join(map(lambda x: str(int(x)), self._correct))
+
+    @solution_str.setter
+    def solution_str(self, value):
+        self._correct = []
+        for cnt, ans in enumerate(self.answers):
+            try:
+                self._correct.append(value[cnt] == "1")
+            except:
+                self._correct.append(False)
 
     @property
     def str_answers(self):
+        return self.get_str_answers_marked(mark_correct_solutions=False)
+
+    def get_str_answers_marked(self, mark_correct_solutions=True):
         rtn = ""
-        for ans in self.answers:
-            rtn += "* {}\n".format(ans)
+        for ans, correct in zip(self.answers, self._correct):
+            if mark_correct_solutions and correct:
+                tag = AnswerList.TAG_CORRECT
+            else:
+                tag = AnswerList.TAG_ITEM
+            rtn += "{}{}\n".format(tag, ans)
+
         return rtn
 
-    def get_exsolution(self):
-        return "".join(map(lambda x: str(int(x)), self.correct))
-
     def __str__(self):
-        rtn =  self.str_markdown_heading + self.str_answers + "\n" + self.str_text
+        rtn =  self.str_markdown_heading + self.str_answers + self.str_text
         return rtn.strip()
 
 class ItemMetaInfo(ItemSection):
@@ -208,6 +246,14 @@ class ItemMetaInfo(ItemSection):
     def level(self, v):
         self.parameter["exextra[Level]"] = v
 
+
+    @property
+    def solution(self):
+        return self._try_parameter("exsolution")
+
+    @solution.setter
+    def solution(self, v):
+        self.parameter["exsolution"] = v
 
     def check_type(self):
         """:returns True if known type
