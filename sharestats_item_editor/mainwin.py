@@ -135,9 +135,6 @@ class MainWin(object):
             else:
                 ig.ml_files(value="")
 
-
-
-
     def update_item_list(self, select_item=None):
         if not os.path.isdir(self.base_directory):
             self.base_directory = sg.PopupGetFolder("Please select item directory:",

@@ -1,8 +1,8 @@
 """
 """
 
-__version__ = "0.1.5"
-__author__ = "Oliver Lindemann"
+__version__ = '0.1.6'
+__author__ = 'Oliver Lindemann'
 
 import sys as _sys
 from . import consts
@@ -19,5 +19,3 @@ if _sys.version_info[0] != 3 or _sys.version_info[1]<5:
 settings = _JSONSettings(appname=consts.APPNAME.replace(" ", "_").lower(),
                          settings_file_name="settings.json",
                          defaults= {"base_directory": None})
-
-
