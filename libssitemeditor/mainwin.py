@@ -6,8 +6,11 @@ from .dialogs import sg
 from . import dialogs
 
 WIDTH_ML = 80 # multi line field for text input
-LEN_ML = 6
-LEN_ANSWER_ML = 5
+LEN_ML_SMALL = 6
+LEN_ML_LARGE = 18 # tab layout
+LEN_ANSWER_SMALL = 5
+LEN_ANSWER_LARGE = 8
+TAB_LAYOUT = True
 
 _EMPTY_ITEM = ShareStatsItem(None)
 
@@ -21,11 +24,11 @@ class MainWin(object):
         # LAYOUT
         self.ig_nl = _ItemGUI("nl")
         self.ig_en = _ItemGUI("en")
-        self.lb_files = sg.Listbox(values=[], enable_events=True,
+        self.lb_items = sg.Listbox(values=[], enable_events=True,
                                    key="lb_files", size=(30, 37))
 
-        fr_files = sg.Frame("Files", [
-            [self.lb_files],
+        fr_items = sg.Frame("Item list", [
+            [self.lb_items],
             [sg.Button(button_text="<<", size=(11, 1), key="btn_previous"),
              sg.Button(button_text=">>", size=(11, 1), key="btn_next")]])
 
@@ -49,7 +52,7 @@ class MainWin(object):
                               sg.Button(button_text="Rename", size=(10, 1),
                                         key="rename")]])
 
-        left_frame = sg.Frame("", [[fr_files], [fr_btns]],
+        left_frame = sg.Frame("", [[fr_items], [fr_btns]],
                               border_width=0)
 
         self.layout = [[top_frame, top_frame2],
@@ -122,16 +125,16 @@ class MainWin(object):
         ig.set_enable_feedback_list(item.solution.has_answer_list_section())
         self.update_answer_list_button(en)
 
-        # info window
-        txt = ""
+        # validation and file info
+        ig.ml_info_validation(value=item.validate_meta_info())
         if len(item.filename.directory):
             x = os.listdir(item.filename.directory)
             x.remove(item.filename.filename)
             if len(x):
-                txt += "Files: {}\n\n".format(", ".join(x))
+                ig.ml_files(value="\n".join(x))
+            else:
+                ig.ml_files(value="")
 
-        txt += item.validate_meta_info()
-        ig.ml_info_validation(value=txt)
 
 
 
@@ -145,7 +148,7 @@ class MainWin(object):
 
         self.fl_list_bilingual = files.FileListBilingual(self.base_directory)
         list_display = self.fl_list_bilingual.get_shared_names()
-        self.lb_files.update(values=list_display)
+        self.lb_items.update(values=list_display)
         try:
             self.idx_selected_item = list_display.index(select_item)
         except:
@@ -154,20 +157,20 @@ class MainWin(object):
     @property
     def idx_selected_item(self):
         try:
-            return self.lb_files.get_indexes()[0]
+            return self.lb_items.get_indexes()[0]
         except:
             return None
 
     @idx_selected_item.setter
     def idx_selected_item(self, index):
-        n = len(self.lb_files.get_list_values())
+        n = len(self.lb_items.get_list_values())
         if n<=0:
             return
         elif index<0:
            index = 0
         elif index > n-1:
             index = n-1
-        self.lb_files.update(set_to_index=index)
+        self.lb_items.update(set_to_index=index)
 
     def resit_gui(self):
         self.update_item_list()
@@ -213,7 +216,7 @@ class MainWin(object):
                 self.new_item()
 
             elif event=="rename":
-                n1, n2, fix_dir= dialogs.rename_item(self.lb_files.get()[0])
+                n1, n2, fix_dir= dialogs.rename_item(self.lb_items.get()[0])
                 if n1 is not None:
                     self.save_items(ask=True)
 
@@ -338,7 +341,7 @@ class MainWin(object):
         if self.unsaved_item is not None:
 
             if ask:
-                item_name = self.lb_files.get_list_values()[self.unsaved_item]
+                item_name = self.lb_items.get_list_values()[self.unsaved_item]
                 if not dialogs.ask_save(item_name):
                     self.unsaved_item = None
                     return
@@ -380,21 +383,29 @@ class MainWin(object):
 class _ItemGUI(object):
 
     def __init__(self, key_prefix):
+
+        if TAB_LAYOUT:
+            len_ml = LEN_ML_LARGE
+            len_answer = LEN_ANSWER_LARGE
+        else:
+            len_ml = LEN_ML_SMALL
+            len_answer = LEN_ANSWER_SMALL
+
         self.ml_quest = sg.Multiline(default_text="",
-                                     size=(WIDTH_ML, LEN_ML), enable_events=True,
+                                     size=(WIDTH_ML, len_ml), enable_events=True,
                                      key="{}_quest".format(key_prefix))
         self.ml_answer = sg.Multiline(default_text="", enable_events=True,
-                                      size=(WIDTH_ML, LEN_ANSWER_ML),
+                                      size=(WIDTH_ML, len_answer),
                                       key="{}_answer".format(key_prefix))
 
         self.txt_answer_list = sg.Text("Answer list", size=(10, 1),
                                        background_color=consts.COLOR_QUEST)
 
         self.ml_solution = sg.Multiline(default_text="", enable_events=True,
-                                        size=(WIDTH_ML, LEN_ML),
+                                        size=(WIDTH_ML, len_ml),
                                         key="{}_solution".format(key_prefix))
         self.ml_solution_answ_lst = sg.Multiline(default_text="", enable_events=True,
-                                                 size=(WIDTH_ML, LEN_ANSWER_ML),
+                                                 size=(WIDTH_ML, len_answer),
                                                  key="{}_solution_feedback".format(key_prefix))
         self.txt_solution_answ_lst = sg.Text("Answer list", size=(10, 1),
                                              background_color=consts.COLOR_SOLUTION)
@@ -407,9 +418,14 @@ class _ItemGUI(object):
                                          key="{}_btn_change_meta".format(key_prefix))
 
         self.ml_info_validation =sg.Multiline(default_text="",
-                                              size=(WIDTH_ML, 5),
+                                              size=(WIDTH_ML-26, 4),
                                               background_color="#DADADA",
                                               disabled=True)
+
+        self.ml_files = sg.Multiline(default_text="",
+                                     size=(20, 4),
+                                     background_color="#DADADA",
+                                     disabled=True)
 
         self.dd_types = sg.DropDown(values=[consts.UNKNOWN_TYPE] +
                                            list(consts.EXTYPES.keys()),
@@ -488,15 +504,34 @@ class _ItemGUI(object):
         layout_meta_info =  [[self.ml_metainfo],
                         [self.dd_types, self.btn_change_meta]]
 
-        return sg.Frame(heading, [
-                    [sg.Frame("Question", layout_question ,
-                              background_color=consts.COLOR_QUEST)],
-                    [sg.Frame("Solution (feedback)", layout_solution,
-                              background_color=consts.COLOR_SOLUTION)],
+        if TAB_LAYOUT:
+            tab_group = sg.TabGroup([[sg.Tab("Question", layout_question,
+                                             background_color=consts.COLOR_QUEST,
+                                             key="tab_quest_{}".format(
+                                                 heading)),
+                                      sg.Tab("Solution", layout_solution,
+                                             background_color=consts.COLOR_SOLUTION,
+                                             key="tab_sol_{}".format(heading))
+                                      ]])
+            return sg.Frame(heading, [
+                   [tab_group],
+                   [sg.Frame("Meta-Information", layout_meta_info)],
+                   [sg.Frame("Validation", [[self.ml_info_validation]]),
+                    sg.Frame("Files", [[self.ml_files]])]
+            ])
+
+
+        else:
+            return sg.Frame(heading, [
+                   [sg.Frame("Question", layout_question ,
+                             background_color=consts.COLOR_QUEST)],
+                   [sg.Frame("Solution (feedback)", layout_solution,
+                             background_color=consts.COLOR_SOLUTION)],
                     [sg.Frame("Meta-Information", layout_meta_info,
                               background_color=consts.COLOR_MATA_INFO)],
                     [sg.Frame("", [[self.ml_info_validation]])]
-        ])
+            ])
+
 
     def as_markdown_file(self):
         rtn = _EMPTY_ITEM.question.str_markdown_heading
