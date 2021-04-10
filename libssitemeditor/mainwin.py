@@ -5,7 +5,12 @@ from .item_sections import AnswerList
 from .dialogs import sg
 from . import dialogs
 
+WIDTH_ML = 80 # multi line field for text input
+LEN_ML = 6
+LEN_ANSWER_ML = 5
+
 _EMPTY_ITEM = ShareStatsItem(None)
+
 
 class MainWin(object):
 
@@ -68,7 +73,7 @@ class MainWin(object):
         if v != settings.base_directory:
             settings.base_directory = v
 
-            self.update_files_list()
+            self.update_item_list()
 
     def update_item_gui(self, en):
 
@@ -84,7 +89,7 @@ class MainWin(object):
             item = _EMPTY_ITEM
         else:
             names = self.fl_list_bilingual.get_shared_names(bilingual_tag=False)
-            self.it_name.update(value=names[self.selected_file_index])
+            self.it_name.update(value=names[self.idx_selected_item])
 
 
         ig.ml_quest.update(value=item.question.str_text)
@@ -130,7 +135,7 @@ class MainWin(object):
 
 
 
-    def update_files_list(self, select_item=None):
+    def update_item_list(self, select_item=None):
         if not os.path.isdir(self.base_directory):
             self.base_directory = sg.PopupGetFolder("Please select item directory:",
                 title="{} ({})".format(consts.APPNAME, __version__))
@@ -142,19 +147,19 @@ class MainWin(object):
         list_display = self.fl_list_bilingual.get_shared_names()
         self.lb_files.update(values=list_display)
         try:
-            self.selected_file_index = list_display.index(select_item)
+            self.idx_selected_item = list_display.index(select_item)
         except:
             pass
 
     @property
-    def selected_file_index(self):
+    def idx_selected_item(self):
         try:
             return self.lb_files.get_indexes()[0]
         except:
             return None
 
-    @selected_file_index.setter
-    def selected_file_index(self, index):
+    @idx_selected_item.setter
+    def idx_selected_item(self, index):
         n = len(self.lb_files.get_list_values())
         if n<=0:
             return
@@ -165,7 +170,7 @@ class MainWin(object):
         self.lb_files.update(set_to_index=index)
 
     def resit_gui(self):
-        self.update_files_list()
+        self.update_item_list()
         self.ss_item_nl = None
         self.ss_item_en = None
         self.update_item_gui(en=False)
@@ -179,7 +184,7 @@ class MainWin(object):
                         enable_close_attempted_event=True)
 
         self.resit_gui()
-        self.selected_file_index = 0
+        self.idx_selected_item = 0
         self.load_selected_item()
 
         while True:
@@ -192,7 +197,7 @@ class MainWin(object):
             if self.unsaved_item is None and \
                     (event.startswith("nl_") or event.startswith("en_")):
                 # if change in any text boxes
-                self.unsaved_item = self.selected_file_index
+                self.unsaved_item = self.idx_selected_item
 
             is_nl_event = event.startswith("nl_")
 
@@ -212,8 +217,8 @@ class MainWin(object):
                 if n1 is not None:
                     self.save_items(ask=True)
 
-                for new_name, old in zip( (n1, n2),
-                        self.fl_list_bilingual.files[self.selected_file_index]):
+                for new_name, old in zip((n1, n2),
+                                         self.fl_list_bilingual.files[self.idx_selected_item]):
                     if new_name is not None and old is not None:
                         new = old.copy()
                         new.name = new_name
@@ -235,15 +240,15 @@ class MainWin(object):
             elif event in ("lb_files", "btn_next", "btn_previous"):
                 self.save_items(ask=True)
                 if event=="btn_next":
-                    if self.selected_file_index is None:
-                        self.selected_file_index = 0
+                    if self.idx_selected_item is None:
+                        self.idx_selected_item = 0
                     else:
-                        self.selected_file_index +=1
+                        self.idx_selected_item +=1
                 elif event=="btn_previous":
-                    if self.selected_file_index is None:
-                        self.selected_file_index = 0
+                    if self.idx_selected_item is None:
+                        self.idx_selected_item = 0
                     else:
-                        self.selected_file_index -= 1
+                        self.idx_selected_item -= 1
                 self.load_selected_item()
 
             elif event.endswith("btn_change_meta"):
@@ -312,12 +317,12 @@ class MainWin(object):
                                         item.meta_info.solution != solution)
 
     def load_selected_item(self):
-        if self.selected_file_index is None:
+        if self.idx_selected_item is None:
             return
 
         self.ss_item_nl = None
         self.ss_item_en = None
-        fls = self.fl_list_bilingual.files[self.selected_file_index]
+        fls = self.fl_list_bilingual.files[self.idx_selected_item]
         if fls[0] is not None and fls[0].get_language() == "en":
             fls = (fls[1], fls[0]) # swap
 
@@ -365,23 +370,18 @@ class MainWin(object):
             self.save_items(ask=False)  # create folder and file
             self.update_item_gui(en=True)
             self.update_item_gui(en=False)
-            self.update_files_list()
+            self.update_item_list()
 
             idx = self.fl_list_bilingual.find_filename(fl_name)
             if idx is not None:
-                self.selected_file_index = idx
+                self.idx_selected_item = idx
 
-
-LEN_LARGE_ML = 12
-LEN_SMALL_ML = 6
-LEN_ANSWER_ML = 5
-WIDTH_ML = 80 # multi line field for text input
 
 class _ItemGUI(object):
 
     def __init__(self, key_prefix):
         self.ml_quest = sg.Multiline(default_text="",
-                                     size=(WIDTH_ML, LEN_SMALL_ML), enable_events=True,
+                                     size=(WIDTH_ML, LEN_ML), enable_events=True,
                                      key="{}_quest".format(key_prefix))
         self.ml_answer = sg.Multiline(default_text="", enable_events=True,
                                       size=(WIDTH_ML, LEN_ANSWER_ML),
@@ -391,7 +391,7 @@ class _ItemGUI(object):
                                        background_color=consts.COLOR_QUEST)
 
         self.ml_solution = sg.Multiline(default_text="", enable_events=True,
-                                        size=(WIDTH_ML, LEN_SMALL_ML),
+                                        size=(WIDTH_ML, LEN_ML),
                                         key="{}_solution".format(key_prefix))
         self.ml_solution_answ_lst = sg.Multiline(default_text="", enable_events=True,
                                                  size=(WIDTH_ML, LEN_ANSWER_ML),
@@ -476,23 +476,25 @@ class _ItemGUI(object):
 
 
     def get_frame(self, heading):
-        return sg.Frame(heading, [
-                    [sg.Frame("Question", [
-                        [self.ml_quest],
+        layout_question =[[self.ml_quest],
                         [self.txt_answer_list, self.btn_add_answer_list,
                          self.btn_update_exsolution],
-                        [self.ml_answer]],
-                              background_color=consts.COLOR_QUEST)],
+                        [self.ml_answer]]
 
-                    [sg.Frame("Solution (feedback)", [
-                        [self.ml_solution],
+        layout_solution = [[self.ml_solution],
                         [self.txt_solution_answ_lst, self.btn_add_feedback_list],
-                        [self.ml_solution_answ_lst]],
+                        [self.ml_solution_answ_lst]]
+
+        layout_meta_info =  [[self.ml_metainfo],
+                        [self.dd_types, self.btn_change_meta]]
+
+        return sg.Frame(heading, [
+                    [sg.Frame("Question", layout_question ,
+                              background_color=consts.COLOR_QUEST)],
+                    [sg.Frame("Solution (feedback)", layout_solution,
                               background_color=consts.COLOR_SOLUTION)],
-                    [sg.Frame("Meta-Information", [
-                        [self.ml_metainfo],
-                        [self.dd_types, self.btn_change_meta]
-                        ], background_color=consts.COLOR_MATA_INFO)],
+                    [sg.Frame("Meta-Information", layout_meta_info,
+                              background_color=consts.COLOR_MATA_INFO)],
                     [sg.Frame("", [[self.ml_info_validation]])]
         ])
 
