@@ -2,8 +2,8 @@ import os
 from . import __version__, consts, files, settings
 from .sharestats_item import ShareStatsItem
 from .item_sections import AnswerList
-from .windows import sg
-from . import windows
+from .dialogs import sg
+from . import dialogs
 
 _EMPTY_ITEM = ShareStatsItem(None)
 
@@ -208,7 +208,7 @@ class MainWin(object):
                 self.new_item()
 
             elif event=="rename":
-                n1, n2, fix_dir= windows.rename_item(self.lb_files.get()[0])
+                n1, n2, fix_dir= dialogs.rename_item(self.lb_files.get()[0])
                 if n1 is not None:
                     self.save_items(ask=True)
 
@@ -255,7 +255,7 @@ class MainWin(object):
                     ig = self.ig_en
 
                 if item is not None:
-                    new_meta = windows.taxonomy(item.meta_info)
+                    new_meta = dialogs.taxonomy(item.meta_info)
                     if new_meta is not None:
                         item.meta_info = new_meta
                         ig.ml_metainfo.update(value= new_meta.str_parameter +
@@ -334,7 +334,7 @@ class MainWin(object):
 
             if ask:
                 item_name = self.lb_files.get_list_values()[self.unsaved_item]
-                if not windows.ask_save(item_name):
+                if not dialogs.ask_save(item_name):
                     self.unsaved_item = None
                     return
 
@@ -352,7 +352,7 @@ class MainWin(object):
             self.unsaved_item = None
 
     def new_item(self):
-        new_items = windows.new_item(self.base_directory)
+        new_items = dialogs.new_item(self.base_directory)
         if new_items[0] is not None:
             self.save_items()  # TODO allow canceling new at this point
             # TODO check existing file and overriding
