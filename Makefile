@@ -3,9 +3,13 @@
 build:
 	python3 setup.py sdist bdist_wheel
 
-publish:
+publish_test:
 	twine check dist/*
 	twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+
+publish:
+	twine check dist/*
+	twine upload dist/*
 
 setup_venv:
 	python3 -m venv venv

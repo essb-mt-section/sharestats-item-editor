@@ -19,8 +19,7 @@ Users familiar with Python are suggested to install `python3`  and use `pip`
 for installation.
 
 ```
-python3 -m pip install pysimplegui
-python3 -m pip install --index-url https://test.pypi.org/simple/ sharestats-item-editor
+python3 -m pip install sharestats-item-editor
 ```
 
 To run ShareStatsItemEditor call
