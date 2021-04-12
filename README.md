@@ -7,7 +7,7 @@
 Oliver Lindemann, Erasmus University Rotterdam, NL
 
 
-![screenshot](picts/screenshot.png)
+![screenshot](https://raw.githubusercontent.com/essb-mt-section/sharestats-item-editor/main/picts/screenshot.png)
 
 ---
 

@@ -1,7 +1,7 @@
 """
 """
 
-__version__ = '0.1.6'
+__version__ = '0.1.6b'
 __author__ = 'Oliver Lindemann'
 
 import sys as _sys
