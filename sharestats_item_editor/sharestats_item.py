@@ -1,7 +1,7 @@
 from os import path, rename
 import types
 
-from . import consts
+from . import consts, templates
 from .item_sections import ItemSection, ItemMetaInfo
 from .files import ShareStatsFile
 
@@ -31,7 +31,7 @@ class ShareStatsItem(object):
         self.question = ItemSection(self, "Question", "=")
         self.solution = ItemSection(self, "Solution", "=")
         self.meta_info = ItemMetaInfo(self)
-        self.header = []
+        self.header = [] # FIXME never used! HEADER WILL BE LOST
         self.text_array = []
 
         if path.isfile(self.filename.full_path):
@@ -57,7 +57,7 @@ class ShareStatsItem(object):
         self.solution.parse()
         self.meta_info.parse()
 
-        # overide answer_list correctness with meta info solution
+        # override answer_list correctness with meta info solution
         self.update_solution(self.meta_info.solution)
 
 
@@ -89,6 +89,10 @@ class ShareStatsItem(object):
         new.fix_directory_name()
         rename(self.filename.directory, new.directory)
 
+    def fix_missing_parameter(self):
+        for k, v in self.meta_info.get_missing_parameter().items():
+            self.meta_info.parameter[k] = v
+
     def validate(self):
         """Validates the item and returns a list of issues"""
         issues = []
@@ -114,6 +118,12 @@ class ShareStatsItem(object):
             if  self.solution.has_answer_list_section():
                 issues.append(Issue("Feedback answer list not required")) #TODO or even allowed?
 
+        missing_parameter = self.meta_info.get_missing_parameter()
+        if len(missing_parameter):
+            issues.append(Issue("Missing required meta-information: {}".format(
+                                list(missing_parameter.keys())),
+                                self.fix_missing_parameter))
+
         # folder name equals filename
         # (should be always the last one, because of item saving)
         if not self.filename.is_good_directory_name():
@@ -129,10 +139,15 @@ class ShareStatsItem(object):
             self.question.answer_list.solution_str = solution_str
 
 
+# set global required_parameter after ShareStatsItem are defned
+def _get_required_parameter():
+    rtn = {}
+    for k, flname in templates.FILES.items():
+        rtn[k] = ShareStatsItem(flname).meta_info.parameter
+    return rtn
 
-
-
+templates.REQUIRED_PARAMETER = _get_required_parameter()
 
 #FIXME: if exsolution is updated in meta info and not save, new taxonimie override exsolution chages
 #FIXME exsolution appears in meta info for new item, although not defined
-
+#FIXME changing meta info manually will be ignored

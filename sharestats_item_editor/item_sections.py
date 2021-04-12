@@ -1,6 +1,5 @@
 from collections import OrderedDict
-from . import consts
-
+from . import consts, templates
 
 class ItemSection(object):
 
@@ -190,6 +189,7 @@ class ItemMetaInfo(ItemSection):
         except:
             return ""
 
+
     @property
     def name(self):
        return self._try_parameter("exname")
@@ -246,7 +246,6 @@ class ItemMetaInfo(ItemSection):
     def level(self, v):
         self.parameter["exextra[Level]"] = v
 
-
     @property
     def solution(self):
         return self._try_parameter("exsolution")
@@ -261,4 +260,10 @@ class ItemMetaInfo(ItemSection):
 
         return self.type in consts.EXTYPES.keys()
 
+    def get_missing_parameter(self):
+        try:
+            paramter = templates.REQUIRED_PARAMETER[self.type]
+        except:
+            return {}
 
+        return {k: v for k, v in paramter.items() if k not in self.parameter}
