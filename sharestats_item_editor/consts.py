@@ -1,7 +1,4 @@
-from os  import path as _path
-
 APPNAME = "ShareStats Item Editor"
-_LIB_DIR = _path.dirname(__file__)
 
 UNKNOWN_TYPE = "unknown"
 EXTYPES = {"schoice": "Multiple choice",
@@ -11,17 +8,6 @@ EXTYPES = {"schoice": "Multiple choice",
            "cloze": "Combinations"}
 
 HAVE_ANSWER_LIST = ["schoice", "mchoice", "cloze"]
-
-TEMPLATES = {"schoice":
-                 _path.join(_LIB_DIR, "templates/TemplateMultipleChoice.Rmd"),
-           "mchoice":
-                 _path.join(_LIB_DIR, "templates/TemplateMultipleAnswer.Rmd"),
-           "num":
-                 _path.join(_LIB_DIR, "templates/TemplateBlankNumber.Rmd"),
-           "string":
-                 _path.join(_LIB_DIR, "templates/TemplateBlankTextEssay.Rmd"),
-           "cloze":
-                 _path.join(_LIB_DIR, "templates/TemplateBlankCombination.Rmd")}
 
 TAG_NL = "-nl"
 TAG_ENG = "-en"

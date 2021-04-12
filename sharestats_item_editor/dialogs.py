@@ -1,11 +1,10 @@
 from os import path
 import PySimpleGUI as sg
 
-from . import consts
+from . import consts, templates
 from .taxonomy import Taxonomy
 from .item_sections import ItemMetaInfo
 from .sharestats_item import ShareStatsItem
-from .files import ShareStatsFile
 
 def splitstrip(text, sep):
     return list(map(lambda x: x.strip(), text.split(sep)))
@@ -272,12 +271,12 @@ def new_item(base_directory):
             item1 = ShareStatsItem(path.join(base_directory, fr_make_name.name1,
                                         "{}.Rmd".format(fr_make_name.name1)))
             if template_key is not None:
-                item1.import_file(consts.TEMPLATES[template_key])
+                item1.import_file(templates.FILES[template_key])
         if len(fr_make_name.name2):
             item2 = ShareStatsItem(path.join(base_directory, fr_make_name.name2,
                                         "{}.Rmd".format(fr_make_name.name2)))
             if template_key is not None:
-                item2.import_file(consts.TEMPLATES[template_key])
+                item2.import_file(templates.FILES[template_key])
 
     window.close()
 

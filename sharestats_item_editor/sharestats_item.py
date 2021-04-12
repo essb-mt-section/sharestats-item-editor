@@ -39,11 +39,11 @@ class ShareStatsItem(object):
 
     def import_file(self, text_file):
         """import a text file as content"""
-
         self.header = []
         self.text_array = []
         with open(text_file, "r") as fl:
             self.parse(fl.readlines())
+
 
     def parse(self, source_text):
         """parse file or source text is specified"""

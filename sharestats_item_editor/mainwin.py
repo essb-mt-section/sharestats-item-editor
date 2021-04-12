@@ -388,13 +388,16 @@ class MainWin(object):
         if new_items[0] is not None:
             self.save_items()  # TODO allow canceling new at this point
             # TODO check existing file and overriding
-            self.ss_item_nl, self.ss_item_en = new_items
-            fl_name = self.ss_item_nl.filename.filename
+            fl_name = new_items[0].filename.filename
+            for n in new_items:
+                if n is not None:
+                    n.save()
+
+            self.ss_item_nl = new_items[0]
+            self.ss_item_en = new_items[1]
             if self.ss_item_nl.filename.get_language() == "en":
                 self.ss_item_nl, self.ss_item_en = \
                                     self.ss_item_en, self.ss_item_nl # swap
-            self.unsaved_item = -1 # any to force saving
-            self.save_items(ask=False)  # create folder and file
             self.update_item_gui(en=True)
             self.update_item_gui(en=False)
             self.update_item_list()
