@@ -126,14 +126,25 @@ class MainWin(object):
         self.update_answer_list_button(en)
 
         # validation and file info
-        ig.ml_info_validation(value=item.validate_meta_info())
-        if len(item.filename.directory):
+        if ig.enable:
+            ig.set_issues(item.validate())
+        else:
+            ig.ml_info_validation(value="")
+
+        #files
+        if ig.enable and len(item.filename.directory):
             x = os.listdir(item.filename.directory)
             x.remove(item.filename.filename)
             if len(x):
                 ig.ml_files(value="\n".join(x))
             else:
                 ig.ml_files(value="")
+        else:
+            ig.ml_files(value="")
+
+
+
+
 
     def update_item_list(self, select_item=None):
         if not os.path.isdir(self.base_directory):
@@ -193,11 +204,6 @@ class MainWin(object):
             if event == sg.WINDOW_CLOSE_ATTEMPTED_EVENT or event is None:
                 self.save_items(ask=True)
                 break
-
-            if self.unsaved_item is None and \
-                    (event.startswith("nl_") or event.startswith("en_")):
-                # if change in any text boxes
-                self.unsaved_item = self.idx_selected_item
 
             is_nl_event = event.startswith("nl_")
 
@@ -293,6 +299,27 @@ class MainWin(object):
                     self.ss_item_en.update_solution(solution_str=\
                         AnswerList.extract_solution(self.ig_en.ml_answer.get()))
                 self.update_item_gui(en = not is_nl_event)
+
+            elif event.endswith("btn_fix_meta_issues"):
+                if is_nl_event:
+                    item = self.ss_item_nl
+                else:
+                    item = self.ss_item_en
+
+                needs_gui_reset = False
+                for i in item.validate():
+                    if str(i.fix_fnc).find("fix_directory_name")>=0:
+                        needs_gui_reset = True
+                    i.fix()
+                if needs_gui_reset:
+                    self.resit_gui()
+                else:
+                    self.update_item_gui(en=not is_nl_event)
+
+            if self.unsaved_item is None and \
+                    (event.startswith("nl_") or event.startswith("en_")):
+                # if change in any text boxes
+                self.unsaved_item = self.idx_selected_item
 
         # processing
         win.close()
@@ -441,6 +468,13 @@ class _ItemGUI(object):
                                             size=(15,1),
                     key="{}_btn_update_exsolution".format(key_prefix))
 
+        self.btn_fix_meta_issues = sg.Button("Auto-fix issues",
+                                            enable_events=True,
+                                            button_color=consts.COLOR_RED_BTN,
+                                            size=(15,1),
+                    key="{}_btn_fix_meta_issues".format(key_prefix))
+
+
         self._enable = False
 
     @property
@@ -466,6 +500,7 @@ class _ItemGUI(object):
             self.btn_add_answer_list.update(visible=False)
             self.btn_update_exsolution.update(visible=False)
             self.btn_add_feedback_list.update(visible=False)
+            self.btn_fix_meta_issues.update(visible=False)
 
     def set_enable_answer_list(self, enable):
         if enable:
@@ -488,6 +523,17 @@ class _ItemGUI(object):
             self.btn_add_feedback_list.update(visible=not enable)
 
 
+    def set_issues(self, issues):
+        txt = ""
+        auto_fix = False
+        for i in issues:
+            txt += "* {}\n".format(i.label)
+            if i.fix_fnc is not None:
+                auto_fix = True
+
+        self.ml_info_validation(value=txt)
+        self.btn_fix_meta_issues.update(visible=auto_fix)
+
     def get_frame(self, heading):
         layout_question =[[self.ml_quest],
                         [self.txt_answer_list, self.btn_add_answer_list,
@@ -499,7 +545,8 @@ class _ItemGUI(object):
                         [self.ml_solution_answ_lst]]
 
         layout_meta_info =  [[self.ml_metainfo],
-                        [self.dd_types, self.btn_change_meta]]
+                        [self.dd_types, self.btn_change_meta,
+                         self.btn_fix_meta_issues]]
 
         if TAB_LAYOUT:
             tab_group = sg.TabGroup([[sg.Tab("Question", layout_question,
@@ -525,7 +572,7 @@ class _ItemGUI(object):
                    [sg.Frame("Solution (feedback)", layout_solution,
                              background_color=consts.COLOR_SOLUTION)],
                     [sg.Frame("Meta-Information", layout_meta_info,
-                              background_color=consts.COLOR_MATA_INFO)],
+                              background_color=consts.COLOR_META_INFO)],
                     [sg.Frame("", [[self.ml_info_validation]])]
             ])
 

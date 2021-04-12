@@ -188,7 +188,12 @@ class FileListBilingual(object):
                     lst.append(good_fl_name)
                 else:
                     # search for rmd file
-                    for fl_name in map(lambda x: path.join(fld, x), os.listdir(fld)):
+                    try:
+                        subdir_lst = os.listdir(fld)
+                    except:
+                        subdir_lst=[] # no permission to acces dir
+                    for fl_name in map(lambda x: path.join(fld, x), subdir_lst):
+                        # not permission
                         if fl_name.lower().endswith(suffix.lower()):
                             # best guess
                             lst.append(fl_name)
