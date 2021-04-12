@@ -15,15 +15,13 @@ Oliver Lindemann, Erasmus University Rotterdam, NL
 
 ### Python / Pip
 
-Users familiar with Python are suggested to install `python3`  and use `pip` 
-for installation.
+Users familiar with Python are suggested to install `python3`  and use `pip`.
 
 ```
 python3 -m pip install sharestats-item-editor
 ```
 
 To run ShareStatsItemEditor call
-
 ```
 sharestats-item-editor
 ```
