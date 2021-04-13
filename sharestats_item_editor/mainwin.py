@@ -6,6 +6,7 @@ from .sharestats_item import ShareStatsItem
 from .item_sections import AnswerList
 from .item_gui import ItemGUI
 
+
 class MainWin(object):
 
     def __init__(self):
@@ -60,26 +61,32 @@ class MainWin(object):
     def menu_definition(self):
         rtn = ['&File', ['&New Item', '&Save Item', '---',
                                  'Open &Directory',
-                                 'Recent', [],
+                                 'Recent', settings.recent_dirs[:-1],
                                  '---',
                                  'C&lose']],   [
                        '&About', ['&About']]
         return rtn
 
-
-
     @property
     def base_directory(self):
-        if settings.base_directory is None:
-            settings.base_directory = os.getcwd()
-        return settings.base_directory
+        if len(settings.recent_dirs) == 0:
+            return os.getcwd()
+        return settings.recent_dirs[-1]
 
     @base_directory.setter
     def base_directory(self, v):
-        if v != settings.base_directory:
-            settings.base_directory = v
+        # update recent_dir list
+        if len(settings.recent_dirs)>0 and v == settings.recent_dirs[-1]:
+            return # nothing changes
 
-            self.update_item_list()
+        while True:
+            try:
+                settings.recent_dirs.remove(v)
+            except:
+                break
+        settings.recent_dirs.append(v)
+        settings.recent_dirs = settings.recent_dirs[-1*consts.MAX_RECENT_DIRS:]
+        self.update_item_list()
 
     @property
     def idx_selected_item(self):
@@ -159,48 +166,7 @@ class MainWin(object):
                 self.save_items(ask=True)
                 break
 
-            if event=="it_base_dir":
-                self.save_items(ask=True)
-                self.base_directory = values[event]
-                self.resit_gui()
-
-            elif event== "save" or event=="Save Item":
-                self.save_items(ask=False)
-
-            elif event=="New Item":
-                self.new_item()
-
-            elif event=="rename":
-                n1, n2, fix_dir= dialogs.rename_item(self.lb_items.get()[0])
-                if n1 is not None:
-                    self.save_items(ask=True)
-
-                for new_name, old in zip((n1, n2),
-                                         self.fl_list_bilingual.files[self.idx_selected_item]):
-                    if new_name is not None and old is not None:
-                        new = old.copy()
-                        new.name = new_name
-                        os.rename(old.full_path, new.full_path)
-                        if fix_dir:
-                            new.fix_directory_name()
-                            os.rename(old.directory, new.directory)
-                self.resit_gui()
-
-            elif event in ("lb_files", "btn_next", "btn_previous"):
-                self.save_items(ask=True)
-                if event=="btn_next":
-                    if self.idx_selected_item is None:
-                        self.idx_selected_item = 0
-                    else:
-                        self.idx_selected_item +=1
-                elif event=="btn_previous":
-                    if self.idx_selected_item is None:
-                        self.idx_selected_item = 0
-                    else:
-                        self.idx_selected_item -= 1
-                self.load_selected_item()
-
-            elif event.startswith("nl_") or event.startswith("en_"):
+            if event.startswith("nl_") or event.startswith("en_"):
                 # ItemGUI events
                 is_nl_event = event.startswith("nl_")
                 if is_nl_event:
@@ -249,6 +215,54 @@ class MainWin(object):
                 if self.unsaved_item is None:
                     # if change in any text boxes
                     self.unsaved_item = self.idx_selected_item
+
+            elif event in ("lb_files", "btn_next", "btn_previous"):
+                self.save_items(ask=True)
+                if event=="btn_next":
+                    if self.idx_selected_item is None:
+                        self.idx_selected_item = 0
+                    else:
+                        self.idx_selected_item +=1
+                elif event=="btn_previous":
+                    if self.idx_selected_item is None:
+                        self.idx_selected_item = 0
+                    else:
+                        self.idx_selected_item -= 1
+                self.load_selected_item()
+
+            elif event=="it_base_dir" or event in settings.recent_dirs:
+                self.save_items(ask=True)
+                try:
+                    self.base_directory = values[event]
+                except:
+                    self.base_directory = event # from recent dir submenu
+                self.resit_gui()
+
+            elif event== "save" or event=="Save Item":
+                self.save_items(ask=False)
+
+            elif event=="New Item":
+                self.new_item()
+
+            elif event=="rename":
+                n1, n2, fix_dir= dialogs.rename_item(self.lb_items.get()[0])
+                if n1 is not None:
+                    self.save_items(ask=True)
+
+                for new_name, old in zip((n1, n2),
+                                         self.fl_list_bilingual.files[self.idx_selected_item]):
+                    if new_name is not None and old is not None:
+                        new = old.copy()
+                        new.name = new_name
+                        os.rename(old.full_path, new.full_path)
+                        if fix_dir:
+                            new.fix_directory_name()
+                            os.rename(old.directory, new.directory)
+                self.resit_gui()
+
+
+
+
 
         # processing
         win.close()

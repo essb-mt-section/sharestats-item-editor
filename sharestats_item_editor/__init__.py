@@ -18,4 +18,4 @@ if _sys.version_info[0] != 3 or _sys.version_info[1]<5:
 
 settings = _JSONSettings(appname=consts.APPNAME.replace(" ", "_").lower(),
                          settings_file_name="settings.json",
-                         defaults= {"base_directory": None})
+                         defaults= {"recent_dirs": []})
