@@ -27,12 +27,9 @@ class MainWin(object):
         self.btn_save = sg.Button(button_text="Save", size=(28, 2),
                                   disabled=True, key="save")
 
-        self.it_base_directory = sg.InputText(self.base_directory, size=(60, 1),
-                                            key="it_base_dir",  disabled=True,
-                                            enable_events=True)
-        top_frame = sg.Frame("Directory",
-                             [[self.it_base_directory,
-                              sg.FolderBrowse(initial_folder=self.base_directory)]])
+        self.txt_base_directory = sg.Text(self.base_directory, size=(60, 1))
+        top_frame = sg.Frame("Item Directory",
+                             [[self.txt_base_directory]])
 
         self.it_name = sg.InputText("", size=(30, 1), disabled=False,
                                     key="it_name", enable_events=False)
@@ -59,19 +56,21 @@ class MainWin(object):
         self._unsaved_item = None
 
     def menu_definition(self):
-        rtn = ['&File', ['&New Item', '&Save Item', '---',
+        recent_dirs =  list(reversed(settings.recent_dirs[:-1]))
+
+        return ['&File', ['&New Item', '&Save Item', '---',
                                  'Open &Directory',
-                                 'Recent', settings.recent_dirs[:-1],
+                                 'Recent', recent_dirs,
                                  '---',
                                  'C&lose']],   [
                        '&About', ['&About']]
-        return rtn
 
     @property
     def base_directory(self):
-        if len(settings.recent_dirs) == 0:
-            return os.getcwd()
-        return settings.recent_dirs[-1]
+        try:
+            return settings.recent_dirs[-1]
+        except:
+            return ""
 
     @base_directory.setter
     def base_directory(self, v):
@@ -85,8 +84,8 @@ class MainWin(object):
             except:
                 break
         settings.recent_dirs.append(v)
-        settings.recent_dirs = settings.recent_dirs[-1*consts.MAX_RECENT_DIRS:]
-        self.update_item_list()
+        settings.recent_dirs = settings.recent_dirs[
+                               -1*consts.MAX_RECENT_DIRS:] #limit n elements         self.update_item_list()
 
     @property
     def idx_selected_item(self):
@@ -123,6 +122,9 @@ class MainWin(object):
         else:
             self.it_name.update(value="")
 
+        # dir information
+        self.txt_base_directory.update(value=self.base_directory)
+
     def update_item_list(self, select_item=None):
         if not os.path.isdir(self.base_directory):
             self.base_directory = sg.PopupGetFolder("Please select item directory:",
@@ -153,6 +155,9 @@ class MainWin(object):
         win = sg.Window("{} ({})".format(consts.APPNAME, __version__),
                         self.layout, finalize=True,
                         enable_close_attempted_event=True)
+
+        if len(settings.recent_dirs) == 0: # very first launch
+            self.base_directory = os.getcwd()
 
         self.resit_gui()
         self.idx_selected_item = 0
@@ -230,11 +235,13 @@ class MainWin(object):
                         self.idx_selected_item -= 1
                 self.load_selected_item()
 
-            elif event=="it_base_dir" or event in settings.recent_dirs:
+            elif event=="Open Directory" or event in settings.recent_dirs:
                 self.save_items(ask=True)
-                try:
-                    self.base_directory = values[event]
-                except:
+                if event=="Open Directory":
+                    fld = sg.PopupGetFolder(message="", no_window=True)
+                    if len(fld):
+                        self.base_directory = fld
+                else:
                     self.base_directory = event # from recent dir submenu
                 self.resit_gui()
 
@@ -260,11 +267,6 @@ class MainWin(object):
                             os.rename(old.directory, new.directory)
                 self.resit_gui()
 
-
-
-
-
-        # processing
         win.close()
         settings.save()
 
