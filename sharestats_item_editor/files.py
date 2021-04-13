@@ -3,6 +3,7 @@ from os import path
 from .  import consts
 
 class ShareStatsFile(object):
+    CASE_SENSITIVE_NAMING = False
 
     def __init__(self, file_path):
         if file_path is None:
@@ -57,7 +58,10 @@ class ShareStatsFile(object):
                 return False
 
     def is_good_directory_name(self):
-        return self.name == path.split(self.directory)[1]
+        if ShareStatsFile.CASE_SENSITIVE_NAMING:
+            return self.name == path.split(self.directory)[1]
+        else:
+            return self.name == path.split(self.directory)[1].lower()
 
     def fix_directory_name(self, add_directory_level=False):
         # changes name of sub folder
@@ -72,7 +76,10 @@ class ShareStatsFile(object):
 
     @property
     def name(self):
-        return path.splitext(self.filename)[0]
+        if ShareStatsFile.CASE_SENSITIVE_NAMING:
+            return path.splitext(self.filename)[0]
+        else:
+            return path.splitext(self.filename)[0].lower()
 
     @name.setter
     def name(self, value):
@@ -103,7 +110,10 @@ class ShareStatsFile(object):
         if not isinstance(other, ShareStatsFile):
             return False
         else:
-            return self.full_path == other.full_path
+            if ShareStatsFile.CASE_SENSITIVE_NAMING:
+                return self.full_path == other.full_path
+            else:
+                return self.full_path.lower() == other.full_path.lower()
 
     def __str__(self):
         return str(self.full_path)

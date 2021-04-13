@@ -1,4 +1,4 @@
-from os import listdir
+from os import listdir, path
 import PySimpleGUI as sg
 
 from . import consts
@@ -18,7 +18,7 @@ _EMPTY_ITEM = ShareStatsItem(None)
 
 class ItemGUI(object):
 
-    def __init__(self, key_prefix):
+    def __init__(self, label, key_prefix):
 
         if TAB_LAYOUT:
             len_ml = LEN_ML_LARGE
@@ -26,6 +26,10 @@ class ItemGUI(object):
         else:
             len_ml = LEN_ML_SMALL
             len_answer = LEN_ANSWER_SMALL
+
+        self.label =label
+        self.key_prefix = key_prefix
+        self._ss_item = None
 
         self.ml_quest = sg.Multiline(default_text="",
                                      size=(WIDTH_ML, len_ml), enable_events=True,
@@ -87,7 +91,46 @@ class ItemGUI(object):
                                             size=(15,1),
                     key="{}_btn_fix_meta_issues".format(key_prefix))
 
-        self._ss_item = None
+        # make main frame
+        layout_question =[[self.ml_quest],
+                        [self.txt_answer_list, self.btn_add_answer_list,
+                         self.btn_update_exsolution],
+                        [self.ml_answer]]
+
+        layout_solution = [[self.ml_solution],
+                        [self.txt_solution_answ_lst, self.btn_add_feedback_list],
+                        [self.ml_solution_answ_lst]]
+
+        layout_meta_info =  [[self.ml_metainfo],
+                        [self.dd_types, self.btn_change_meta,
+                         self.btn_fix_meta_issues]]
+
+        if TAB_LAYOUT:
+            tab_group = sg.TabGroup([[sg.Tab("Question", layout_question,
+                                             background_color=consts.COLOR_QUEST,
+                                             key="{}_tab_quest".format(
+                                                 self.key_prefix)),
+                                      sg.Tab("Solution", layout_solution,
+                                             background_color=consts.COLOR_SOLUTION,
+                                             key="{}_tab_sol".format(
+                                                 self.key_prefix))
+                                      ]])
+            self.main_frame = sg.Frame(self.label, [
+                   [tab_group],
+                   [sg.Frame("Meta-Information", layout_meta_info)],
+                   [sg.Frame("Validation", [[self.ml_info_validation]]),
+                    sg.Frame("Files", [[self.ml_files]])]
+            ])
+        else:
+            self.main_frame = sg.Frame(self.label, [
+                   [sg.Frame("Question", layout_question ,
+                             background_color=consts.COLOR_QUEST)],
+                   [sg.Frame("Solution (feedback)", layout_solution,
+                             background_color=consts.COLOR_SOLUTION)],
+                    [sg.Frame("Meta-Information", layout_meta_info,
+                              background_color=consts.COLOR_META_INFO)],
+                    [sg.Frame("", [[self.ml_info_validation]])]
+            ])
 
     @property
     def ss_item(self):
@@ -152,49 +195,6 @@ class ItemGUI(object):
         self.ml_info_validation(value=txt)
         self.btn_fix_meta_issues.update(visible=auto_fix)
 
-    def get_frame(self, heading):
-        layout_question =[[self.ml_quest],
-                        [self.txt_answer_list, self.btn_add_answer_list,
-                         self.btn_update_exsolution],
-                        [self.ml_answer]]
-
-        layout_solution = [[self.ml_solution],
-                        [self.txt_solution_answ_lst, self.btn_add_feedback_list],
-                        [self.ml_solution_answ_lst]]
-
-        layout_meta_info =  [[self.ml_metainfo],
-                        [self.dd_types, self.btn_change_meta,
-                         self.btn_fix_meta_issues]]
-
-        if TAB_LAYOUT:
-            tab_group = sg.TabGroup([[sg.Tab("Question", layout_question,
-                                             background_color=consts.COLOR_QUEST,
-                                             key="tab_quest_{}".format(
-                                                 heading)),
-                                      sg.Tab("Solution", layout_solution,
-                                             background_color=consts.COLOR_SOLUTION,
-                                             key="tab_sol_{}".format(heading))
-                                      ]])
-            return sg.Frame(heading, [
-                   [tab_group],
-                   [sg.Frame("Meta-Information", layout_meta_info)],
-                   [sg.Frame("Validation", [[self.ml_info_validation]]),
-                    sg.Frame("Files", [[self.ml_files]])]
-            ])
-
-
-        else:
-            return sg.Frame(heading, [
-                   [sg.Frame("Question", layout_question ,
-                             background_color=consts.COLOR_QUEST)],
-                   [sg.Frame("Solution (feedback)", layout_solution,
-                             background_color=consts.COLOR_SOLUTION)],
-                    [sg.Frame("Meta-Information", layout_meta_info,
-                              background_color=consts.COLOR_META_INFO)],
-                    [sg.Frame("", [[self.ml_info_validation]])]
-            ])
-
-
     def as_markdown_file(self):
         rtn = _EMPTY_ITEM.question.str_markdown_heading
         rtn += self.ml_quest.get().strip() + "\n\n"
@@ -232,6 +232,12 @@ class ItemGUI(object):
             item = _EMPTY_ITEM
         else:
             item = self.ss_item
+
+        fl_info = path.join(path.split(item.filename.directory)[1],
+                            item.filename.filename)
+        if len(fl_info):
+            fl_info = ":  ..." + path.sep + fl_info
+        self.main_frame.update(value=self.label + fl_info)
 
         self.ml_quest.update(value=item.question.str_text)
         self.ml_solution.update(value=item.solution.str_text)

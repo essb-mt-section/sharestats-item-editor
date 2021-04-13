@@ -1,5 +1,7 @@
 from os import path, rename
 import types
+from collections import OrderedDict
+
 
 from . import consts, templates
 from .item_sections import ItemSection, ItemMetaInfo
@@ -132,12 +134,11 @@ class ShareStatsItem(object):
 
         return issues
 
-
     def update_solution(self, solution_str):
         self.meta_info.solution = solution_str
+        self.meta_info.sort_parameter()
         if self.question.has_answer_list_section():
             self.question.answer_list.solution_str = solution_str
-
 
 # set global required_parameter after ShareStatsItem are defned
 def _get_required_parameter():

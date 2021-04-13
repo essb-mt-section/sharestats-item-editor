@@ -13,8 +13,8 @@ class MainWin(object):
         sg.theme(consts.COLOR_THEME)
 
         # LAYOUT
-        self.ig_nl = ItemGUI("nl")
-        self.ig_en = ItemGUI("en")
+        self.ig_nl = ItemGUI("Dutch", "nl")
+        self.ig_en = ItemGUI("English", "en")
 
         self.lb_items = sg.Listbox(values=[], enable_events=True,
                                    key="lb_files", size=(30, 40))
@@ -28,14 +28,14 @@ class MainWin(object):
                                   disabled=True, key="save")
 
         self.txt_base_directory = sg.Text(self.base_directory, size=(60, 1))
-        top_frame = sg.Frame("Item Directory",
+        fr_base_dir = sg.Frame("Base Directory",
                              [[self.txt_base_directory]])
 
         self.it_name = sg.InputText("", size=(30, 1), disabled=False,
                                     key="it_name", enable_events=False)
-
-        top_frame2 = sg.Frame("Item Name",
-                             [[self.it_name,
+        fr_item_name = sg.Frame("Item",
+                             [[sg.Text("Name:"),
+                              self.it_name,
                               sg.Button(button_text="Rename", size=(10, 1),
                                         key="rename")]])
 
@@ -47,10 +47,10 @@ class MainWin(object):
                             tearoff=False)
         self.layout = [
                   [self.menu],
-                  [top_frame, top_frame2],
+                  [fr_base_dir, fr_item_name],
                   [left_frame,
-                   self.ig_nl.get_frame("Dutch"),
-                   self.ig_en.get_frame("English")]]
+                   self.ig_nl.main_frame,
+                   self.ig_en.main_frame]]
 
         self.fl_list_bilingual = files.FileListBilingual()
         self._unsaved_item = None
@@ -181,6 +181,7 @@ class MainWin(object):
 
                 if event.endswith("dd_types"):
                     ig.ss_item.meta_info.type = values[event]
+                    ig.ss_item.meta_info.sort_parameter()
                     ig.update_gui()
 
                 elif event.endswith("btn_change_meta"):
@@ -189,6 +190,8 @@ class MainWin(object):
                         ig.ss_item.meta_info = new_meta
                         ig.ml_metainfo.update(value=new_meta.str_parameter +
                                                     new_meta.str_text)
+                        ig.ss_item.meta_info.sort_parameter()
+
 
                 elif event.endswith("btn_add_answer_list"):
                     ig.ss_item.question.add_answer_list_section()

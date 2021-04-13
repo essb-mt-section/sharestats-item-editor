@@ -189,6 +189,19 @@ class ItemMetaInfo(ItemSection):
         except:
             return ""
 
+    def sort_parameter(self):
+        # sorting parameter based on Templates (in place)
+        try:
+            req_para = templates.REQUIRED_PARAMETER[self.type].keys()
+        except:
+            return False
+
+        new_para = OrderedDict()
+        for k in req_para:
+            if k in self.parameter:
+                new_para[k] = self.parameter.pop(k)
+        new_para.update(self.parameter)
+        self.parameter = new_para
 
     @property
     def name(self):
@@ -262,8 +275,8 @@ class ItemMetaInfo(ItemSection):
 
     def get_missing_parameter(self):
         try:
-            paramter = templates.REQUIRED_PARAMETER[self.type]
+            parameter = templates.REQUIRED_PARAMETER[self.type]
         except:
             return {}
 
-        return {k: v for k, v in paramter.items() if k not in self.parameter}
+        return {k: v for k, v in parameter.items() if k not in self.parameter}
