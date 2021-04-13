@@ -1,0 +1,63 @@
+import os
+import tempfile
+from . import consts
+
+try:
+    import rpy2.robjects as robjects
+except:
+    robjects = None
+
+def _get_temp_dir(make_dir=True):
+    # creates and returns a temp folder
+
+    tmpdir = tempfile.gettempdir()
+    tmpdir = os.path.join(tmpdir, consts.APPNAME.replace(" ", "_").lower())
+    if make_dir:
+        try:
+            os.mkdir(tmpdir)
+        except:
+            pass
+
+    return tmpdir
+
+
+class RExams(object):
+
+    HTML_FILE_NAME = "html-test"
+
+    def __init__(self):
+        self.html_dir = _get_temp_dir(make_dir=True)
+
+        r_code = '''library(exams)
+        rmd_to_html <- function(filename) {
+                exams2html(filename, quiet=TRUE, ''' + \
+                 'dir="{}",'.format(self.html_dir) + \
+                 'encoding = "utf8", template = "plain8", ' + \
+                 'name="{}"'.format(RExams.HTML_FILE_NAME) + ")}\n"
+
+        if robjects is not None:
+            try:
+                robjects.r(r_code)
+                self.import_error = None
+            except Exception as error:
+                self.import_error = error
+        else:
+            self.import_error = "rpy2 is not installed."
+
+
+    def rmd_to_html(self, file):
+        """:return error text or None, if conversion succeeded"""
+        if self.import_error is not None:
+            return self.import_error
+        r_func = robjects.r['rmd_to_html']
+        try:
+            r_func(file)
+            return None
+        except Exception as error:
+            return error
+
+    def get_html_file(self):
+        return os.path.join(self.html_dir,
+                            RExams.HTML_FILE_NAME + "1.html")
+
+
