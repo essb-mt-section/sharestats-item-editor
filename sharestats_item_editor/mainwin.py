@@ -204,12 +204,14 @@ class MainWin(object):
                     ig.update_answer_list_button()
 
                 elif event.endswith("btn_update_exsolution"):
+                    ig.update_ss_item()
                     ig.ss_item.update_solution(solution_str= \
                             AnswerList.extract_solution(ig.ml_answer.get()))
                     ig.update_gui()
 
                 elif event.endswith("btn_fix_meta_issues"):
                     needs_gui_reset = False
+                    ig.update_ss_item()
                     for i in ig.ss_item.validate():
                         if str(i.fix_fnc).find("fix_directory_name")>=0:
                             needs_gui_reset = True
@@ -303,13 +305,11 @@ class MainWin(object):
 
             if self.ig_nl.ss_item is not None: # TODO can be simplified (move
                 # to itemGUI
-                txt = self.ig_nl.as_markdown_file()
-                self.ig_nl.ss_item.parse(txt)
+                self.ig_nl.update_ss_item()
                 self.ig_nl.ss_item.save()
                 self.ig_nl.update_gui()
             if self.ig_en.ss_item is not None:
-                txt = self.ig_en.as_markdown_file()
-                self.ig_en.ss_item.parse(txt)
+                self.ig_en.update_ss_item()
                 self.ig_en.ss_item.save()
                 self.ig_en.update_gui()
 

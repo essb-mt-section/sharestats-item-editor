@@ -150,6 +150,5 @@ def _get_required_parameter():
 
 templates.REQUIRED_PARAMETER = _get_required_parameter()
 
-#FIXME: if exsolution is updated in meta info and not save, new taxonimie override exsolution chages
 #FIXME exsolution appears in meta info for new item, although not defined
 #FIXME changing meta info manually will be ignored

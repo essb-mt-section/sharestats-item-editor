@@ -225,9 +225,12 @@ class ItemGUI(object):
         self.btn_update_exsolution.update(visible=
                                     self.ss_item.meta_info.solution != solution)
 
+    def update_ss_item(self):
+        # new content from gui to ss_item
+        self.ss_item.parse(self.as_markdown_file())
 
     def update_gui(self):
-
+        # copy ss_items --> GUI elements and set active
         self.enabled_gui= self.ss_item is not None
         if self.ss_item is None:
             item = _EMPTY_ITEM
