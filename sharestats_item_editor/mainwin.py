@@ -179,11 +179,13 @@ class MainWin(object):
                     ig = self.ig_en
 
                 if event.endswith("dd_types"):
+                    ig.update_ss_item()
                     ig.ss_item.meta_info.type = values[event]
                     ig.ss_item.meta_info.sort_parameter()
                     ig.update_gui()
 
                 elif event.endswith("btn_change_meta"):
+                    ig.update_ss_item()
                     new_meta = dialogs.taxonomy(ig.ss_item.meta_info)
                     if new_meta is not None:
                         ig.ss_item.meta_info = new_meta
@@ -340,4 +342,4 @@ class MainWin(object):
             self.ig_nl.update_gui()
             self.update_name()
 
-#FIXME update solution (save, before refresh)
+#TODO update solution (save, before refresh)

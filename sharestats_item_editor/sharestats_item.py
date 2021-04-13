@@ -135,6 +135,10 @@ class ShareStatsItem(object):
         return issues
 
     def update_solution(self, solution_str):
+        if solution_str == self.meta_info.solution:
+            #don't write solution nothing changed (avoid creating of solution
+            # is solution_str is empty and parameter is not yet defined)
+            return
         self.meta_info.solution = solution_str
         self.meta_info.sort_parameter()
         if self.question.has_answer_list_section():
@@ -149,6 +153,3 @@ def _get_required_parameter():
     return rtn
 
 templates.REQUIRED_PARAMETER = _get_required_parameter()
-
-#FIXME exsolution appears in meta info for new item, although not defined
-#FIXME changing meta info manually will be ignored

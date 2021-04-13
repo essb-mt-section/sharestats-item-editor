@@ -183,7 +183,6 @@ class ItemGUI(object):
         if self.is_enabled():
             self.btn_add_feedback_list.update(visible=not enable)
 
-
     def set_issues(self, issues):
         txt = ""
         auto_fix = False
