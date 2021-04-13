@@ -3,7 +3,7 @@ from . import consts, templates
 
 class ItemSection(object):
 
-    def __init__(self, parent, tag, underline_chr, min_underline_length=4):
+    def __init__(self, parent, label, underline_chr, min_underline_length=4):
         from .sharestats_item import ShareStatsItem
         assert(isinstance(parent, (ItemSection, ShareStatsItem)))
 
@@ -11,7 +11,7 @@ class ItemSection(object):
         self._underline_chr = underline_chr
         self._underline_string = underline_chr * min_underline_length
 
-        self.tag = tag
+        self.label = label
         self.text_array = [] # array of text lines ending with \n (like readlines)
         self.line_range = [None, None]
         self.answer_list = None
@@ -27,7 +27,7 @@ class ItemSection(object):
         for cnt, line in enumerate(self._parent.text_array):
             if not is_section:
                 if line.startswith(self._underline_string) and \
-                        prev.strip() == self.tag:
+                        prev.strip() == self.label:
                     is_section = True
                     self.line_range[0] = cnt-1
             else:
@@ -62,8 +62,8 @@ class ItemSection(object):
 
     @property
     def str_markdown_heading(self):
-        return "{}\n{}\n".format(self.tag,
-                                 str(self._underline_chr * len(self.tag)))
+        return "{}\n{}\n".format(self.label,
+                                 str(self._underline_chr * len(self.label)))
 
     @property
     def str_text(self):

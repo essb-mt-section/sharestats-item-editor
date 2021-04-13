@@ -1,29 +1,19 @@
 import os
-from . import __version__, consts, files, settings
+import PySimpleGUI as sg
+
+from . import __version__, consts, files, settings, dialogs
 from .sharestats_item import ShareStatsItem
 from .item_sections import AnswerList
-from .dialogs import sg
-from . import dialogs
-
-WIDTH_ML = 80 # multi line field for text input
-LEN_ML_SMALL = 6
-LEN_ML_LARGE = 18 # tab layout
-LEN_ANSWER_SMALL = 5
-LEN_ANSWER_LARGE = 8
-TAB_LAYOUT = True
-
-_EMPTY_ITEM = ShareStatsItem(None)
-
+from .item_gui import ItemGUI
 
 class MainWin(object):
 
-
     def __init__(self):
-        sg.theme('SystemDefault1')
+        sg.theme(consts.COLOR_THEME)
 
         # LAYOUT
-        self.ig_nl = _ItemGUI("nl")
-        self.ig_en = _ItemGUI("en")
+        self.ig_nl = ItemGUI("nl")
+        self.ig_en = ItemGUI("en")
         self.lb_items = sg.Listbox(values=[], enable_events=True,
                                    key="lb_files", size=(30, 37))
 
@@ -60,8 +50,6 @@ class MainWin(object):
                    self.ig_nl.get_frame("Dutch"),
                    self.ig_en.get_frame("English")]]
 
-        self.ss_item_nl = None
-        self.ss_item_en = None
         self.fl_list_bilingual = files.FileListBilingual()
         self.unsaved_item = None
 
@@ -77,90 +65,6 @@ class MainWin(object):
             settings.base_directory = v
 
             self.update_item_list()
-
-    def update_item_gui(self, en):
-
-        if en:
-            ig = self.ig_en
-            item = self.ss_item_en
-        else:
-            ig = self.ig_nl
-            item = self.ss_item_nl
-
-        ig.enable=item is not None
-        if item is None:
-            item = _EMPTY_ITEM
-        else:
-            names = self.fl_list_bilingual.get_shared_names(bilingual_tag=False)
-            self.it_name.update(value=names[self.idx_selected_item])
-
-
-        ig.ml_quest.update(value=item.question.str_text)
-        ig.ml_solution.update(value=item.solution.str_text)
-
-        ig.ml_metainfo.update(value=item.meta_info.str_parameter +
-                                item.meta_info.str_text)
-
-        if not item.meta_info.check_type():
-            t = consts.UNKNOWN_TYPE
-        else:
-            t = item.meta_info.type
-        ig.dd_types.update(value=t)
-
-        if not item.question.has_answer_list_section():
-            ig.ml_answer.update(value="")
-        else:
-            ig.ml_answer.update(value=
-                        item.question.answer_list.get_str_answers_marked() +
-                        item.question.answer_list.str_text)
-
-
-        if not item.solution.has_answer_list_section():
-            ig.ml_solution_answ_lst.update(value="")
-        else:
-            ig.ml_solution_answ_lst.update(value=
-                        item.solution.answer_list.str_answers +
-                        item.solution.answer_list.str_text)
-        ig.set_enable_answer_list(item.question.has_answer_list_section())
-        ig.set_enable_feedback_list(item.solution.has_answer_list_section())
-        self.update_answer_list_button(en)
-
-        # validation and file info
-        if ig.enable:
-            ig.set_issues(item.validate())
-        else:
-            ig.ml_info_validation(value="")
-
-        #files
-        if ig.enable and len(item.filename.directory):
-            x = os.listdir(item.filename.directory)
-            x.remove(item.filename.filename)
-            if len(x):
-                ig.ml_files(value="\n".join(x))
-            else:
-                ig.ml_files(value="")
-        else:
-            ig.ml_files(value="")
-
-
-
-
-
-    def update_item_list(self, select_item=None):
-        if not os.path.isdir(self.base_directory):
-            self.base_directory = sg.PopupGetFolder("Please select item directory:",
-                title="{} ({})".format(consts.APPNAME, __version__))
-            if not os.path.isdir(self.base_directory):
-                sg.PopupError("No valid item directory selected.")
-                exit()
-
-        self.fl_list_bilingual = files.FileListBilingual(self.base_directory)
-        list_display = self.fl_list_bilingual.get_shared_names()
-        self.lb_items.update(values=list_display)
-        try:
-            self.idx_selected_item = list_display.index(select_item)
-        except:
-            pass
 
     @property
     def idx_selected_item(self):
@@ -180,13 +84,37 @@ class MainWin(object):
             index = n-1
         self.lb_items.update(set_to_index=index)
 
+    def update_name(self):
+        if self.idx_selected_item is not None:
+            #update name
+            names = self.fl_list_bilingual.get_shared_names(bilingual_tag=False)
+            self.it_name.update(value=names[self.idx_selected_item])
+        else:
+            self.it_name.update(value="")
+
+    def update_item_list(self, select_item=None):
+        if not os.path.isdir(self.base_directory):
+            self.base_directory = sg.PopupGetFolder("Please select item directory:",
+                title="{} ({})".format(consts.APPNAME, __version__))
+            if not os.path.isdir(self.base_directory):
+                sg.PopupError("No valid item directory selected.")
+                exit()
+
+        self.fl_list_bilingual = files.FileListBilingual(self.base_directory)
+        list_display = self.fl_list_bilingual.get_shared_names()
+        self.lb_items.update(values=list_display)
+        try:
+            self.idx_selected_item = list_display.index(select_item)
+        except:
+            pass
+
     def resit_gui(self):
         self.update_item_list()
-        self.ss_item_nl = None
-        self.ss_item_en = None
-        self.update_item_gui(en=False)
-        self.update_item_gui(en=True)
-        self.it_name.update(value="")
+        self.ig_nl.ss_item = None
+        self.ig_en.ss_item = None
+        self.ig_en.update_gui()
+        self.ig_nl.update_gui()
+        self.update_name()
         self.unsaved_item = None
 
     def run(self):
@@ -204,8 +132,6 @@ class MainWin(object):
             if event == sg.WINDOW_CLOSE_ATTEMPTED_EVENT or event is None:
                 self.save_items(ask=True)
                 break
-
-            is_nl_event = event.startswith("nl_")
 
             if event=="it_base_dir":
                 self.save_items(ask=True)
@@ -234,15 +160,6 @@ class MainWin(object):
                             os.rename(old.directory, new.directory)
                 self.resit_gui()
 
-            elif event.endswith("dd_types"):
-                if is_nl_event:
-                    self.ss_item_nl.meta_info.type = values[event]
-                    self.update_item_gui(en=False)
-
-                else:
-                    self.ss_item_en.meta_info.type = values[event]
-                    self.update_item_gui(en=True)
-
             elif event in ("lb_files", "btn_next", "btn_previous"):
                 self.save_items(ask=True)
                 if event=="btn_next":
@@ -257,109 +174,80 @@ class MainWin(object):
                         self.idx_selected_item -= 1
                 self.load_selected_item()
 
-            elif event.endswith("btn_change_meta"):
+            elif event.startswith("nl_") or event.startswith("en_"):
+                # ItemGUI events
+                is_nl_event = event.startswith("nl_")
                 if is_nl_event:
-                    item = self.ss_item_nl
                     ig = self.ig_nl
                 else:
-                    item = self.ss_item_en
                     ig = self.ig_en
 
-                if item is not None:
-                    new_meta = dialogs.taxonomy(item.meta_info)
+                if event.endswith("dd_types"):
+                    ig.ss_item.meta_info.type = values[event]
+                    ig.update_gui()
+
+                elif event.endswith("btn_change_meta"):
+                    new_meta = dialogs.taxonomy(ig.ss_item.meta_info)
                     if new_meta is not None:
-                        item.meta_info = new_meta
-                        ig.ml_metainfo.update(value= new_meta.str_parameter +
-                                          new_meta.str_text)
+                        ig.ss_item.meta_info = new_meta
+                        ig.ml_metainfo.update(value=new_meta.str_parameter +
+                                                    new_meta.str_text)
 
-            elif event.endswith("btn_add_answer_list"):
-                if is_nl_event:
-                    self.ss_item_nl.question.add_answer_list_section()
-                    self.update_item_gui(en=False)
-                else:
-                    self.ss_item_en.question.add_answer_list_section()
-                    self.update_item_gui(en=True)
+                elif event.endswith("btn_add_answer_list"):
+                    ig.ss_item.question.add_answer_list_section()
+                    ig.update_gui()
 
-            elif event.endswith("btn_add_feedback_list"):
-                if is_nl_event:
-                    self.ss_item_nl.solution.add_answer_list_section()
-                    self.update_item_gui(en=False)
-                else:
-                    self.ss_item_en.solution.add_answer_list_section()
-                    self.update_item_gui(en=True)
+                elif event.endswith("btn_add_feedback_list"):
+                    ig.ss_item.solution.add_answer_list_section()
+                    ig.update_gui()
 
-            elif event.endswith("_answer"):
-                self.update_answer_list_button(en=not is_nl_event)
+                elif event.endswith("_answer"):
+                    ig.update_answer_list_button()
 
-            elif event.endswith("btn_update_exsolution"):
-                if is_nl_event:
-                    self.ss_item_nl.update_solution(solution_str=\
-                        AnswerList.extract_solution(self.ig_nl.ml_answer.get()))
-                else:
-                    self.ss_item_en.update_solution(solution_str=\
-                        AnswerList.extract_solution(self.ig_en.ml_answer.get()))
-                self.update_item_gui(en = not is_nl_event)
+                elif event.endswith("btn_update_exsolution"):
+                    ig.ss_item.update_solution(solution_str= \
+                            AnswerList.extract_solution(ig.ml_answer.get()))
+                    ig.update_gui()
 
-            elif event.endswith("btn_fix_meta_issues"):
-                if is_nl_event:
-                    item = self.ss_item_nl
-                else:
-                    item = self.ss_item_en
+                elif event.endswith("btn_fix_meta_issues"):
+                    needs_gui_reset = False
+                    for i in ig.ss_item.validate():
+                        if str(i.fix_fnc).find("fix_directory_name")>=0:
+                            needs_gui_reset = True
+                        i.fix()
+                    if needs_gui_reset:
+                        self.resit_gui()
+                    else:
+                        ig.update_gui()
 
-                needs_gui_reset = False
-                for i in item.validate():
-                    if str(i.fix_fnc).find("fix_directory_name")>=0:
-                        needs_gui_reset = True
-                    i.fix()
-                if needs_gui_reset:
-                    self.resit_gui()
-                else:
-                    self.update_item_gui(en=not is_nl_event)
-
-            if self.unsaved_item is None and \
-                    (event.startswith("nl_") or event.startswith("en_")):
-                # if change in any text boxes
-                self.unsaved_item = self.idx_selected_item
+                if self.unsaved_item is None:
+                    # if change in any text boxes
+                    self.unsaved_item = self.idx_selected_item
 
         # processing
         win.close()
         settings.save()
 
-    def update_answer_list_button(self, en):
-        # extract solution and switch visibility
-
-        if en:
-            item = self.ss_item_en
-            ig = self.ig_en
-        else:
-            item = self.ss_item_nl
-            ig = self.ig_nl
-
-        if item is None or not item.question.has_answer_list_section():
-            ig.btn_update_exsolution.update(visible=False)
-            return
-
-        solution = AnswerList.extract_solution(ig.ml_answer.get())
-        ig.btn_update_exsolution.update(visible=
-                                        item.meta_info.solution != solution)
-
     def load_selected_item(self):
         if self.idx_selected_item is None:
             return
 
-        self.ss_item_nl = None
-        self.ss_item_en = None
         fls = self.fl_list_bilingual.files[self.idx_selected_item]
         if fls[0] is not None and fls[0].get_language() == "en":
             fls = (fls[1], fls[0]) # swap
 
         if fls[0] is not None:
-            self.ss_item_nl = ShareStatsItem(fls[0])
+            self.ig_nl.ss_item = ShareStatsItem(fls[0])
+        else:
+            self.ig_nl.ss_item = None
         if fls[1] is not None:
-            self.ss_item_en = ShareStatsItem(fls[1])
+            self.ig_en.ss_item = ShareStatsItem(fls[1])
+        else:
+            self.ig_en.ss_item = None
 
-        self.update_item_gui(en=True)
-        self.update_item_gui(en=False)
+        self.ig_en.update_gui()
+        self.ig_nl.update_gui()
+        self.update_name()
 
     def save_items(self, ask=False):
         if self.unsaved_item is not None:
@@ -370,16 +258,17 @@ class MainWin(object):
                     self.unsaved_item = None
                     return
 
-            if self.ss_item_nl is not None:
+            if self.ig_nl.ss_item is not None: # TODO can be simplified (move
+                # to itemGUI
                 txt = self.ig_nl.as_markdown_file()
-                self.ss_item_nl.parse(txt)
-                self.ss_item_nl.save()
-                self.update_item_gui(en=False)
-            if self.ss_item_en is not None:
+                self.ig_nl.ss_item.parse(txt)
+                self.ig_nl.ss_item.save()
+                self.ig_nl.update_gui()
+            if self.ig_en.ss_item is not None:
                 txt = self.ig_en.as_markdown_file()
-                self.ss_item_en.parse(txt)
-                self.ss_item_en.save()
-                self.update_item_gui(en=True)
+                self.ig_en.ss_item.parse(txt)
+                self.ig_en.ss_item.save()
+                self.ig_en.update_gui()
 
             self.unsaved_item = None
 
@@ -393,211 +282,19 @@ class MainWin(object):
                 if n is not None:
                     n.save()
 
-            self.ss_item_nl = new_items[0]
-            self.ss_item_en = new_items[1]
-            if self.ss_item_nl.filename.get_language() == "en":
-                self.ss_item_nl, self.ss_item_en = \
-                                    self.ss_item_en, self.ss_item_nl # swap
-            self.update_item_gui(en=True)
-            self.update_item_gui(en=False)
+            self.ig_nl.ss_item = new_items[0]
+            self.ig_en.ss_item = new_items[1]
+            if self.ig_nl.ss_item.filename.get_language() == "en":
+                self.ig_nl.ss_item, self.ig_en.ss_item = \
+                                    self.ig_en.ss_item, self.ig_nl.ss_item # swap
             self.update_item_list()
 
             idx = self.fl_list_bilingual.find_filename(fl_name)
             if idx is not None:
                 self.idx_selected_item = idx
 
+            self.ig_en.update_gui()
+            self.ig_nl.update_gui()
+            self.update_name()
 
-class _ItemGUI(object):
-
-    def __init__(self, key_prefix):
-
-        if TAB_LAYOUT:
-            len_ml = LEN_ML_LARGE
-            len_answer = LEN_ANSWER_LARGE
-        else:
-            len_ml = LEN_ML_SMALL
-            len_answer = LEN_ANSWER_SMALL
-
-        self.ml_quest = sg.Multiline(default_text="",
-                                     size=(WIDTH_ML, len_ml), enable_events=True,
-                                     key="{}_quest".format(key_prefix))
-        self.ml_answer = sg.Multiline(default_text="", enable_events=True,
-                                      size=(WIDTH_ML, len_answer),
-                                      key="{}_answer".format(key_prefix))
-
-        self.txt_answer_list = sg.Text("Answer list", size=(10, 1),
-                                       background_color=consts.COLOR_QUEST)
-
-        self.ml_solution = sg.Multiline(default_text="", enable_events=True,
-                                        size=(WIDTH_ML, len_ml),
-                                        key="{}_solution".format(key_prefix))
-        self.ml_solution_answ_lst = sg.Multiline(default_text="", enable_events=True,
-                                                 size=(WIDTH_ML, len_answer),
-                                                 key="{}_solution_feedback".format(key_prefix))
-        self.txt_solution_answ_lst = sg.Text("Answer list", size=(10, 1),
-                                             background_color=consts.COLOR_SOLUTION)
-
-        self.ml_metainfo = sg.Multiline(default_text="",
-                                        size=(WIDTH_ML, 10),  enable_events=True,
-                                        key="{}_meta".format(key_prefix))
-
-        self.btn_change_meta = sg.Button("Edit Meta Information",  enable_events=True,
-                                         key="{}_btn_change_meta".format(key_prefix))
-
-        self.ml_info_validation =sg.Multiline(default_text="",
-                                              size=(WIDTH_ML-26, 4),
-                                              background_color="#DADADA",
-                                              disabled=True)
-
-        self.ml_files = sg.Multiline(default_text="",
-                                     size=(20, 4),
-                                     background_color="#DADADA",
-                                     disabled=True)
-
-        self.dd_types = sg.DropDown(values=[consts.UNKNOWN_TYPE] +
-                                           list(consts.EXTYPES.keys()),
-                                    size=(10,1),  enable_events=True,
-                                    key="{}_dd_types".format(key_prefix))
-
-        self.btn_add_answer_list = sg.Button("+", enable_events=True,
-                                             size=(2, 1),
-                      key="{}_btn_add_answer_list".format(key_prefix))
-        self.btn_add_feedback_list = sg.Button("+", enable_events=True,
-                                            size=(2,1),
-                    key="{}_btn_add_feedback_list".format(key_prefix))
-
-        self.btn_update_exsolution = sg.Button("update 'exsolution'",
-                                            enable_events=True,
-                                            size=(15,1),
-                    key="{}_btn_update_exsolution".format(key_prefix))
-
-        self.btn_fix_meta_issues = sg.Button("Auto-fix issues",
-                                            enable_events=True,
-                                            button_color=consts.COLOR_RED_BTN,
-                                            size=(15,1),
-                    key="{}_btn_fix_meta_issues".format(key_prefix))
-
-
-        self._enable = False
-
-    @property
-    def enable(self):
-        return self._enable
-
-    @enable.setter
-    def enable(self, value):
-        self._enable = value
-        if value:
-            col =  consts.COLOR_BKG_ACTIVE
-        else:
-            col = consts.COLOR_BKG_INACTIVE
-        self.ml_quest.update(disabled=not value, background_color=col)
-        self.ml_answer.update(disabled=not value, background_color=col)
-        self.ml_solution.update(disabled=not value, background_color=col)
-        self.ml_solution_answ_lst.update(disabled=not value,
-                                         background_color=col)
-        self.ml_metainfo.update(disabled=not value, background_color=col)
-        self.dd_types.update(disabled=not value)
-        self.btn_change_meta.update(disabled=not value)
-        if not value:
-            self.btn_add_answer_list.update(visible=False)
-            self.btn_update_exsolution.update(visible=False)
-            self.btn_add_feedback_list.update(visible=False)
-            self.btn_fix_meta_issues.update(visible=False)
-
-    def set_enable_answer_list(self, enable):
-        if enable:
-            col =  consts.COLOR_BKG_ACTIVE
-        else:
-            col = consts.COLOR_BKG_INACTIVE
-        self.ml_answer.update(disabled=not enable, background_color=col)
-
-        if self._enable:
-            self.btn_add_answer_list.update(visible=not enable)
-
-    def set_enable_feedback_list(self, enable):
-        if enable:
-            col =  consts.COLOR_BKG_ACTIVE
-        else:
-            col = consts.COLOR_BKG_INACTIVE
-        self.ml_solution_answ_lst.update(disabled=not enable,
-                                         background_color=col)
-        if self._enable:
-            self.btn_add_feedback_list.update(visible=not enable)
-
-
-    def set_issues(self, issues):
-        txt = ""
-        auto_fix = False
-        for i in issues:
-            txt += "* {}\n".format(i.label)
-            if i.fix_fnc is not None:
-                auto_fix = True
-
-        self.ml_info_validation(value=txt)
-        self.btn_fix_meta_issues.update(visible=auto_fix)
-
-    def get_frame(self, heading):
-        layout_question =[[self.ml_quest],
-                        [self.txt_answer_list, self.btn_add_answer_list,
-                         self.btn_update_exsolution],
-                        [self.ml_answer]]
-
-        layout_solution = [[self.ml_solution],
-                        [self.txt_solution_answ_lst, self.btn_add_feedback_list],
-                        [self.ml_solution_answ_lst]]
-
-        layout_meta_info =  [[self.ml_metainfo],
-                        [self.dd_types, self.btn_change_meta,
-                         self.btn_fix_meta_issues]]
-
-        if TAB_LAYOUT:
-            tab_group = sg.TabGroup([[sg.Tab("Question", layout_question,
-                                             background_color=consts.COLOR_QUEST,
-                                             key="tab_quest_{}".format(
-                                                 heading)),
-                                      sg.Tab("Solution", layout_solution,
-                                             background_color=consts.COLOR_SOLUTION,
-                                             key="tab_sol_{}".format(heading))
-                                      ]])
-            return sg.Frame(heading, [
-                   [tab_group],
-                   [sg.Frame("Meta-Information", layout_meta_info)],
-                   [sg.Frame("Validation", [[self.ml_info_validation]]),
-                    sg.Frame("Files", [[self.ml_files]])]
-            ])
-
-
-        else:
-            return sg.Frame(heading, [
-                   [sg.Frame("Question", layout_question ,
-                             background_color=consts.COLOR_QUEST)],
-                   [sg.Frame("Solution (feedback)", layout_solution,
-                             background_color=consts.COLOR_SOLUTION)],
-                    [sg.Frame("Meta-Information", layout_meta_info,
-                              background_color=consts.COLOR_META_INFO)],
-                    [sg.Frame("", [[self.ml_info_validation]])]
-            ])
-
-
-    def as_markdown_file(self):
-        rtn = _EMPTY_ITEM.question.str_markdown_heading
-        rtn += self.ml_quest.get().strip() + "\n\n"
-
-        if len(self.ml_answer.get().strip())>0:
-            rtn += AnswerList(_EMPTY_ITEM).str_markdown_heading
-            rtn += self.ml_answer.get().strip() + "\n\n"
-
-        rtn += _EMPTY_ITEM.solution.str_markdown_heading
-        rtn += self.ml_solution.get().strip() + "\n\n"
-        if len(self.ml_solution_answ_lst.get().strip())>0:
-            rtn += AnswerList(_EMPTY_ITEM).str_markdown_heading
-            rtn += self.ml_solution_answ_lst.get().strip() + "\n\n"
-
-        rtn += _EMPTY_ITEM.meta_info.str_markdown_heading
-        rtn += self.ml_metainfo.get().strip() + "\n"
-        return rtn
-
-
-
-
+#FIXME update solution (save, before refresh)

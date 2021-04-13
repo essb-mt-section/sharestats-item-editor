@@ -21,21 +21,20 @@ def taxonomy(meta_info):
 
     # LAYOUT
     layout = []
-    sg.theme('SystemDefault1')
-    list_bg = '#E0E0D0'
+    sg.theme(consts.COLOR_THEME)
 
     # taxomony
     list_box = [sg.Listbox(values=[], size=(22, 10), key="L1",
-                           background_color=list_bg,
+                           background_color=consts.COLOR_BKG_TAX_LIST,
                            enable_events=True),
                 sg.Listbox(values=[], size=(22, 10), key="L2",
-                           background_color=list_bg,
+                           background_color=consts.COLOR_BKG_TAX_LIST,
                            enable_events=True),
                 sg.Listbox(values=[], size=(22, 10), key="L3",
-                           background_color=list_bg,
+                           background_color=consts.COLOR_BKG_TAX_LIST,
                            enable_events=True),
                 sg.Listbox(values=[], size=(22, 10), key="L4",
-                           background_color=list_bg,
+                           background_color=consts.COLOR_BKG_TAX_LIST,
                            enable_events=True)]
 
     ml_result_tax = sg.Multiline(default_text=default_taxonomy, size=(80, 6),
@@ -55,7 +54,7 @@ def taxonomy(meta_info):
                             key="result_types")
     fr_types = sg.Frame("Types", [
         [sg.Listbox(values=tax.get_tags_type(), size=(26, 10),
-                    background_color=list_bg, key="L_types"),
+                    background_color=consts.COLOR_BKG_TAX_LIST, key="L_types"),
          sg.Button(">>", size=(2, 2), key="add_types"),
          ml_types]
     ])
@@ -234,7 +233,7 @@ class _FrameMakeSSName(object):
 
 
 def new_item(base_directory):
-    sg.theme('SystemDefault1')
+    sg.theme(consts.COLOR_THEME)
 
     lb_type = sg.Listbox(values=["None"] + list(consts.EXTYPES.values()),
                             default_values=["None"],
@@ -283,7 +282,7 @@ def new_item(base_directory):
     return item1, item2
 
 def rename_item(item_name):
-    sg.theme('SystemDefault1')
+    sg.theme(consts.COLOR_THEME)
 
     fr_make_name = _FrameMakeSSName(item_name)
     fix_dir = sg.Checkbox(text="Adapt directory name", default=True)
@@ -312,7 +311,7 @@ def rename_item(item_name):
 
 
 def ask_save(item_name):
-    sg.theme('SystemDefault1')
+    sg.theme(consts.COLOR_THEME)
 
     layout = [[sg.Text("Unsave changes in '{}'".format(item_name))]]
     layout.append([sg.Save("Save item", key="save"),
