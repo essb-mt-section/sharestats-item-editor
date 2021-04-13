@@ -2,7 +2,6 @@ from os import path, rename
 import types
 from copy import copy
 
-
 from . import consts, templates
 from .item_sections import ItemSection, ItemMetaInfo
 from .files import ShareStatsFile
@@ -135,7 +134,7 @@ class ShareStatsItem(object):
         return issues
 
     def update_solution(self, solution_str):
-        if solution_str == self.meta_info.solution:
+        if len(solution_str) == 0 and len(self.meta_info.solution)==0:
             #don't write solution nothing changed (avoid creating of solution
             # is solution_str is empty and parameter is not yet defined)
             return

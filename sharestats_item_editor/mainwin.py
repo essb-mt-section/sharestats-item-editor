@@ -61,8 +61,8 @@ class MainWin(object):
                                  'Open &Directory',
                                  'Recent', recent_dirs,
                                  '---',
-                                 'C&lose']],   [
-                       '&About', ['&About']]
+                                 'C&lose']], \
+               ["&View", ["&Raw files", "---", '&About']]
 
     @property
     def base_directory(self):
@@ -273,6 +273,14 @@ class MainWin(object):
                             os.rename(old.directory, new.directory)
                 self.resit_gui()
 
+            elif event=="Raw files":
+                self.save_items(ask=True)
+                try:
+                    files = self.fl_list_bilingual.files[self.idx_selected_item]
+                except:
+                    continue
+                dialogs.show_text_file(files[0], files[1])
+
         win.close()
         settings.save()
 
@@ -342,4 +350,3 @@ class MainWin(object):
             self.ig_nl.update_gui()
             self.update_name()
 
-#TODO update solution (save, before refresh)

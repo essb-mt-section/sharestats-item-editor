@@ -5,6 +5,7 @@ from . import consts, templates
 from .taxonomy import Taxonomy
 from .item_sections import ItemMetaInfo
 from .sharestats_item import ShareStatsItem
+from .files import ShareStatsFile
 
 def splitstrip(text, sep):
     return list(map(lambda x: x.strip(), text.split(sep)))
@@ -325,3 +326,40 @@ def ask_save(item_name):
     window.close()
 
     return event == "save"
+
+def show_text_file(file, file2=None):
+    sg.theme(consts.COLOR_THEME)
+    win_titel = "View Files"
+    content = [None, None]
+    files = []
+    for i, fl in enumerate((file, file2)):
+        if isinstance(fl, ShareStatsFile):
+            win_titel = "View Files: {}".format(fl.name)
+            fl = fl.full_path
+        try:
+            with open(fl, "r") as fl_hdl:
+                content[i] = fl_hdl.readlines()
+            files.append(fl)
+        except:
+            pass
+
+    if len(files)==0:
+        return
+
+    tabs = []
+    for c, f in zip(content, files):
+        if c is not None:
+            tabs.append(sg.Tab("{}".format(path.split(f)[1]),
+                    [[sg.Text("File: {}".format(f))],
+                    [sg.Multiline(default_text="".join(c),
+                        disabled=True, size=(80, 40))]]))
+
+    layout = [[sg.TabGroup([tabs])],
+              [sg.CloseButton("Close")]]
+    window = sg.Window(win_titel, layout, finalize=True)
+    window.refresh()
+    while True:
+        window.refresh()
+        event, v = window.read()
+        break
+    window.close()
