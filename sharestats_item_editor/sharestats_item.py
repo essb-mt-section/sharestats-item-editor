@@ -1,6 +1,6 @@
 from os import path, rename
 import types
-from collections import OrderedDict
+from copy import copy
 
 
 from . import consts, templates
@@ -23,6 +23,7 @@ class Issue(object):
         else:
             return False
 
+
 class ShareStatsItem(object):
 
     def __init__(self, filename=None):
@@ -33,7 +34,7 @@ class ShareStatsItem(object):
         self.question = ItemSection(self, "Question", "=")
         self.solution = ItemSection(self, "Solution", "=")
         self.meta_info = ItemMetaInfo(self)
-        self.header = [] # FIXME never used! HEADER WILL BE LOST
+        self.header = []
         self.text_array = []
 
         if path.isfile(self.filename.full_path):
@@ -45,7 +46,6 @@ class ShareStatsItem(object):
         self.text_array = []
         with open(text_file, "r") as fl:
             self.parse(fl.readlines())
-
 
     def parse(self, source_text):
         """parse file or source text is specified"""
@@ -59,9 +59,9 @@ class ShareStatsItem(object):
         self.solution.parse()
         self.meta_info.parse()
 
+        self.header = copy(self.text_array[:self.question.line_range[0]])
         # override answer_list correctness with meta info solution
         self.update_solution(self.meta_info.solution)
-
 
     def requires_answer_list(self):
         return self.meta_info.type in consts.HAVE_ANSWER_LIST
@@ -75,7 +75,7 @@ class ShareStatsItem(object):
     def save(self):
         if len(self.filename.full_path):
             self.filename.make_dirs()
-            #print("Save {}".format(self.filename.path))
+            #print("Save {}".format(self.filename.full_path))
             with open(self.filename.full_path, "w") as fl:
                 fl.write(str(self))
 
@@ -139,6 +139,7 @@ class ShareStatsItem(object):
         self.meta_info.sort_parameter()
         if self.question.has_answer_list_section():
             self.question.answer_list.solution_str = solution_str
+
 
 # set global required_parameter after ShareStatsItem are defned
 def _get_required_parameter():

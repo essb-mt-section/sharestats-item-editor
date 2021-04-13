@@ -6,7 +6,6 @@ from .sharestats_item import ShareStatsItem
 from .item_sections import AnswerList
 from .item_gui import ItemGUI
 
-
 class MainWin(object):
 
     def __init__(self):
@@ -296,7 +295,6 @@ class MainWin(object):
 
     def save_items(self, ask=False):
         if self.unsaved_item is not None:
-
             if ask:
                 item_name = self.lb_items.get_list_values()[self.unsaved_item]
                 if not dialogs.ask_save(item_name):

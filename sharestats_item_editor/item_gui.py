@@ -196,7 +196,8 @@ class ItemGUI(object):
         self.btn_fix_meta_issues.update(visible=auto_fix)
 
     def as_markdown_file(self):
-        rtn = _EMPTY_ITEM.question.str_markdown_heading
+        rtn = "".join(self.ss_item.header)
+        rtn += _EMPTY_ITEM.question.str_markdown_heading
         rtn += self.ml_quest.get().strip() + "\n\n"
 
         if len(self.ml_answer.get().strip())>0:

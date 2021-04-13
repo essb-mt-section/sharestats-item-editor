@@ -65,7 +65,7 @@ if __name__ == '__main__':
         install_requires=install_requires,
         entry_points=entry_points,
         extras_require=extras_require,
-        keywords = "", #ToDo
+        keywords = "",
         classifiers=[
             "Intended Audience :: Education",
             "Intended Audience :: Science/Research",

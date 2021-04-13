@@ -78,7 +78,6 @@ class ItemSection(object):
             return rtn
 
 
-
 class AnswerList(ItemSection):
 
     TAG_CORRECT = "# "
@@ -93,7 +92,7 @@ class AnswerList(ItemSection):
         super().parse()
         self.answers = []
         self._correct = []
-        additional_content = []
+        unparsed_content = []
         while len(self.text_array)>0:
             answer = self.text_array.pop(0)
             if answer.strip().startswith(AnswerList.TAG_ITEM):
@@ -103,9 +102,9 @@ class AnswerList(ItemSection):
                 self.answers.append(answer[2:].strip())
                 self._correct.append(True)
             else:
-                additional_content.append(answer)
+                unparsed_content.append(answer)
 
-        self.text_array = additional_content # TODO What do with that content?
+        self.text_array = unparsed_content
 
     @staticmethod
     def extract_solution(markdown):
@@ -151,6 +150,7 @@ class AnswerList(ItemSection):
         rtn =  self.str_markdown_heading + self.str_answers + self.str_text
         return rtn.strip()
 
+
 class ItemMetaInfo(ItemSection):
 
     def __init__(self, parent):
@@ -158,7 +158,6 @@ class ItemMetaInfo(ItemSection):
         from .sharestats_item import ShareStatsItem
         assert(isinstance(self._parent, ShareStatsItem))
         self.parameter = OrderedDict()
-
 
     def parse(self):
         super().parse()
