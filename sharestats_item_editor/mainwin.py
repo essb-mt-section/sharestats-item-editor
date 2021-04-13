@@ -14,18 +14,17 @@ class MainWin(object):
         # LAYOUT
         self.ig_nl = ItemGUI("nl")
         self.ig_en = ItemGUI("en")
+
         self.lb_items = sg.Listbox(values=[], enable_events=True,
-                                   key="lb_files", size=(30, 37))
+                                   key="lb_files", size=(30, 40))
 
         fr_items = sg.Frame("Item list", [
             [self.lb_items],
             [sg.Button(button_text="<<", size=(11, 1), key="btn_previous"),
              sg.Button(button_text=">>", size=(11, 1), key="btn_next")]])
 
-        fr_btns =sg.Frame("", [
-            [sg.Button(button_text="New", size=(28, 2), key="new")],
-            [sg.Button(button_text="Save", size=(28, 2), key="save")],
-            [sg.CloseButton(button_text="Close", size=(28, 2))]])
+        self.btn_save = sg.Button(button_text="Save", size=(28, 2),
+                                  disabled=True, key="save")
 
         self.it_base_directory = sg.InputText(self.base_directory, size=(60, 1),
                                             key="it_base_dir",  disabled=True,
@@ -42,16 +41,32 @@ class MainWin(object):
                               sg.Button(button_text="Rename", size=(10, 1),
                                         key="rename")]])
 
+        fr_btns =sg.Frame("", [[self.btn_save]])
         left_frame = sg.Frame("", [[fr_items], [fr_btns]],
                               border_width=0)
 
-        self.layout = [[top_frame, top_frame2],
+        self.menu = sg.Menu(menu_definition=self.menu_definition(),
+                            tearoff=False)
+        self.layout = [
+                  [self.menu],
+                  [top_frame, top_frame2],
                   [left_frame,
                    self.ig_nl.get_frame("Dutch"),
                    self.ig_en.get_frame("English")]]
 
         self.fl_list_bilingual = files.FileListBilingual()
-        self.unsaved_item = None
+        self._unsaved_item = None
+
+    def menu_definition(self):
+        rtn = ['&File', ['&New Item', '&Save Item', '---',
+                                 'Open &Directory',
+                                 'Recent', [],
+                                 '---',
+                                 'C&lose']],   [
+                       '&About', ['&About']]
+        return rtn
+
+
 
     @property
     def base_directory(self):
@@ -84,6 +99,15 @@ class MainWin(object):
             index = n-1
         self.lb_items.update(set_to_index=index)
 
+    @property
+    def unsaved_item(self):
+        return self._unsaved_item
+
+    @unsaved_item.setter
+    def unsaved_item(self, v):
+        self._unsaved_item = v
+        self.btn_save.update(disabled=v is None)
+
     def update_name(self):
         if self.idx_selected_item is not None:
             #update name
@@ -109,6 +133,7 @@ class MainWin(object):
             pass
 
     def resit_gui(self):
+        self.menu.update(menu_definition=self.menu_definition())
         self.update_item_list()
         self.ig_nl.ss_item = None
         self.ig_en.ss_item = None
@@ -129,7 +154,8 @@ class MainWin(object):
         while True:
             win.refresh()
             event, values = win.read()
-            if event == sg.WINDOW_CLOSE_ATTEMPTED_EVENT or event is None:
+            if event == sg.WINDOW_CLOSE_ATTEMPTED_EVENT or \
+                    event =="Close" or event is None:
                 self.save_items(ask=True)
                 break
 
@@ -138,10 +164,10 @@ class MainWin(object):
                 self.base_directory = values[event]
                 self.resit_gui()
 
-            elif event== "save":
+            elif event== "save" or event=="Save Item":
                 self.save_items(ask=False)
 
-            elif event=="new":
+            elif event=="New Item":
                 self.new_item()
 
             elif event=="rename":

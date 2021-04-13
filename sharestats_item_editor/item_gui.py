@@ -8,7 +8,7 @@ from .item_sections import AnswerList
 
 WIDTH_ML = 80 # multi line field for text input
 LEN_ML_SMALL = 6
-LEN_ML_LARGE = 18 # tab layout
+LEN_ML_LARGE = 15 # tab layout
 LEN_ANSWER_SMALL = 5
 LEN_ANSWER_LARGE = 8
 TAB_LAYOUT = True
