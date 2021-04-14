@@ -1,7 +1,7 @@
 import os
 import PySimpleGUI as sg
 
-from . import __version__, DEVELOPER_VERSION,\
+from . import __version__, \
                 consts, files, settings, dialogs
 from .sharestats_item import ShareStatsItem
 from .item_sections import AnswerList
@@ -63,7 +63,7 @@ class MainWin(object):
         view = ["&Raw files", "---", '&About']
         menu = [['&File', file], ["&View", view]]
 
-        if  DEVELOPER_VERSION and RPY2INSTALLED:
+        if  RPY2INSTALLED:
             d_inactive, e_inactive = "", ""
             if not self.ig_nl.is_enabled():
                 d_inactive="!"

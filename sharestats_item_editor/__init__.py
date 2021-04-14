@@ -1,10 +1,10 @@
 """
 """
 
-__version__ = '0.1.7'
+__version__ = '0.1.8'
 __author__ = 'Oliver Lindemann'
 
-DEVELOPER_VERSION = True # include preliminary features
+DEVELOPER_VERSION = False # include preliminary features
 
 
 import sys as _sys

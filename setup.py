@@ -12,7 +12,8 @@ package_name = "sharestats_item_editor"
 application_name = "sharestats-item-editor"
 
 install_requires = ["appdirs>=1.4",
-                    "pysimplegui>=4.33"]
+                    "pysimplegui>=4.33",
+                    "rpy2>=3.4.3"]
 
 extras_require = {
 }
