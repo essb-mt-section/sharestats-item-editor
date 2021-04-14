@@ -1,7 +1,7 @@
 from os import path
 import PySimpleGUI as sg
 
-from . import consts, templates
+from . import consts, templates, __version__, __author__, PYTHON_VERSION
 from .taxonomy import Taxonomy
 from .item_sections import ItemMetaInfo
 from .sharestats_item import ShareStatsItem
@@ -378,3 +378,45 @@ def render(file):
         r.open_html(new=0)
     else:
         sg.Print(error)
+
+def about():
+    sg.theme("DarkBlack")
+    width = 40
+
+    layout = [[sg.Text(consts.APPNAME, size=(width , 1), font='bold',
+                       justification='center')],
+              [sg.Text("Version {}".format(__version__), font='bold',
+                       size=(width , 1),
+                       justification='center')],
+              [sg.Text(" " * 22), sg.Image(path.join(path.dirname(__file__),
+                                                     "essb.png"))],
+              [sg.Text("")] ]
+
+
+    info = ["(c) {}".format(__author__),
+            "", "Python: {}".format(PYTHON_VERSION),
+            "R support: {}".format(yesno(r_exams.RPY2INSTALLED)),
+            "", "website: https://github.com/essb-mt-section/sharestats-item" \
+                                        "-editor"]
+
+    layout.append([sg.Multiline(default_text="\n".join(info),
+                                size=(55, len(info)),
+                                border_width=0,
+                                background_color='black',
+                                auto_size_text=True,
+                                no_scrollbar=True,
+                                text_color='white')])
+
+    window = sg.Window("About", layout, finalize=True)
+    window.refresh()
+    while True:
+        window.refresh()
+        event, v = window.read()
+        break
+    window.close()
+
+def yesno(bool):
+    if bool:
+        return "Yes"
+    else:
+        return "No"

@@ -1,7 +1,7 @@
 """
 """
 
-__version__ = '0.1.9'
+__version__ = '0.1.9-2'
 __author__ = 'Oliver Lindemann'
 
 DEVELOPER_VERSION = False # include preliminary features
@@ -10,6 +10,10 @@ DEVELOPER_VERSION = False # include preliminary features
 import sys as _sys
 from . import consts
 from .json_settings import JSONSettings as _JSONSettings
+
+PYTHON_VERSION = "{0}.{1}.{2}".format(_sys.version_info[0],
+                                      _sys.version_info[1],
+                                      _sys.version_info[2])
 
 if _sys.version_info[0] != 3 or _sys.version_info[1]<5:
 

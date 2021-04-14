@@ -69,8 +69,9 @@ class MainWin(object):
                 d_inactive="!"
             if not self.ig_en.is_enabled():
                 e_inactive = "!"
-            menu.append(["&Render", ["{}&Dutch Version::render".format(d_inactive),
-                                "{}&English Version::render".format(e_inactive)]])
+            rmenu = ["&Render", ["{}&Dutch Version::render".format(d_inactive),
+                            "{}&English Version::render".format(e_inactive)]]
+            menu = menu[0], rmenu, menu[1]
 
         return menu
 
@@ -267,6 +268,9 @@ class MainWin(object):
             elif event=="New Item":
                 self.new_item()
 
+            elif event=="About":
+                dialogs.about()
+
             elif event=="rename":
                 n1, n2, fix_dir= dialogs.rename_item(self.lb_items.get()[0])
                 if n1 is not None:
@@ -303,6 +307,7 @@ class MainWin(object):
                 if fl is not None:
                     self.save_items(ask=True)
                     dialogs.render(files[0])
+
 
 
         win.close()
