@@ -60,7 +60,8 @@ class MainWin(object):
         self._unsaved_item = None
 
     def menu_definition(self):
-        file = ['&New Item', '&Save Item', '---', 'Open &Directory',
+        file = ['&New Item', '&Rename Item',  '---', '&Save Item', '---',
+                'Open &Directory',
                 'Recent', list(reversed(settings.recent_dirs[:-1])),
                 '---', 'C&lose']
         view = ["&Raw files", "---", '&About']
@@ -183,7 +184,7 @@ class MainWin(object):
                     event =="Close" or event is None:
                 self.save_items(ask=True)
                 break
-            print(event)
+
             if event.startswith("nl_") or event.startswith("en_"):
                 # ItemGUI events
                 is_nl_event = event.startswith("nl_")
@@ -274,7 +275,7 @@ class MainWin(object):
             elif event=="About":
                 dialogs.about()
 
-            elif event=="rename":
+            elif event=="rename" or event=="Rename Item":
                 n1, n2, fix_dir= dialogs.rename_item(self.lb_items.get()[0])
                 if n1 is not None:
                     self.save_items(ask=True)

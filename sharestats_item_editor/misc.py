@@ -39,3 +39,18 @@ def get_temp_dir(appname, make_dir=True):
 
     return tmpdir
 
+def remove_all(str_list, element, ignore_cases=False):
+    """removes all occurrences of element from string list and ignores
+    optionally letter cases"""
+
+    if ignore_cases:
+        new_list = [e for e in str_list if e.lower() != element.lower()]
+    else:
+        new_list = [e for e in str_list if e != element]
+
+    if len(str_list) == len(new_list): # no items anymore
+        return new_list
+    else:
+        return remove_all(new_list, element, ignore_cases)
+
+

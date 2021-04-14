@@ -1,6 +1,7 @@
 import os
 from os import path
-from .  import consts
+from .  import consts, misc
+
 
 class ShareStatsFile(object):
     CASE_SENSITIVE_NAMING = False
@@ -130,6 +131,7 @@ class ShareStatsFile(object):
             return None
 
 
+
 class FileListBilingual(object):
 
     def __init__(self, folder=None):
@@ -143,11 +145,7 @@ class FileListBilingual(object):
             first = ShareStatsFile(lst.pop(0))
             second = first.get_other_language()
 
-            while True:  # remove all instance of second in lst
-                try:
-                    lst.remove(second.full_path)
-                except:
-                    break
+            lst = misc.remove_all(lst, second.full_path, ignore_cases=True)  # remove all instance of second in lst
 
             if second is not None:
                 if path.isfile(second.full_path):
