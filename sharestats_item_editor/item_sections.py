@@ -4,8 +4,8 @@ from . import consts, templates
 class ItemSection(object):
 
     def __init__(self, parent, label, underline_chr, min_underline_length=4):
-        from .sharestats_item import ShareStatsItem
-        assert(isinstance(parent, (ItemSection, ShareStatsItem)))
+        from .rmd_exam_item import RmdExamItem
+        assert(isinstance(parent, (ItemSection, RmdExamItem)))
 
         self._parent = parent
         self._underline_chr = underline_chr
@@ -155,8 +155,8 @@ class ItemMetaInfo(ItemSection):
 
     def __init__(self, parent):
         super().__init__(parent, "Meta-information", "=")
-        from .sharestats_item import ShareStatsItem
-        assert(isinstance(self._parent, ShareStatsItem))
+        from .rmd_exam_item import RmdExamItem
+        assert(isinstance(self._parent, RmdExamItem))
         self.parameter = OrderedDict()
 
     def parse(self):

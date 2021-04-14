@@ -73,7 +73,6 @@ class ShareStatsFile(object):
 
         return self.directory
 
-
     @property
     def name(self):
         if ShareStatsFile.CASE_SENSITIVE_NAMING:
@@ -86,7 +85,6 @@ class ShareStatsFile(object):
         # changes name (and keeps extension)
         ext = path.splitext(self.filename)[1]
         self.filename = value + ext
-
 
     @property
     def full_path(self):

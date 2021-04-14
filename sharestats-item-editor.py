@@ -1,2 +1,2 @@
-from sharestats_item_editor.mainwin import MainWin
-MainWin().run()
+from sharestats_item_editor.__main__ import run
+run()

@@ -1,7 +1,7 @@
 from os import path
 import json as json
 
-from . import misc
+from sharestats_item_editor import misc
 
 class Taxonomy(object):
 
@@ -39,3 +39,5 @@ class Taxonomy(object):
 
     def get_tags_level(self):
         return self._get_level('Tags', "Level")
+
+#FIXME validate taxonomy entries

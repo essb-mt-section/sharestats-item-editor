@@ -1,7 +1,4 @@
-from .mainwin import MainWin
-
-def run():
-    MainWin().run()
+from .gui import run
 
 if __name__ == "__main__":
     run()

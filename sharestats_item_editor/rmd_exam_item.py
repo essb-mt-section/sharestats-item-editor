@@ -23,7 +23,7 @@ class Issue(object):
             return False
 
 
-class ShareStatsItem(object):
+class RmdExamItem(object):
 
     def __init__(self, filename=None):
         if isinstance(filename, ShareStatsFile):
@@ -148,7 +148,8 @@ class ShareStatsItem(object):
 def _get_required_parameter():
     rtn = {}
     for k, flname in templates.FILES.items():
-        rtn[k] = ShareStatsItem(flname).meta_info.parameter
+        rtn[k] = RmdExamItem(flname).meta_info.parameter
     return rtn
 
 templates.REQUIRED_PARAMETER = _get_required_parameter()
+

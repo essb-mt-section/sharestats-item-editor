@@ -1,12 +1,15 @@
 import os
 import PySimpleGUI as sg
 
-from . import __version__, \
-                consts, files, settings, dialogs
-from .sharestats_item import ShareStatsItem
-from .item_sections import AnswerList
+from .. import __version__, consts, files, settings
+from . import dialogs
 from .item_gui import ItemGUI
-from .r_exams import RPY2INSTALLED
+from ..rmd_exam_item import RmdExamItem
+from ..item_sections import AnswerList
+from ..r_exams import RPY2INSTALLED
+
+#FIXME removing paramter
+
 
 class MainWin(object):
 
@@ -163,7 +166,7 @@ class MainWin(object):
 
     def run(self):
         win = sg.Window("{} ({})".format(consts.APPNAME, __version__),
-                        self.layout, finalize=True,
+                        self.layout, finalize=True, return_keyboard_events=True,
                         enable_close_attempted_event=True)
 
         if len(settings.recent_dirs) == 0: # very first launch
@@ -180,7 +183,7 @@ class MainWin(object):
                     event =="Close" or event is None:
                 self.save_items(ask=True)
                 break
-
+            print(event)
             if event.startswith("nl_") or event.startswith("en_"):
                 # ItemGUI events
                 is_nl_event = event.startswith("nl_")
@@ -322,11 +325,11 @@ class MainWin(object):
             fls = (fls[1], fls[0]) # swap
 
         if fls[0] is not None:
-            self.ig_nl.ss_item = ShareStatsItem(fls[0])
+            self.ig_nl.ss_item = RmdExamItem(fls[0])
         else:
             self.ig_nl.ss_item = None
         if fls[1] is not None:
-            self.ig_en.ss_item = ShareStatsItem(fls[1])
+            self.ig_en.ss_item = RmdExamItem(fls[1])
         else:
             self.ig_en.ss_item = None
 

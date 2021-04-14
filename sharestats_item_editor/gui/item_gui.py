@@ -1,9 +1,9 @@
 from os import listdir, path
 import PySimpleGUI as sg
 
-from . import consts
-from .sharestats_item import ShareStatsItem
-from .item_sections import AnswerList
+from .. import consts
+from ..rmd_exam_item import RmdExamItem
+from ..item_sections import AnswerList
 
 
 WIDTH_ML = 80 # multi line field for text input
@@ -13,7 +13,7 @@ LEN_ANSWER_SMALL = 5
 LEN_ANSWER_LARGE = 8
 TAB_LAYOUT = True
 
-_EMPTY_ITEM = ShareStatsItem(None)
+_EMPTY_ITEM = RmdExamItem(None)
 
 
 class ItemGUI(object):

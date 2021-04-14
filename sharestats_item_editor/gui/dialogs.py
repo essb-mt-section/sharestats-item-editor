@@ -1,13 +1,13 @@
 from os import path
 import PySimpleGUI as sg
 
-from . import consts, templates, __version__, __author__, PYTHON_VERSION
-from .misc import yesno, splitstrip
-from .taxonomy import Taxonomy
-from .item_sections import ItemMetaInfo
-from .sharestats_item import ShareStatsItem
-from .files import ShareStatsFile
-from . import r_exams
+from .. import consts, templates, __version__, __author__, PYTHON_VERSION
+from ..misc import yesno, splitstrip
+from ..taxonomy import Taxonomy
+from ..item_sections import ItemMetaInfo
+from ..rmd_exam_item import RmdExamItem
+from ..files import ShareStatsFile
+from .. import r_exams
 
 
 
@@ -268,12 +268,12 @@ def new_item(base_directory):
             template_key = None
 
         if len(fr_make_name.name1):
-            item1 = ShareStatsItem(path.join(base_directory, fr_make_name.name1,
+            item1 = RmdExamItem(path.join(base_directory, fr_make_name.name1,
                                         "{}.Rmd".format(fr_make_name.name1)))
             if template_key is not None:
                 item1.import_file(templates.FILES[template_key])
         if len(fr_make_name.name2):
-            item2 = ShareStatsItem(path.join(base_directory, fr_make_name.name2,
+            item2 = RmdExamItem(path.join(base_directory, fr_make_name.name2,
                                         "{}.Rmd".format(fr_make_name.name2)))
             if template_key is not None:
                 item2.import_file(templates.FILES[template_key])
@@ -371,6 +371,7 @@ def render(file):
     r = r_exams.RExams()
     if r.r_init_error is not None:
         sg.Print(r.r_init_error)
+        return
 
     error = r.rmd_to_html(file)
     if error is None:
