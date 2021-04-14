@@ -2,9 +2,9 @@
 
 **Editor and validator for Rexam items in the ShareStats project**
 
-**Feature overview**
+Feature overview
 
-* Take into account the conventions of the [ShareStats Project](https://github.com/ShareStats) 
+* Takes into account the conventions of the [ShareStats Project](https://github.com/ShareStats) 
     * violation checks of file and folder naming and required meta-information 
     * required subfolder structure
     * joining bilingual items in the database (Dutch, English)
