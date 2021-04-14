@@ -1,6 +1,8 @@
 from os import path
 import json as json
 
+from . import misc
+
 class Taxonomy(object):
 
     def __init__(self):
@@ -11,7 +13,7 @@ class Taxonomy(object):
 
         d = self._dict[type]
         if categories is not None:
-            d = _subdict(d, categories)
+            d = misc.subdict(d, categories)
 
         rtn = filter(lambda x: x!="name", d.keys()) # all keys except 'name'
         return list(rtn)
@@ -37,20 +39,3 @@ class Taxonomy(object):
 
     def get_tags_level(self):
         return self._get_level('Tags', "Level")
-
-
-def _subdict(d, nested_keys=None):
-    """:return the dict nested hierarchically indicated by nested_keys
-    or None if key list is incorrect
-    :param nested_keys list of keys or a single keys
-
-    """
-    if not isinstance(nested_keys, (tuple, list)):
-        nested_keys = [nested_keys]
-    for k in nested_keys:
-        try:
-            d = d[k]
-        except:
-            return {}
-    return d
-

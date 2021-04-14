@@ -2,14 +2,13 @@ from os import path
 import PySimpleGUI as sg
 
 from . import consts, templates, __version__, __author__, PYTHON_VERSION
+from .misc import yesno, splitstrip
 from .taxonomy import Taxonomy
 from .item_sections import ItemMetaInfo
 from .sharestats_item import ShareStatsItem
 from .files import ShareStatsFile
 from . import r_exams
 
-def splitstrip(text, sep):
-    return list(map(lambda x: x.strip(), text.split(sep)))
 
 
 def taxonomy(meta_info):
@@ -414,9 +413,3 @@ def about():
         event, v = window.read()
         break
     window.close()
-
-def yesno(bool):
-    if bool:
-        return "Yes"
-    else:
-        return "No"

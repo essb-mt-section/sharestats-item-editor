@@ -1,6 +1,5 @@
 import os
-import tempfile
-from . import consts
+from . import consts, misc
 
 try:
     import rpy2.robjects as robjects
@@ -15,7 +14,8 @@ class RExams(object):
     HTML_FILE_NAME = "html-test"
 
     def __init__(self):
-        self.html_dir = _get_temp_dir(make_dir=True)
+        self.html_dir = misc.get_temp_dir(
+                    consts.APPNAME.replace(" ","_").lower(), make_dir=True)
 
         r_code = '''library(exams)
         rmd_to_html <- function(filename) {
@@ -52,18 +52,3 @@ class RExams(object):
         fl = self.get_html_file()
         if os.path.isfile(fl):
             webbrowser.open(fl, new=new)
-
-
-def _get_temp_dir(make_dir=True):
-    # creates and returns a temp folder
-
-    tmpdir = tempfile.gettempdir()
-    tmpdir = os.path.join(tmpdir, consts.APPNAME.replace(" ", "_").lower())
-    if make_dir:
-        try:
-            os.mkdir(tmpdir)
-        except:
-            pass
-
-    return tmpdir
-
