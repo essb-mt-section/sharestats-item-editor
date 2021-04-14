@@ -20,8 +20,10 @@ entry_points = {'console_scripts':
                 ['{}={}.__main__:run'.format(application_name, package_name)]}
 
 packages = [package_name]
-for subp in ["templates"]:
+for subp in ["templates", "gui"]:
     packages.append("{}.{}".format(package_name, subp))
+
+package_data = {'': ['*.json', '*.png'],}
 
 
 if _vi.major< 1:
@@ -60,6 +62,7 @@ if __name__ == '__main__':
         url='https://github.com/essb-mt-section/sharestats-item-editor/',
         packages=packages,
         include_package_data=True,
+        package_data=package_data,
         setup_requires=[],
         install_requires=install_requires,
         entry_points=entry_points,
