@@ -12,11 +12,9 @@ package_name = "sharestats_item_editor"
 application_name = "sharestats-item-editor"
 
 install_requires = ["appdirs>=1.4",
-                    "pysimplegui>=4.33",
-                    "rpy2>=3.4.3"]
+                    "pysimplegui>=4.33"]
 
-extras_require = {
-}
+extras_require = {"rendering": ["rpy2>=3.4.3"]}
 
 entry_points = {'console_scripts':
                 ['{}={}.__main__:run'.format(application_name, package_name)]}
