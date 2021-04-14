@@ -23,7 +23,7 @@ packages = [package_name]
 for subp in ["templates", "gui"]:
     packages.append("{}.{}".format(package_name, subp))
 
-package_data = {'': ['*.json', '*.png'],}
+package_data = {'' : ['*.json', '*.png', '.Rmd']}
 
 
 if _vi.major< 1:
