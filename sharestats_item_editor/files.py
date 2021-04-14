@@ -145,9 +145,8 @@ class FileListBilingual(object):
             first = ShareStatsFile(lst.pop(0))
             second = first.get_other_language()
 
-            lst = misc.remove_all(lst, second.full_path, ignore_cases=True)  # remove all instance of second in lst
-
             if second is not None:
+                lst = misc.remove_all(lst, second.full_path, ignore_cases=True)  # remove all instance of second in lst
                 if path.isfile(second.full_path):
                     if second.get_language() == "nl":
                         second, first = first, second  # swap
