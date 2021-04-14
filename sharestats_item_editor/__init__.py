@@ -4,6 +4,9 @@
 __version__ = '0.1.7'
 __author__ = 'Oliver Lindemann'
 
+DEVELOPER_VERSION = True # include preliminary features
+
+
 import sys as _sys
 from . import consts
 from .json_settings import JSONSettings as _JSONSettings
@@ -19,3 +22,6 @@ if _sys.version_info[0] != 3 or _sys.version_info[1]<5:
 settings = _JSONSettings(appname=consts.APPNAME.replace(" ", "_").lower(),
                          settings_file_name="settings.json",
                          defaults= {"recent_dirs": []})
+
+if DEVELOPER_VERSION:
+    __version__ += "-dev"

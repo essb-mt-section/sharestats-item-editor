@@ -6,6 +6,7 @@ from .taxonomy import Taxonomy
 from .item_sections import ItemMetaInfo
 from .sharestats_item import ShareStatsItem
 from .files import ShareStatsFile
+from . import r_exams
 
 def splitstrip(text, sep):
     return list(map(lambda x: x.strip(), text.split(sep)))
@@ -363,3 +364,17 @@ def show_text_file(file, file2=None):
         event, v = window.read()
         break
     window.close()
+
+
+def render(file):
+    if isinstance(file, ShareStatsFile):
+        file = file.full_path
+    r = r_exams.RExams()
+    if r.r_init_error is not None:
+        sg.Print(r.r_init_error)
+
+    error = r.rmd_to_html(file)
+    if error is None:
+        r.open_html(new=0)
+    else:
+        sg.Print(error)

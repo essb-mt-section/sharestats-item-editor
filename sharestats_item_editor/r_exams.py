@@ -4,22 +4,11 @@ from . import consts
 
 try:
     import rpy2.robjects as robjects
+    import webbrowser
 except:
     robjects = None
 
-def _get_temp_dir(make_dir=True):
-    # creates and returns a temp folder
-
-    tmpdir = tempfile.gettempdir()
-    tmpdir = os.path.join(tmpdir, consts.APPNAME.replace(" ", "_").lower())
-    if make_dir:
-        try:
-            os.mkdir(tmpdir)
-        except:
-            pass
-
-    return tmpdir
-
+RPY2INSTALLED = robjects is not None
 
 class RExams(object):
 
@@ -38,17 +27,16 @@ class RExams(object):
         if robjects is not None:
             try:
                 robjects.r(r_code)
-                self.import_error = None
+                self.r_init_error = None
             except Exception as error:
-                self.import_error = error
+                self.r_init_error = error
         else:
-            self.import_error = "rpy2 is not installed."
-
+            self.r_init_error = "rpy2 is not installed."
 
     def rmd_to_html(self, file):
         """:return error text or None, if conversion succeeded"""
-        if self.import_error is not None:
-            return self.import_error
+        if self.r_init_error is not None:
+            return self.r_init_error
         r_func = robjects.r['rmd_to_html']
         try:
             r_func(file)
@@ -60,4 +48,22 @@ class RExams(object):
         return os.path.join(self.html_dir,
                             RExams.HTML_FILE_NAME + "1.html")
 
+    def open_html(self, new=0):
+        fl = self.get_html_file()
+        if os.path.isfile(fl):
+            webbrowser.open(fl, new=new)
+
+
+def _get_temp_dir(make_dir=True):
+    # creates and returns a temp folder
+
+    tmpdir = tempfile.gettempdir()
+    tmpdir = os.path.join(tmpdir, consts.APPNAME.replace(" ", "_").lower())
+    if make_dir:
+        try:
+            os.mkdir(tmpdir)
+        except:
+            pass
+
+    return tmpdir
 

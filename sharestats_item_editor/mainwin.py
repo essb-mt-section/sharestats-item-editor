@@ -1,10 +1,12 @@
 import os
 import PySimpleGUI as sg
 
-from . import __version__, consts, files, settings, dialogs
+from . import __version__, DEVELOPER_VERSION,\
+                consts, files, settings, dialogs
 from .sharestats_item import ShareStatsItem
 from .item_sections import AnswerList
 from .item_gui import ItemGUI
+from .r_exams import RPY2INSTALLED
 
 class MainWin(object):
 
@@ -55,14 +57,22 @@ class MainWin(object):
         self._unsaved_item = None
 
     def menu_definition(self):
-        recent_dirs =  list(reversed(settings.recent_dirs[:-1]))
+        file = ['&New Item', '&Save Item', '---', 'Open &Directory',
+                'Recent', list(reversed(settings.recent_dirs[:-1])),
+                '---', 'C&lose']
+        view = ["&Raw files", "---", '&About']
+        menu = [['&File', file], ["&View", view]]
 
-        return ['&File', ['&New Item', '&Save Item', '---',
-                                 'Open &Directory',
-                                 'Recent', recent_dirs,
-                                 '---',
-                                 'C&lose']], \
-               ["&View", ["&Raw files", "---", '&About']]
+        if  DEVELOPER_VERSION and RPY2INSTALLED:
+            d_inactive, e_inactive = "", ""
+            if not self.ig_nl.is_enabled():
+                d_inactive="!"
+            if not self.ig_en.is_enabled():
+                e_inactive = "!"
+            menu.append(["&Render", ["{}&Dutch Version::render".format(d_inactive),
+                                "{}&English Version::render".format(e_inactive)]])
+
+        return menu
 
     @property
     def base_directory(self):
@@ -141,12 +151,12 @@ class MainWin(object):
             pass
 
     def resit_gui(self):
-        self.menu.update(menu_definition=self.menu_definition())
         self.update_item_list()
         self.ig_nl.ss_item = None
         self.ig_en.ss_item = None
         self.ig_en.update_gui()
         self.ig_nl.update_gui()
+        self.menu.update(menu_definition=self.menu_definition())
         self.update_name()
         self.unsaved_item = None
 
@@ -274,12 +284,26 @@ class MainWin(object):
                 self.resit_gui()
 
             elif event=="Raw files":
-                self.save_items(ask=True)
                 try:
                     files = self.fl_list_bilingual.files[self.idx_selected_item]
                 except:
                     continue
+                self.save_items(ask=True)
                 dialogs.show_text_file(files[0], files[1])
+
+            elif event.endswith("render"):
+                try:
+                    files = self.fl_list_bilingual.files[self.idx_selected_item]
+                except:
+                    continue
+                if event.startswith("Dutch"):
+                    fl = files[0]
+                else:
+                    fl = files[1]
+                if fl is not None:
+                    self.save_items(ask=True)
+                    dialogs.render(files[0])
+
 
         win.close()
         settings.save()
@@ -304,6 +328,8 @@ class MainWin(object):
         self.ig_en.update_gui()
         self.ig_nl.update_gui()
         self.update_name()
+        self.menu.update(menu_definition=self.menu_definition())
+
 
     def save_items(self, ask=False):
         if self.unsaved_item is not None:
@@ -349,4 +375,6 @@ class MainWin(object):
             self.ig_en.update_gui()
             self.ig_nl.update_gui()
             self.update_name()
+            self.menu.update(menu_definition=self.menu_definition())
+
 
