@@ -1,7 +1,7 @@
 """
 """
 
-__version__ = '0.1.9-2'
+__version__ = '0.1.10'
 __author__ = 'Oliver Lindemann'
 
 DEVELOPER_VERSION = False # include preliminary features
