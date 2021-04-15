@@ -1,14 +1,19 @@
+% download source
+
 python -m virtualenv venv
 
 .\venv\Scripts\pip.exe install -r requirements.txt
-.\venv\Scripts\pip.exe install sharestats_item_editor
+.\venv\Scripts\python sharestats-item-editor.py
+
 
 .\venv\Scripts\pip.exe install pyinstaller
-.\venv\Scripts\pyinstaller.exe --onefile -w --icon=picts\ESSB_logo.ico sharestats-item-editor.py
+.\venv\Scripts\pyinstaller.exe --onefile -w --icon=picts\ESSB_logo.ico sharestats-item-editor.py --add-data "sharestats_item_editor\gui\essb.png;sharestats_item_editor\gui" --add-data "sharestats_item_editor\templates;sharestats_item_editor" --add-data "sharestats_item_editor\taxonomy.json;sharestats_item_editor"
 
-% rename exe--> without rendering
+
+% save exe (at another location or upload)
 % delete build folder
 
 .\venv\Scripts\pip.exe install rpy2
-.\venv\Scripts\pyinstaller.exe --onefile -w --icon=picts\ESSB_logo.ico sharestats-item-editor.py
+
+% make another exe (see cmd above) 
 % rename exe--> with rendering

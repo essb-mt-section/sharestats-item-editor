@@ -29,3 +29,5 @@ settings = _JSONSettings(appname=consts.APPNAME.replace(" ", "_").lower(),
 
 if DEVELOPER_VERSION:
     __version__ += "-dev"
+
+#FIXME improve pyinstaller settings
