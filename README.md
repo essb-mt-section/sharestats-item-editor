@@ -33,7 +33,7 @@ Oliver Lindemann, Erasmus University Rotterdam, NL
 Users familiar with Python are suggested to install `python3`  and use `pip`.
 
 ```
-python3 -m pip install sharestats-item-editor
+python3 -m pip install -U sharestats-item-editor
 ```
 
 To run ShareStatsItemEditor call
