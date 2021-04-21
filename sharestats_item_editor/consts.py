@@ -1,4 +1,10 @@
+import sys as _sys
+
 APPNAME = "ShareStats Item Editor"
+PYTHON_VERSION = "{0}.{1}.{2}".format(_sys.version_info[0],
+                                      _sys.version_info[1],
+                                      _sys.version_info[2])
+
 
 UNKNOWN_TYPE = "unknown"
 EXTYPES = {"schoice": "Multiple choice",

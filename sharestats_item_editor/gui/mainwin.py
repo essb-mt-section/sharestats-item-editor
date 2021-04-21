@@ -10,7 +10,6 @@ from ..r_exams import RPY2INSTALLED
 
 #FIXME removing paramter
 
-
 class MainWin(object):
 
     def __init__(self):
@@ -276,6 +275,8 @@ class MainWin(object):
                 dialogs.about()
 
             elif event=="rename" or event=="Rename Item":
+                if not self.ig_en.is_enabled() and not self.ig_nl.is_enabled():
+                    continue
                 n1, n2, fix_dir= dialogs.rename_item(self.lb_items.get()[0])
                 if n1 is not None:
                     self.save_items(ask=True)

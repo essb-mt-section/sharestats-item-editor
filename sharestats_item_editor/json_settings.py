@@ -1,5 +1,5 @@
 __author__  = "Oliver Lindemann"
-__version__ = "0.3"
+__version__ = "0.4"
 
 import os
 import json
@@ -8,12 +8,14 @@ from appdirs import user_config_dir
 
 class JSONSettings():
 
-    def __init__(self, appname, settings_file_name, defaults):
+    def __init__(self, appname, settings_file_name, defaults, reset=False):
         """General settings class that saves the settings in a json file.
         If no config file exists it will be created.
         The variables (fields) can be access a properties of the Settings object.
 
         Changes DEFAULTS to defined the required settings and their defaults.
+
+        if reset==True, old setting file will deleted.
         """
 
         self.config_dir = user_config_dir(appname=appname)
@@ -22,6 +24,11 @@ class JSONSettings():
         except:
             pass
         self.settings_file = os.path.join(self.config_dir, settings_file_name)
+        if reset:
+            try:
+                os.remove(self.settings_file)
+            except:
+                pass
 
         try: #load
             with open(self.settings_file, 'r') as fl:

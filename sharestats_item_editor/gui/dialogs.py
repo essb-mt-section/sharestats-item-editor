@@ -1,14 +1,13 @@
 from os import path
 import PySimpleGUI as sg
 
-from .. import consts, templates, __version__, __author__, PYTHON_VERSION
+from .. import consts, templates, __version__, __author__, info
 from ..misc import yesno, splitstrip
 from ..taxonomy import Taxonomy
 from ..item_sections import ItemMetaInfo
 from ..rmd_exam_item import RmdExamItem
 from ..files import ShareStatsFile
 from .. import r_exams
-
 
 
 def taxonomy(meta_info):
@@ -393,14 +392,12 @@ def about():
               [sg.Text("")] ]
 
 
-    info = ["(c) {}".format(__author__),
-            "", "Python: {}".format(PYTHON_VERSION),
-            "R support: {}".format(yesno(r_exams.RPY2INSTALLED)),
-            "", "website: https://github.com/essb-mt-section/sharestats-item" \
+    info_array = ["(c) {}".format(__author__), ""] + info() +\
+            ["", "website: https://github.com/essb-mt-section/sharestats-item" \
                                         "-editor"]
 
-    layout.append([sg.Multiline(default_text="\n".join(info),
-                                size=(55, len(info)),
+    layout.append([sg.Multiline(default_text="\n".join(info_array),
+                                size=(55, len(info_array)),
                                 border_width=0,
                                 background_color='black',
                                 auto_size_text=True,
