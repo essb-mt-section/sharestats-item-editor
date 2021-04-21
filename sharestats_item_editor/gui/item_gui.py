@@ -1,7 +1,7 @@
 from os import listdir, path
 import PySimpleGUI as sg
 
-from .. import consts
+from .. import consts, misc
 from ..rmd_exam_item import RmdExamItem
 from ..item_sections import AnswerList
 
@@ -281,7 +281,7 @@ class ItemGUI(object):
         #files
         if self.enabled_gui and len(item.filename.directory):
             x = listdir(item.filename.directory)
-            x.remove(item.filename.filename)
+            x = misc.remove_all(x, item.filename.filename, ignore_cases=True)
             if len(x):
                 self.ml_files(value="\n".join(x))
             else:
