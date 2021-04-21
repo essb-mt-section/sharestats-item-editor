@@ -36,11 +36,12 @@ class MainWin(object):
 
         self.it_name = sg.InputText("", size=(30, 1), disabled=False,
                                     key="it_name", enable_events=False)
+        self.btn_rename = sg.Button(button_text="Rename", size=(10, 1),
+                                    key="rename")
         fr_item_name = sg.Frame("Item",
                              [[sg.Text("Name:"),
                               self.it_name,
-                              sg.Button(button_text="Rename", size=(10, 1),
-                                        key="rename")]])
+                              self.btn_rename]])
 
         fr_btns =sg.Frame("", [[self.btn_save]])
         left_frame = sg.Frame("", [[fr_items], [fr_btns]],
@@ -131,9 +132,11 @@ class MainWin(object):
         if self.idx_selected_item is not None:
             #update name
             names = self.fl_list_bilingual.get_shared_names(bilingual_tag=False)
-            self.it_name.update(value=names[self.idx_selected_item])
+            self.it_name.update(value=names[self.idx_selected_item], disabled=False)
+            self.btn_rename.update(disabled=False)
         else:
-            self.it_name.update(value="")
+            self.it_name.update(value="", disabled=True)
+            self.btn_rename.update(disabled=True)
 
         # dir information
         self.txt_base_directory.update(value=self.base_directory)
@@ -275,8 +278,6 @@ class MainWin(object):
                 dialogs.about()
 
             elif event=="rename" or event=="Rename Item":
-                if not self.ig_en.is_enabled() and not self.ig_nl.is_enabled():
-                    continue
                 n1, n2, fix_dir= dialogs.rename_item(self.lb_items.get()[0])
                 if n1 is not None:
                     self.save_items(ask=True)
