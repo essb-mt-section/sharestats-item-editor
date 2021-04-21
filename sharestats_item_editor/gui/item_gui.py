@@ -289,6 +289,11 @@ class ItemGUI(object):
         else:
             self.ml_files(value="")
 
+    def save_item(self):
+        if self.ss_item is not None:
+            self.update_ss_item()
+            self.ss_item.save()
+            self.update_gui()
 
 
 

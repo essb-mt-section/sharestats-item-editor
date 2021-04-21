@@ -314,8 +314,6 @@ class MainWin(object):
                     self.save_items(ask=True)
                     dialogs.render(files[0])
 
-
-
         win.close()
         settings.save()
 
@@ -349,17 +347,8 @@ class MainWin(object):
                 if not dialogs.ask_save(item_name):
                     self.unsaved_item = None
                     return
-
-            if self.ig_nl.ss_item is not None: # TODO can be simplified (move
-                # to itemGUI
-                self.ig_nl.update_ss_item()
-                self.ig_nl.ss_item.save()
-                self.ig_nl.update_gui()
-            if self.ig_en.ss_item is not None:
-                self.ig_en.update_ss_item()
-                self.ig_en.ss_item.save()
-                self.ig_en.update_gui()
-
+            self.ig_nl.save_item()
+            self.ig_en.save_item()
             self.unsaved_item = None
 
     def new_item(self):
