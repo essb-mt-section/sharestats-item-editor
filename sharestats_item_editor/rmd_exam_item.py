@@ -46,7 +46,7 @@ class RmdExamItem(object):
         with open(text_file, "r") as fl:
             self.parse(fl.readlines())
 
-    def parse(self, source_text):
+    def parse(self, source_text, reset_meta_information=False):
         """parse file or source text is specified"""
         if isinstance(source_text, str):
             self.text_array = list(map(lambda x: x+"\n",
@@ -56,7 +56,7 @@ class RmdExamItem(object):
             self.text_array = source_text
         self.question.parse()
         self.solution.parse()
-        self.meta_info.parse()
+        self.meta_info.parse(reset_parameter=reset_meta_information)
 
         self.header = copy(self.text_array[:self.question.line_range[0]])
         # override answer_list correctness with meta info solution
@@ -118,6 +118,12 @@ class RmdExamItem(object):
                 issues.append(Issue("Answer list not required")) #TODO or even allowed?
             if  self.solution.has_answer_list_section():
                 issues.append(Issue("Feedback answer list not required")) #TODO or even allowed?
+
+        # check taxomony
+        invalid_tax = self.meta_info.get_invalid_taxonomy_levels()
+        if len(invalid_tax):
+            issues.append(Issue("Invalid taxonomy levels: {}".format(
+                                    ", ".join(invalid_tax))))
 
         missing_parameter = self.meta_info.get_missing_parameter()
         if len(missing_parameter):

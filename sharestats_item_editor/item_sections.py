@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from . import consts, templates
+from .taxonomy import Taxonomy
 
 class ItemSection(object):
 
@@ -153,15 +154,19 @@ class AnswerList(ItemSection):
 
 class ItemMetaInfo(ItemSection):
 
+    TAXONOMY = Taxonomy()
+
     def __init__(self, parent):
         super().__init__(parent, "Meta-information", "=")
         from .rmd_exam_item import RmdExamItem
         assert(isinstance(self._parent, RmdExamItem))
         self.parameter = OrderedDict()
 
-    def parse(self):
+    def parse(self, reset_parameter=False):
         super().parse()
         additional_content = []
+        if reset_parameter:
+            self.parameter = OrderedDict()
         while len(self.text_array)>0:
             para = self.text_array.pop(0).split(":", maxsplit=1)
             if len(para)<2:
@@ -279,3 +284,13 @@ class ItemMetaInfo(ItemSection):
             return {}
 
         return {k: v for k, v in parameter.items() if k not in self.parameter}
+
+    def get_invalid_taxonomy_levels(self):
+        """returns incorrect level descriptors"""
+        incorrect_level = []
+        for tax in self.taxonomy.split(","):
+            valid, level = ItemMetaInfo.TAXONOMY.is_valid_taxonomy(tax)
+            if not valid:
+                incorrect_level.append(level)
+        return incorrect_level
+

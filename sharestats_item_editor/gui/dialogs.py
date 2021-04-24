@@ -114,8 +114,9 @@ def taxonomy(meta_info):
 
         elif event == "add_tax":
             r = value["result_tax"]
-            r += " / ".join(select) + "\n"
+            r += "/".join(select) + "\n"
             ml_result_tax.update(value=r.strip())
+
         elif event == "add_types":
             r = value["result_types"]
             r += "\n".join(value["L_types"]) + "\n"

@@ -209,7 +209,7 @@ class MainWin(object):
                         ig.ml_metainfo.update(value=new_meta.str_parameter +
                                                     new_meta.str_text)
                         ig.ss_item.meta_info.sort_parameter()
-
+                        ig.update_gui()
 
                 elif event.endswith("btn_add_answer_list"):
                     ig.ss_item.question.add_answer_list_section()
@@ -378,3 +378,4 @@ class MainWin(object):
             self.menu.update(menu_definition=self.menu_definition())
 
 
+#FIXME  rename to add enlish version does not work

@@ -5,6 +5,9 @@ from sharestats_item_editor import misc
 
 class Taxonomy(object):
 
+    TAX_KEY = 'Statistics Taxonomy'
+    TAGS_KEY = 'Tags'
+
     def __init__(self):
         with open(path.join(path.dirname(__file__), "taxonomy.json")) as fl:
             self._dict = json.load(fl)
@@ -15,6 +18,9 @@ class Taxonomy(object):
         if categories is not None:
             d = misc.subdict(d, categories)
 
+        if len(d)==0:
+            return None
+
         rtn = filter(lambda x: x!="name", d.keys()) # all keys except 'name'
         return list(rtn)
 
@@ -23,21 +29,37 @@ class Taxonomy(object):
                     list of nested categories or single category
         """
 
-        return self._get_level('Statistics Taxonomy', categories)
+        rtn = self._get_level(Taxonomy.TAX_KEY, categories)
+        if rtn is None:
+            return []
+        else:
+            return rtn
 
     def get_tags_type(self):
-        rtn = self._get_level('Tags', categories=None)
+        rtn = self._get_level(Taxonomy.TAGS_KEY, categories=None)
         for x in ("Program", "Language", "Level"):
             rtn.remove(x)
         return rtn
 
     def get_tags_program(self):
-        return self._get_level('Tags', "Program")
+        return self._get_level(Taxonomy.TAGS_KEY, "Program")
 
     def get_tags_language(self):
-        return self._get_level('Tags', "Language")
+        return self._get_level(Taxonomy.TAGS_KEY, "Language")
 
     def get_tags_level(self):
-        return self._get_level('Tags', "Level")
+        return self._get_level(Taxonomy.TAGS_KEY, "Level")
 
-#FIXME validate taxonomy entries
+    def is_valid_taxonomy(self, tax_string):
+        """Returns tuple (boolean, level descriptor that is invalid)"""
+        if not isinstance(tax_string, str):
+            return False, "Not a string"
+        cat = []
+        for level in map(lambda x:x.strip(), tax_string.split("/")):
+            cat.append(level)
+            if self._get_level(Taxonomy.TAX_KEY, categories=cat) is None:
+                return False, level
+        return True, ""
+
+
+

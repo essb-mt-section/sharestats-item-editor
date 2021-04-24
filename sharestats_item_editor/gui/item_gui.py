@@ -59,13 +59,14 @@ class ItemGUI(object):
 
         self.ml_info_validation =sg.Multiline(default_text="",
                                               size=(WIDTH_ML-26, 4),
-                                              background_color="#DADADA",
+                                              background_color=consts.COLOR_BKG_INACTIVE,
                                               disabled=True)
 
         self.ml_files = sg.Multiline(default_text="",
                                      size=(20, 4),
-                                     background_color="#DADADA",
-                                     disabled=True)
+                                     background_color=consts.COLOR_BKG_INACTIVE,
+                                     disabled=True,
+                                     write_only=False)
 
         self.dd_types = sg.DropDown(values=[consts.UNKNOWN_TYPE] +
                                            list(consts.EXTYPES.keys()),
@@ -193,6 +194,12 @@ class ItemGUI(object):
 
         self.ml_info_validation(value=txt)
         self.btn_fix_meta_issues.update(visible=auto_fix)
+        if len(issues):
+            self.ml_info_validation(background_color="darkred",
+                                    text_color="white")
+        else:
+            self.ml_info_validation(background_color=consts.COLOR_BKG_ACTIVE_INFO,
+                                    text_color="black")
 
     def as_markdown_file(self):
         rtn = "".join(self.ss_item.header)
@@ -226,7 +233,8 @@ class ItemGUI(object):
 
     def update_ss_item(self):
         # new content from gui to ss_item
-        self.ss_item.parse(self.as_markdown_file())
+        self.ss_item.parse(self.as_markdown_file(),
+                           reset_meta_information=True)
 
     def update_gui(self):
         # copy ss_items --> GUI elements and set active
@@ -274,11 +282,14 @@ class ItemGUI(object):
 
         # validation and file info
         if self.enabled_gui:
+            col = consts.COLOR_BKG_ACTIVE_INFO
             self.set_issues(item.validate())
         else:
-            self.ml_info_validation(value="")
+            col = consts.COLOR_BKG_INACTIVE
+            self.ml_info_validation(value="", background_color=col)
 
         #files
+        self.ml_files.update(background_color=col)
         if self.enabled_gui and len(item.filename.directory):
             x = listdir(item.filename.directory)
             x = misc.remove_all(x, item.filename.filename, ignore_cases=True)
