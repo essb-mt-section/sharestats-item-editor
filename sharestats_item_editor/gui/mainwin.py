@@ -8,8 +8,6 @@ from ..rmd_exam_item import RmdExamItem
 from ..item_sections import AnswerList
 from ..r_exams import RPY2INSTALLED
 
-#FIXME removing paramter
-
 class MainWin(object):
 
     def __init__(self):
@@ -30,18 +28,22 @@ class MainWin(object):
         self.btn_save = sg.Button(button_text="Save", size=(28, 2),
                                   disabled=True, key="save")
 
-        self.txt_base_directory = sg.Text(self.base_directory, size=(60, 1))
+        self.txt_base_directory = sg.Text(self.base_directory, size=(60, 1),
+                                          background_color=consts.COLOR_BKG_ACTIVE_INFO)
         fr_base_dir = sg.Frame("Base Directory",
                              [[self.txt_base_directory]])
 
-        self.it_name = sg.InputText("", size=(30, 1), disabled=False,
-                                    key="it_name", enable_events=False)
+        self.txt_name = sg.Text("", size=(30, 1),
+                                background_color=consts.COLOR_BKG_ACTIVE_INFO)
         self.btn_rename = sg.Button(button_text="Rename", size=(10, 1),
                                     key="rename")
-        fr_item_name = sg.Frame("Item",
-                             [[sg.Text("Name:"),
-                              self.it_name,
-                              self.btn_rename]])
+        self.btn_second_lang = sg.Button(button_text="Add Language",
+                                         size=(10, 1), disabled=True,
+                                    key="second_lang")
+        fr_item_name = sg.Frame("Item Name",
+                             [[self.txt_name,
+                              self.btn_rename,
+                               self.btn_second_lang]])
 
         fr_btns =sg.Frame("", [[self.btn_save]])
         left_frame = sg.Frame("", [[fr_items], [fr_btns]],
@@ -132,11 +134,16 @@ class MainWin(object):
         if self.idx_selected_item is not None:
             #update name
             names = self.fl_list_bilingual.get_shared_names(bilingual_tag=False)
-            self.it_name.update(value=names[self.idx_selected_item], disabled=False)
+            self.txt_name.update(value=names[self.idx_selected_item])
             self.btn_rename.update(disabled=False)
+            if self.fl_list_bilingual.is_bilingual(self.idx_selected_item):
+                self.btn_second_lang.update(disabled=True)
+            else:
+                self.btn_second_lang.update(disabled=False)
         else:
-            self.it_name.update(value="", disabled=True)
+            self.txt_name.update(value="")
             self.btn_rename.update(disabled=True)
+            self.btn_second_lang.update(disabled=True)
 
         # dir information
         self.txt_base_directory.update(value=self.base_directory)
@@ -293,26 +300,36 @@ class MainWin(object):
                             os.rename(old.directory, new.directory)
                 self.resit_gui()
 
+            elif event=="second_lang":
+                self.save_items()
+                fl = self.fl_list_bilingual.files[self.idx_selected_item]
+                if fl[0] is None:
+                    fl_name = fl[1].get_other_language()
+                else:
+                    fl_name = fl[0].get_other_language()
+
+                self.new_item(fl_name.full_path)
+
             elif event=="Raw files":
                 try:
-                    files = self.fl_list_bilingual.files[self.idx_selected_item]
+                    two_files = self.fl_list_bilingual.files[self.idx_selected_item]
                 except:
                     continue
                 self.save_items(ask=True)
-                dialogs.show_text_file(files[0], files[1])
+                dialogs.show_text_file(two_files[0], two_files[1])
 
             elif event.endswith("render"):
                 try:
-                    files = self.fl_list_bilingual.files[self.idx_selected_item]
+                    two_files = self.fl_list_bilingual.files[self.idx_selected_item]
                 except:
                     continue
                 if event.startswith("Dutch"):
-                    fl = files[0]
+                    fl = two_files[0]
                 else:
-                    fl = files[1]
+                    fl = two_files[1]
                 if fl is not None:
                     self.save_items(ask=True)
-                    dialogs.render(files[0])
+                    dialogs.render(two_files[0])
 
         win.close()
         settings.save()
@@ -339,7 +356,6 @@ class MainWin(object):
         self.update_name()
         self.menu.update(menu_definition=self.menu_definition())
 
-
     def save_items(self, ask=False):
         if self.unsaved_item is not None:
             if ask:
@@ -351,8 +367,17 @@ class MainWin(object):
             self.ig_en.save_item()
             self.unsaved_item = None
 
-    def new_item(self):
-        new_items = dialogs.new_item(self.base_directory)
+    def new_item(self, new_ss_file = None):
+        if new_ss_file is None:
+            new_items = dialogs.new_item(self.base_directory)
+        else:
+            assert (isinstance(new_ss_file, str))
+            new_items = [RmdExamItem(new_ss_file), None]
+            if self.ig_en.ss_item is not None:
+                new_items[1] = self.ig_en.ss_item
+            elif self.ig_nl.ss_item is not None:
+                new_items[1] = self.ig_nl.ss_item
+
         if new_items[0] is not None:
             self.save_items()  # TODO allow canceling new at this point
             # TODO check existing file and overriding
@@ -371,11 +396,11 @@ class MainWin(object):
             idx = self.fl_list_bilingual.find_filename(fl_name)
             if idx is not None:
                 self.idx_selected_item = idx
-
+            self.update_item_list(select_item=idx)
             self.ig_en.update_gui()
             self.ig_nl.update_gui()
             self.update_name()
             self.menu.update(menu_definition=self.menu_definition())
 
-
 #FIXME  rename to add enlish version does not work
+#FIXME new item not selected

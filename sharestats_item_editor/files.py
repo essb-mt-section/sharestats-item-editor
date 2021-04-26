@@ -155,7 +155,7 @@ class FileListBilingual(object):
 
             self.files.append((first, second))
 
-        self.files =  sorted(self.files,
+        self.files = sorted(self.files,
                              key=FileListBilingual.shared_name)
 
     @staticmethod
@@ -211,5 +211,11 @@ class FileListBilingual(object):
         tmp = [x[0].filename==fl_name for x in self.files]
         try:
             return tmp.index(True)
+        except:
+            return None
+
+    def is_bilingual(self, idx):
+        try:
+            return None not in self.files[idx]
         except:
             return None
