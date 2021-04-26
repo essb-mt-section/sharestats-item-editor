@@ -21,7 +21,6 @@ def taxonomy(meta_info):
 
     # LAYOUT
     layout = []
-    sg.theme(consts.COLOR_THEME)
 
     # taxomony
     list_box = [sg.Listbox(values=[], size=(22, 10), key="L1",
@@ -234,8 +233,6 @@ class _FrameMakeSSName(object):
 
 
 def new_item(base_directory):
-    sg.theme(consts.COLOR_THEME)
-
     lb_type = sg.Listbox(values=["None"] + list(consts.EXTYPES.values()),
                             default_values=["None"],
                          select_mode=sg.LISTBOX_SELECT_MODE_SINGLE,
@@ -283,8 +280,6 @@ def new_item(base_directory):
     return item1, item2
 
 def rename_item(item_name):
-    sg.theme(consts.COLOR_THEME)
-
     fr_make_name = _FrameMakeSSName(item_name)
     fix_dir = sg.Checkbox(text="Adapt directory name", default=True)
     layout = [[fr_make_name.frame]]
@@ -312,8 +307,6 @@ def rename_item(item_name):
 
 
 def ask_save(item_name):
-    sg.theme(consts.COLOR_THEME)
-
     layout = [[sg.Text("Unsave changes in '{}'".format(item_name))]]
     layout.append([sg.Save("Save item", key="save"),
                    sg.Cancel("Dismiss changes")])
@@ -328,7 +321,6 @@ def ask_save(item_name):
     return event == "save"
 
 def show_text_file(file, file2=None):
-    sg.theme(consts.COLOR_THEME)
     win_titel = "View Files"
     content = [None, None]
     files = []
@@ -380,6 +372,7 @@ def render(file):
         sg.Print(error)
 
 def about():
+    old_theme = sg.theme()
     sg.theme("DarkBlack")
     width = 40
 
@@ -391,7 +384,6 @@ def about():
               [sg.Text(" " * 22), sg.Image(path.join(path.dirname(__file__),
                                                      "essb.png"))],
               [sg.Text("")] ]
-
 
     info_array = ["(c) {}".format(__author__), ""] + info() +\
             ["", "website: https://github.com/essb-mt-section/sharestats-item" \
@@ -412,3 +404,4 @@ def about():
         event, v = window.read()
         break
     window.close()
+    sg.theme(old_theme)

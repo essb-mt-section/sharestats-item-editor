@@ -8,11 +8,12 @@ from ..rmd_exam_item import RmdExamItem
 from ..item_sections import AnswerList
 from ..r_exams import RPY2INSTALLED
 
+sg.theme_add_new("mytheme", consts.SG_COLOR_THEME)
+sg.theme("mytheme")
+
 class MainWin(object):
 
     def __init__(self):
-        sg.theme(consts.COLOR_THEME)
-
         # LAYOUT
         self.ig_nl = ItemGUI("Dutch", "nl")
         self.ig_en = ItemGUI("English", "en")
@@ -26,7 +27,8 @@ class MainWin(object):
              sg.Button(button_text=">>", size=(11, 1), key="btn_next")]])
 
         self.btn_save = sg.Button(button_text="Save", size=(28, 2),
-                                  disabled=True, key="save")
+                                  disabled=True,
+                                  key="save")
 
         self.txt_base_directory = sg.Text(self.base_directory, size=(60, 1),
                                           background_color=consts.COLOR_BKG_ACTIVE_INFO)
@@ -404,3 +406,4 @@ class MainWin(object):
 
 #FIXME  rename to add enlish version does not work
 #FIXME new item not selected
+#FIXME btn text colour (MACOS problem)

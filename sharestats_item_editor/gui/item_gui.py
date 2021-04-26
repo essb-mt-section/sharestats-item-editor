@@ -75,7 +75,7 @@ class ItemGUI(object):
 
         self.btn_add_answer_list = sg.Button("+", enable_events=True,
                                              size=(2, 1),
-                      key="{}_btn_add_answer_list".format(key_prefix))
+                                key="{}_btn_add_answer_list".format(key_prefix))
         self.btn_add_feedback_list = sg.Button("+", enable_events=True,
                                             size=(2,1),
                     key="{}_btn_add_feedback_list".format(key_prefix))
@@ -90,7 +90,7 @@ class ItemGUI(object):
                                             enable_events=True,
                                             button_color=consts.COLOR_RED_BTN,
                                             size=(15,1),
-                    key="{}_btn_fix_meta_issues".format(key_prefix))
+                                key="{}_btn_fix_meta_issues".format(key_prefix))
 
         # make main frame
         layout_question =[[self.ml_quest],
@@ -128,8 +128,7 @@ class ItemGUI(object):
                              background_color=consts.COLOR_QUEST)],
                    [sg.Frame("Solution (feedback)", layout_solution,
                              background_color=consts.COLOR_SOLUTION)],
-                    [sg.Frame("Meta-Information", layout_meta_info,
-                              background_color=consts.COLOR_META_INFO)],
+                    [sg.Frame("Meta-Information", layout_meta_info)],
                     [sg.Frame("", [[self.ml_info_validation]])]
             ])
 
@@ -309,3 +308,9 @@ class ItemGUI(object):
 
 
 #FIXME DOCU Rpy2 usage
+# FIXME tempates under MAcOS
+# FIXME button label don't shown under MACOS
+# FIXME prgram none
+# FIXME change language
+# FIXME check meta language
+# FIXME add refresh-function
