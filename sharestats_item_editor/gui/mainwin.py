@@ -381,8 +381,7 @@ class MainWin(object):
                 new_items[1] = self.ig_nl.ss_item
 
         if new_items[0] is not None:
-            self.save_items()  # TODO allow canceling new at this point
-            # TODO check existing file and overriding
+            self.save_items()
             fl_name = new_items[0].filename.filename
             for n in new_items:
                 if n is not None:
@@ -406,4 +405,3 @@ class MainWin(object):
 
 #FIXME  rename to add enlish version does not work
 #FIXME new item not selected
-#FIXME btn text colour (MACOS problem)

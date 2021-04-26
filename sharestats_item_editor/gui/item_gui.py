@@ -308,7 +308,6 @@ class ItemGUI(object):
 
 
 #FIXME DOCU Rpy2 usage
-# FIXME tempates under MAcOS
 # FIXME button label don't shown under MACOS
 # FIXME prgram none
 # FIXME change language
