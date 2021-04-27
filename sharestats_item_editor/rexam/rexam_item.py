@@ -9,7 +9,7 @@ class RExamItem(object):
 
     META_INFO_CLASS = ItemMetaInfo
 
-    def __init__(self, filename=None, meta_info_class=None):
+    def __init__(self, filename=None):
         if isinstance(filename, RmdFile):
             self.filename = filename
         else:

@@ -1,9 +1,9 @@
 from os import path
 import PySimpleGUI as sg
 
-from .. import APPNAME, __version__, __author__, info
-from ..rexam import r_render, RmdFile
-
+from .. import consts, __version__, __author__
+from ..rexam import r_render, RmdFile, templates, RExamItem, extypes
+from ..rexam.files import TAG_NL, TAG_ENG, TAG_BILINGUAL
 
 def ask_save(item_name):
     layout = [[sg.Text("Unsave changes in '{}'".format(item_name))]]
@@ -16,8 +16,8 @@ def ask_save(item_name):
         break
 
     window.close()
-
     return event == "save"
+
 
 def show_text_file(file, file2=None):
     win_titel = "View Files"
@@ -76,7 +76,7 @@ def about():
     sg.theme("DarkBlack")
     width = 40
 
-    layout = [[sg.Text(APPNAME, size=(width , 1), font='bold',
+    layout = [[sg.Text(consts.APPNAME, size=(width , 1), font='bold',
                        justification='center')],
               [sg.Text("Version {}".format(__version__), font='bold',
                        size=(width , 1),
@@ -85,7 +85,7 @@ def about():
                                                      "essb.png"))],
               [sg.Text("")] ]
 
-    info_array = ["(c) {}".format(__author__), ""] + info() +\
+    info_array = ["(c) {}".format(__author__), ""] + consts.info() +\
             ["", "website: https://github.com/essb-mt-section/sharestats-item" \
                                         "-editor"]
 
@@ -105,3 +105,163 @@ def about():
         break
     window.close()
     sg.theme(old_theme)
+
+
+class FrameMakeName(object):
+
+    def __init__(self, default_name=""):
+
+        default_name = path.splitext(default_name)[0] # remove possible extension
+        defaults = [""] * 3
+        if default_name.endswith(TAG_BILINGUAL):
+            defaults[-1] = "Bilingual"
+            default_name = default_name[:-1*len(TAG_BILINGUAL)]
+        elif default_name.endswith(TAG_NL):
+            defaults[-1] = "Dutch"
+            default_name = default_name[:-1*len(TAG_NL)]
+        elif default_name.endswith(TAG_ENG):
+            defaults[-1] = "English"
+            default_name = default_name[:-1*len(TAG_ENG)]
+        else:
+            defaults[-1] = ""
+
+        for c, txt in enumerate(default_name.split("-", maxsplit=2)):
+            if c == len(defaults)-2: # cast number
+                try:
+                    defaults[c] = str(int(txt))
+                except:
+                    defaults[c-1] += "-" + txt
+            else:
+                defaults[c] = txt
+
+        self.txt_name1 = sg.Text("", size=(43, 1), key="txt_name1")
+        self.txt_name2 = sg.Text("", size=(43, 1), key="txt_name2")
+        self.fr_names = sg.Frame("", [[sg.Text("a:", size=(2,1)),
+                                  self.txt_name1],
+                                 [sg.Text("b:" , size=(2,1)),
+                                  self.txt_name2]],
+                                  border_width=0)
+
+        self.fln = [sg.InputText(default_text=defaults[0], size=(25,1),
+                                 enable_events=True)]
+        self.fln_cnt = sg.InputText(default_text=str(defaults[-1]), size=(4, 1),
+                                    enable_events=True)
+
+        self.fln_lang = sg.DropDown(default_value=defaults[-1],
+                                    values=["Dutch", "English", "Bilingual"],
+                                    enable_events=True)
+
+        self.frame = sg.Frame("Item Name(s)",[
+            [sg.Text("Topic"+" "*24 +
+                     "Counter"+" "*7 + "Language")],
+            [self.fln[0], sg.Text("-"),
+             self.fln_cnt, sg.Text("-"),
+             self.fln_lang], [self.fr_names]
+        ])
+
+    def update_names(self):
+        # call me once after window created
+        name_parts = map(lambda x: x.get().strip().lower(), self.fln)
+        fln_cnt = self.fln_cnt.get().strip()
+
+        name1 = "-".join(filter(lambda x:len(x), name_parts))
+        name2 = ""
+
+        if len(name1):
+            try:
+                name1 += "-" + str(int(fln_cnt)).zfill(3)
+            except:
+                pass
+
+        if len(name1) > 0:
+            lang = self.fln_lang.get()
+            if lang == "Dutch":
+                name1 = name1 + TAG_NL
+            elif lang == "English":
+                name1 = name1 + TAG_ENG
+            elif lang == "Bilingual":
+                name2 = name1 + TAG_ENG
+                name1 = name1 + TAG_NL
+
+        self.txt_name1.update(value=name1)
+        self.txt_name2.update(value=name2)
+
+    @property
+    def name1(self):
+        return self.txt_name1.get()
+
+    @property
+    def name2(self):
+        return self.txt_name2.get()
+
+
+def new_item(base_directory):
+    fr_make_name = FrameMakeName()
+    lb_type = sg.Listbox(values=["None"] + list(extypes.EXTYPES.values()),
+                         default_values=["None"],
+                         select_mode=sg.LISTBOX_SELECT_MODE_SINGLE,
+                         size=(26, 6), no_scrollbar=True,
+                         key="lb_type")
+
+    layout = [[fr_make_name.frame]]
+    layout.append([sg.Frame("Template", [[lb_type]]),
+                   sg.Cancel(size=(10, 2)),
+                   sg.Button("Create", size=(10, 2), key="create")])
+    window = sg.Window("New Item(s)", layout, finalize=True)
+    fr_make_name.update_names()
+    while True:
+        window.refresh()
+        event, v = window.read()
+        if event in ("Cancel", "create", None):
+            break
+        else:
+            fr_make_name.update_names()
+
+    item1, item2 = (None, None)
+    if event == "create":
+        # template
+        sel = lb_type.get_indexes()[0]
+        if sel > 0:
+            template_key = list(extypes.EXTYPES.keys())[sel - 1]
+        else:
+            template_key = None
+
+        if len(fr_make_name.name1):
+            item1 = RExamItem(path.join(base_directory, fr_make_name.name1,
+                                        "{}.Rmd".format(fr_make_name.name1)))
+            if template_key is not None:
+                item1.import_file(templates.FILES[template_key])
+        if len(fr_make_name.name2):
+            item2 = RExamItem(path.join(base_directory, fr_make_name.name2,
+                                        "{}.Rmd".format(fr_make_name.name2)))
+            if template_key is not None:
+                item2.import_file(templates.FILES[template_key])
+
+    window.close()
+
+    return item1, item2
+
+def rename_item(item_name):
+    fr_make_name = FrameMakeName(item_name)
+    fix_dir = sg.Checkbox(text="Adapt directory name", default=True)
+    layout = [[fr_make_name.frame]]
+    layout.append([sg.Frame("", [[fix_dir]]),
+                   sg.Text(" "*10),
+                   sg.Cancel(size=(10, 2)),
+                   sg.Button("Rename", size=(10, 2), key="rename")])
+    window = sg.Window("Rename", layout, finalize=True)
+    fr_make_name.update_names()
+
+    while True:
+        window.refresh()
+        event, _ = window.read()
+        if event in ("Cancel", "rename", None):
+            break
+        else:
+            fr_make_name.update_names()
+
+    window.close()
+    if event=="rename":
+        return fr_make_name.name1, fr_make_name.name2, bool(fix_dir.get())
+    else:
+        return None, None, None

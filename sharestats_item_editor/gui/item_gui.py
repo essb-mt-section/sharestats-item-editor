@@ -1,15 +1,15 @@
 from os import listdir, path
 import PySimpleGUI as sg
 
-from . import consts
-from .. import misc
+from .. import misc, consts
 from ..rexam import extypes, RExamItem, AnswerList
 
 _EMPTY_ITEM = RExamItem(None)
 
 class ItemGUI(object):
 
-    def __init__(self, label, key_prefix):
+    def __init__(self, label, key_prefix, change_meta_info_button=False):
+        # all events start with key_prefix
 
         if consts.TAB_LAYOUT:
             len_ml = consts.LEN_ML_LARGE
@@ -20,7 +20,7 @@ class ItemGUI(object):
 
         self.label =label
         self.key_prefix = key_prefix
-        self._ss_item = None
+        self._item = None
 
         self.ml_quest = sg.Multiline(default_text="",
                                      size=(consts.WIDTH_ML, len_ml),
@@ -37,20 +37,23 @@ class ItemGUI(object):
                                         size=(consts.WIDTH_ML, len_ml),
                                         key="{}_solution".format(key_prefix))
         self.ml_solution_answ_lst = sg.Multiline(default_text="", enable_events=True,
-                                                 size=(consts.WIDTH_ML, len_answer),
+                                                 size=(
+                                                 consts.WIDTH_ML, len_answer),
                                                  key="{}_solution_feedback".format(key_prefix))
         self.txt_solution_answ_lst = sg.Text("Answer list", size=(10, 1),
                                              background_color=consts.COLOR_SOLUTION)
 
         self.ml_metainfo = sg.Multiline(default_text="",
-                                        size=(consts.WIDTH_ML, 10),  enable_events=True,
+                                        size=(consts.WIDTH_ML, 10), enable_events=True,
                                         key="{}_meta".format(key_prefix))
 
-        self.btn_change_meta = sg.Button("Edit Meta Information",  enable_events=True,
-                                         key="{}_btn_change_meta".format(key_prefix))
+        self.change_meta_info_extra = sg.Button("Edit Meta Information",
+                                                enable_events=True,
+                                                visible=change_meta_info_button,
+                                                key="{}_btn_change_meta".format(key_prefix))
 
         self.ml_info_validation =sg.Multiline(default_text="",
-                                              size=(consts.WIDTH_ML-26, 4),
+                                              size=(consts.WIDTH_ML - 26, 4),
                                               background_color=consts.COLOR_BKG_INACTIVE,
                                               disabled=True)
 
@@ -95,8 +98,8 @@ class ItemGUI(object):
                         [self.ml_solution_answ_lst]]
 
         layout_meta_info =  [[self.ml_metainfo],
-                        [self.dd_types, self.btn_change_meta,
-                         self.btn_fix_meta_issues]]
+                             [self.dd_types, self.btn_fix_meta_issues,
+                              self.change_meta_info_extra]]
 
         if consts.TAB_LAYOUT:
             tab_group = sg.TabGroup([[sg.Tab("Question", layout_question,
@@ -126,15 +129,15 @@ class ItemGUI(object):
 
     @property
     def rexam_item(self):
-        return self._ss_item
+        return self._item
 
     @rexam_item.setter
     def rexam_item(self, v):
-        self._ss_item = v
+        self._item = v
         self._enable_gui(v is not None)
 
     def is_enabled(self):
-        return self._ss_item is not None
+        return self._item is not None
 
     def _enable_gui(self, value):
         if value:
@@ -148,7 +151,7 @@ class ItemGUI(object):
                                          background_color=col)
         self.ml_metainfo.update(disabled=not value, background_color=col)
         self.dd_types.update(disabled=not value)
-        self.btn_change_meta.update(disabled=not value)
+        self.change_meta_info_extra.update(disabled=not value)
         if not value:
             self.btn_add_answer_list.update(visible=False)
             self.btn_update_exsolution.update(visible=False)
@@ -229,7 +232,6 @@ class ItemGUI(object):
 
     def update_gui(self):
         # copy ss_items --> GUI elements and set active
-        self.enabled_gui= self.rexam_item is not None
         if self.rexam_item is None:
             item = _EMPTY_ITEM
         else:
@@ -272,7 +274,7 @@ class ItemGUI(object):
         self.update_answer_list_button()
 
         # validation and file info
-        if self.enabled_gui:
+        if self.is_enabled():
             col = consts.COLOR_BKG_ACTIVE_INFO
             self.set_issues(item.validate())
         else:
@@ -281,7 +283,7 @@ class ItemGUI(object):
 
         #files
         self.ml_files.update(background_color=col)
-        if self.enabled_gui and len(item.filename.directory):
+        if self.is_enabled() and len(item.filename.directory):
             x = listdir(item.filename.directory)
             x = misc.remove_all(x, item.filename.filename, ignore_cases=True)
             if len(x):
