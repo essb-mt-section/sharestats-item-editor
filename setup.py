@@ -20,7 +20,7 @@ entry_points = {'console_scripts':
                 ['{}={}.__main__:run'.format(application_name, package_name)]}
 
 packages = [package_name]
-for subp in ["templates", "gui"]:
+for subp in ["sharestats", "templates", "gui"]:
     packages.append("{}.{}".format(package_name, subp))
 
 package_data = {'' : ['*.json', '*.png', '*.Rmd']}

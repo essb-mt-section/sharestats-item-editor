@@ -8,7 +8,6 @@ FILES = {"schoice": _path.join(_fldir, "TemplateMultipleChoice.Rmd"),
         "string": _path.join(_fldir, "TemplateBlankTextEssay.Rmd"),
         "cloze": _path.join(_fldir, "TemplateBlankCombination.Rmd")}
 
-REQUIRED_PARAMETER = {} # will be set, if ShareStatsItem has been defined
 
 
 

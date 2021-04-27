@@ -2,10 +2,9 @@ from os import path, rename
 import types
 from copy import copy
 
-from . import consts, templates
 from .item_sections import ItemSection, ItemMetaInfo
-from .files import ShareStatsFile
-
+from .files import RmdFile
+from .. import consts
 
 class Issue(object):
 
@@ -23,13 +22,13 @@ class Issue(object):
             return False
 
 
-class RmdExamItem(object):
+class RExamItem(object):
 
     def __init__(self, filename=None):
-        if isinstance(filename, ShareStatsFile):
+        if isinstance(filename, RmdFile):
             self.filename = filename
         else:
-            self.filename = ShareStatsFile(filename)
+            self.filename = RmdFile(filename)
         self.question = ItemSection(self, "Question", "=")
         self.solution = ItemSection(self, "Solution", "=")
         self.meta_info = ItemMetaInfo(self)
@@ -150,12 +149,6 @@ class RmdExamItem(object):
             self.question.answer_list.solution_str = solution_str
 
 
-# set global required_parameter after ShareStatsItem are defned
-def _get_required_parameter():
-    rtn = {}
-    for k, flname in templates.FILES.items():
-        rtn[k] = RmdExamItem(flname).meta_info.parameter
-    return rtn
 
-templates.REQUIRED_PARAMETER = _get_required_parameter()
+
 

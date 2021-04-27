@@ -1,5 +1,5 @@
 import os
-from . import consts, misc
+from .. import consts, misc
 
 try:
     import rpy2.robjects as robjects
@@ -9,7 +9,7 @@ except:
 
 RPY2INSTALLED = robjects is not None
 
-class RExams(object):
+class RRender(object):
 
     HTML_FILE_NAME = "html-test"
 
@@ -22,7 +22,7 @@ class RExams(object):
                 exams2html(filename, quiet=TRUE, ''' + \
                  'dir="{}",'.format(self.html_dir) + \
                  'encoding = "utf8", template = "plain8", ' + \
-                 'name="{}"'.format(RExams.HTML_FILE_NAME) + ")}\n"
+                 'name="{}"'.format(RRender.HTML_FILE_NAME) + ")}\n"
 
         if robjects is not None:
             try:
@@ -46,7 +46,7 @@ class RExams(object):
 
     def get_html_file(self):
         return os.path.join(self.html_dir,
-                            RExams.HTML_FILE_NAME + "1.html")
+                            RRender.HTML_FILE_NAME + "1.html")
 
     def open_html(self, new=0):
         fl = self.get_html_file()

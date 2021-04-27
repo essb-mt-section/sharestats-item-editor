@@ -1,5 +1,6 @@
 import os
 import tempfile
+import re
 
 def subdict(d, nested_keys=None):
     """:return the dict nested hierarchically indicated by nested_keys
@@ -55,3 +56,10 @@ def remove_all(str_list, element, ignore_cases=False):
         return remove_all(new_list, element, ignore_cases)
 
 
+def extract_parameter(txt):
+    # extract parameter for text line
+
+    m = re.match(r"\s*\w+[\[\]\w]+:", txt)
+    if m is not None:
+        return {txt[:m.end()-1].strip(): txt[m.end():].strip()}
+    return None

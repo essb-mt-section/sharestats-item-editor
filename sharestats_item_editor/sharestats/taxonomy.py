@@ -1,7 +1,7 @@
 from os import path
 import json as json
 
-from sharestats_item_editor import misc
+from .. import misc
 
 class Taxonomy(object):
 

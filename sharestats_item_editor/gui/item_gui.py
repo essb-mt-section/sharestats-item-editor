@@ -2,8 +2,8 @@ from os import listdir, path
 import PySimpleGUI as sg
 
 from .. import consts, misc
-from ..rmd_exam_item import RmdExamItem
-from ..item_sections import AnswerList
+from ..rexam.rmd_exam_item import RExamItem
+from ..rexam.item_sections import AnswerList
 
 
 WIDTH_ML = 80 # multi line field for text input
@@ -13,7 +13,7 @@ LEN_ANSWER_SMALL = 5
 LEN_ANSWER_LARGE = 8
 TAB_LAYOUT = True
 
-_EMPTY_ITEM = RmdExamItem(None)
+_EMPTY_ITEM = RExamItem(None)
 
 
 class ItemGUI(object):
@@ -133,11 +133,11 @@ class ItemGUI(object):
             ])
 
     @property
-    def ss_item(self):
+    def rexam_item(self):
         return self._ss_item
 
-    @ss_item.setter
-    def ss_item(self, v):
+    @rexam_item.setter
+    def rexam_item(self, v):
         self._ss_item = v
         self._enable_gui(v is not None)
 
@@ -201,7 +201,7 @@ class ItemGUI(object):
                                     text_color="black")
 
     def as_markdown_file(self):
-        rtn = "".join(self.ss_item.header)
+        rtn = "".join(self.rexam_item.header)
         rtn += _EMPTY_ITEM.question.str_markdown_heading
         rtn += self.ml_quest.get().strip() + "\n\n"
 
@@ -222,26 +222,26 @@ class ItemGUI(object):
     def update_answer_list_button(self):
         # extract solution and switch visibility
 
-        if self.ss_item is None or not self.ss_item.question.has_answer_list_section():
+        if self.rexam_item is None or not self.rexam_item.question.has_answer_list_section():
             self.btn_update_exsolution.update(visible=False)
             return
 
         solution = AnswerList.extract_solution(self.ml_answer.get())
         self.btn_update_exsolution.update(visible=
-                                    self.ss_item.meta_info.solution != solution)
+                                          self.rexam_item.meta_info.solution != solution)
 
     def update_ss_item(self):
         # new content from gui to ss_item
-        self.ss_item.parse(self.as_markdown_file(),
-                           reset_meta_information=True)
+        self.rexam_item.parse(self.as_markdown_file(),
+                              reset_meta_information=True)
 
     def update_gui(self):
         # copy ss_items --> GUI elements and set active
-        self.enabled_gui= self.ss_item is not None
-        if self.ss_item is None:
+        self.enabled_gui= self.rexam_item is not None
+        if self.rexam_item is None:
             item = _EMPTY_ITEM
         else:
-            item = self.ss_item
+            item = self.rexam_item
 
         fl_info = path.join(path.split(item.filename.directory)[1],
                             item.filename.filename)
@@ -300,16 +300,16 @@ class ItemGUI(object):
             self.ml_files(value="")
 
     def save_item(self):
-        if self.ss_item is not None:
+        if self.rexam_item is not None:
             self.update_ss_item()
-            self.ss_item.save()
+            self.rexam_item.save()
             self.update_gui()
 
 
 
-#FIXME DOCU Rpy2 usage
+#TODO DOCU Rpy2 usage
 # FIXME button label don't shown under MACOS
-# FIXME prgram none
+# TODO program: none (MACOS)
 # FIXME change language
 # FIXME check meta language
 # FIXME add refresh-function

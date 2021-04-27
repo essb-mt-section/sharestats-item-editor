@@ -1,12 +1,14 @@
 from collections import OrderedDict
-from . import consts, templates
-from .taxonomy import Taxonomy
+from .. import consts, templates
+from ..misc import extract_parameter
+from ..sharestats import taxonomy
+
 
 class ItemSection(object):
 
     def __init__(self, parent, label, underline_chr, min_underline_length=4):
-        from .rmd_exam_item import RmdExamItem
-        assert(isinstance(parent, (ItemSection, RmdExamItem)))
+        from .rmd_exam_item import RExamItem
+        assert(isinstance(parent, (ItemSection, RExamItem)))
 
         self._parent = parent
         self._underline_chr = underline_chr
@@ -152,14 +154,30 @@ class AnswerList(ItemSection):
         return rtn.strip()
 
 
+def _get_required_parameter_from_templates():
+    rtn ={}
+    for k, filename in templates.FILES.items():
+        meta_info = False
+        rtn[k] = OrderedDict()
+        with open(filename, "r") as fl:
+            for l in fl:
+                if l.startswith("Meta-information"):
+                    meta_info = True
+                elif meta_info:
+                    para = extract_parameter(l)
+                    if para is not None:
+                        rtn[k].update(para)
+    return rtn
+
+
 class ItemMetaInfo(ItemSection):
 
-    TAXONOMY = Taxonomy()
+    TAXONOMY = taxonomy.Taxonomy()
 
     def __init__(self, parent):
         super().__init__(parent, "Meta-information", "=")
-        from .rmd_exam_item import RmdExamItem
-        assert(isinstance(self._parent, RmdExamItem))
+        from .rmd_exam_item import RExamItem
+        assert(isinstance(self._parent, RExamItem))
         self.parameter = OrderedDict()
 
     def parse(self, reset_parameter=False):
@@ -168,11 +186,12 @@ class ItemMetaInfo(ItemSection):
         if reset_parameter:
             self.parameter = OrderedDict()
         while len(self.text_array)>0:
-            para = self.text_array.pop(0).split(":", maxsplit=1)
-            if len(para)<2:
-                additional_content.extend(para)
+            l = self.text_array.pop(0)
+            para = extract_parameter(l)
+            if para is None:
+                additional_content.extend(l)
             else:
-                self.parameter[para[0].strip()] = para[1].strip()
+                self.parameter.update(para)
         self.text_array = additional_content
 
     @property
@@ -196,7 +215,7 @@ class ItemMetaInfo(ItemSection):
     def sort_parameter(self):
         # sorting parameter based on Templates (in place)
         try:
-            req_para = templates.REQUIRED_PARAMETER[self.type].keys()
+            req_para = ItemMetaInfo.REQUIRED_PARAMETER[self.type].keys()
         except:
             return False
 
@@ -279,7 +298,7 @@ class ItemMetaInfo(ItemSection):
 
     def get_missing_parameter(self):
         try:
-            parameter = templates.REQUIRED_PARAMETER[self.type]
+            parameter = ItemMetaInfo.REQUIRED_PARAMETER[self.type]
         except:
             return {}
 

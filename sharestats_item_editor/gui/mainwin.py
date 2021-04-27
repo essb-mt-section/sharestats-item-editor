@@ -1,12 +1,16 @@
 import os
 import PySimpleGUI as sg
 
-from .. import __version__, consts, files, settings
 from . import dialogs
 from .item_gui import ItemGUI
-from ..rmd_exam_item import RmdExamItem
-from ..item_sections import AnswerList
-from ..r_exams import RPY2INSTALLED
+
+from .. import __version__, consts, settings
+from ..rexam import files
+from ..rexam.rmd_exam_item import RExamItem
+from ..rexam.item_sections import AnswerList
+from ..rexam.r_render import RPY2INSTALLED
+
+from ..sharestats.dialogs import dialog_new_item, dialog_rename_item, dialog_taxonomy
 
 sg.theme_add_new("mytheme", consts.SG_COLOR_THEME)
 sg.theme("mytheme")
@@ -168,8 +172,8 @@ class MainWin(object):
 
     def resit_gui(self):
         self.update_item_list()
-        self.ig_nl.ss_item = None
-        self.ig_en.ss_item = None
+        self.ig_nl.rexam_item = None
+        self.ig_en.rexam_item = None
         self.ig_en.update_gui()
         self.ig_nl.update_gui()
         self.menu.update(menu_definition=self.menu_definition())
@@ -192,7 +196,7 @@ class MainWin(object):
             win.refresh()
             event, values = win.read()
             if event == sg.WINDOW_CLOSE_ATTEMPTED_EVENT or \
-                    event =="Close" or event is None:
+                    event == "Close" or event is None:
                 self.save_items(ask=True)
                 break
 
@@ -206,26 +210,26 @@ class MainWin(object):
 
                 if event.endswith("dd_types"):
                     ig.update_ss_item()
-                    ig.ss_item.meta_info.type = values[event]
-                    ig.ss_item.meta_info.sort_parameter()
+                    ig.rexam_item.meta_info.type = values[event]
+                    ig.rexam_item.meta_info.sort_parameter()
                     ig.update_gui()
 
                 elif event.endswith("btn_change_meta"):
                     ig.update_ss_item()
-                    new_meta = dialogs.taxonomy(ig.ss_item.meta_info)
+                    new_meta = dialog_taxonomy(ig.rexam_item.meta_info)
                     if new_meta is not None:
-                        ig.ss_item.meta_info = new_meta
+                        ig.rexam_item.meta_info = new_meta
                         ig.ml_metainfo.update(value=new_meta.str_parameter +
                                                     new_meta.str_text)
-                        ig.ss_item.meta_info.sort_parameter()
+                        ig.rexam_item.meta_info.sort_parameter()
                         ig.update_gui()
 
                 elif event.endswith("btn_add_answer_list"):
-                    ig.ss_item.question.add_answer_list_section()
+                    ig.rexam_item.question.add_answer_list_section()
                     ig.update_gui()
 
                 elif event.endswith("btn_add_feedback_list"):
-                    ig.ss_item.solution.add_answer_list_section()
+                    ig.rexam_item.solution.add_answer_list_section()
                     ig.update_gui()
 
                 elif event.endswith("_answer"):
@@ -233,14 +237,14 @@ class MainWin(object):
 
                 elif event.endswith("btn_update_exsolution"):
                     ig.update_ss_item()
-                    ig.ss_item.update_solution(solution_str= \
+                    ig.rexam_item.update_solution(solution_str= \
                             AnswerList.extract_solution(ig.ml_answer.get()))
                     ig.update_gui()
 
                 elif event.endswith("btn_fix_meta_issues"):
                     needs_gui_reset = False
                     ig.update_ss_item()
-                    for i in ig.ss_item.validate():
+                    for i in ig.rexam_item.validate():
                         if str(i.fix_fnc).find("fix_directory_name")>=0:
                             needs_gui_reset = True
                         i.fix()
@@ -287,7 +291,7 @@ class MainWin(object):
                 dialogs.about()
 
             elif event=="rename" or event=="Rename Item":
-                n1, n2, fix_dir= dialogs.rename_item(self.lb_items.get()[0])
+                n1, n2, fix_dir= dialog_rename_item(self.lb_items.get()[0])
                 if n1 is not None:
                     self.save_items(ask=True)
 
@@ -306,11 +310,11 @@ class MainWin(object):
                 self.save_items()
                 fl = self.fl_list_bilingual.files[self.idx_selected_item]
                 if fl[0] is None:
-                    fl_name = fl[1].get_other_language()
+                    fl_path = fl[1].get_other_language_path()
                 else:
-                    fl_name = fl[0].get_other_language()
+                    fl_path = fl[0].get_other_language_path()
 
-                self.new_item(fl_name.full_path)
+                self.new_item(fl_path)
 
             elif event=="Raw files":
                 try:
@@ -345,13 +349,13 @@ class MainWin(object):
             fls = (fls[1], fls[0]) # swap
 
         if fls[0] is not None:
-            self.ig_nl.ss_item = RmdExamItem(fls[0])
+            self.ig_nl.rexam_item = RExamItem(fls[0])
         else:
-            self.ig_nl.ss_item = None
+            self.ig_nl.rexam_item = None
         if fls[1] is not None:
-            self.ig_en.ss_item = RmdExamItem(fls[1])
+            self.ig_en.rexam_item = RExamItem(fls[1])
         else:
-            self.ig_en.ss_item = None
+            self.ig_en.rexam_item = None
 
         self.ig_en.update_gui()
         self.ig_nl.update_gui()
@@ -369,16 +373,19 @@ class MainWin(object):
             self.ig_en.save_item()
             self.unsaved_item = None
 
-    def new_item(self, new_ss_file = None):
-        if new_ss_file is None:
-            new_items = dialogs.new_item(self.base_directory)
+    def new_item(self, new_rmd_file_name = None):
+        if new_rmd_file_name is None:
+            new_items = dialog_new_item(self.base_directory)
+            for x in range(2):
+                if new_items[x] is not None:
+                    new_items[x] = RExamItem(new_items[x])
         else:
-            assert (isinstance(new_ss_file, str))
-            new_items = [RmdExamItem(new_ss_file), None]
-            if self.ig_en.ss_item is not None:
-                new_items[1] = self.ig_en.ss_item
-            elif self.ig_nl.ss_item is not None:
-                new_items[1] = self.ig_nl.ss_item
+            assert (isinstance(new_rmd_file_name, str))
+            new_items = [RExamItem(new_rmd_file_name), None]
+            if self.ig_en.rexam_item is not None:
+                new_items[1] = self.ig_en.rexam_item
+            elif self.ig_nl.rexam_item is not None:
+                new_items[1] = self.ig_nl.rexam_item
 
         if new_items[0] is not None:
             self.save_items()
@@ -387,11 +394,11 @@ class MainWin(object):
                 if n is not None:
                     n.save()
 
-            self.ig_nl.ss_item = new_items[0]
-            self.ig_en.ss_item = new_items[1]
-            if self.ig_nl.ss_item.filename.get_language() == "en":
-                self.ig_nl.ss_item, self.ig_en.ss_item = \
-                                    self.ig_en.ss_item, self.ig_nl.ss_item # swap
+            self.ig_nl.rexam_item = new_items[0]
+            self.ig_en.rexam_item = new_items[1]
+            if self.ig_nl.rexam_item.filename.get_language() == "en":
+                self.ig_nl.rexam_item, self.ig_en.rexam_item = \
+                    self.ig_en.rexam_item, self.ig_nl.rexam_item # swap
             self.update_item_list()
 
             idx = self.fl_list_bilingual.find_filename(fl_name)
