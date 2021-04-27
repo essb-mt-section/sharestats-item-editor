@@ -1,13 +1,12 @@
 from collections import OrderedDict
-from .. import consts, templates
+from .extypes import EXTYPES
+from . import templates
 from ..misc import extract_parameter
-from ..sharestats import taxonomy
-
 
 class ItemSection(object):
 
     def __init__(self, parent, label, underline_chr, min_underline_length=4):
-        from .rmd_exam_item import RExamItem
+        from .rexam_item import RExamItem
         assert(isinstance(parent, (ItemSection, RExamItem)))
 
         self._parent = parent
@@ -172,11 +171,11 @@ def _get_required_parameter_from_templates():
 
 class ItemMetaInfo(ItemSection):
 
-    TAXONOMY = taxonomy.Taxonomy()
+    REQUIRED_PARAMETER = _get_required_parameter_from_templates()
 
     def __init__(self, parent):
         super().__init__(parent, "Meta-information", "=")
-        from .rmd_exam_item import RExamItem
+        from .rexam_item import RExamItem
         assert(isinstance(self._parent, RExamItem))
         self.parameter = OrderedDict()
 
@@ -235,11 +234,11 @@ class ItemMetaInfo(ItemSection):
         self.parameter["exname"] = v
 
     @property
-    def taxonomy(self):
+    def section(self):
         return self._try_parameter("exsection")
 
-    @taxonomy.setter
-    def taxonomy(self, v):
+    @section.setter
+    def section(self, v):
         self.parameter["exsection"] = v
 
     @property
@@ -250,37 +249,6 @@ class ItemMetaInfo(ItemSection):
     def type(self, v):
         self.parameter["extype"] = v
 
-    @property
-    def type_tag(self):
-        return self._try_parameter("exextra[Type]")
-
-    @type_tag.setter
-    def type_tag(self, v):
-        self.parameter["exextra[Type]"] = v
-
-    @property
-    def program(self):
-        return self._try_parameter("exextra[Program]")
-
-    @program.setter
-    def program(self, v):
-        self.parameter["exextra[Program]"] = v
-
-    @property
-    def language(self):
-        return self._try_parameter("exextra[Language]")
-
-    @language.setter
-    def language(self, v):
-        self.parameter["exextra[Language]"] = v
-
-    @property
-    def level(self):
-        return self._try_parameter("exextra[Level]")
-
-    @level.setter
-    def level(self, v):
-        self.parameter["exextra[Level]"] = v
 
     @property
     def solution(self):
@@ -294,7 +262,7 @@ class ItemMetaInfo(ItemSection):
         """:returns True if known type
         """
 
-        return self.type in consts.EXTYPES.keys()
+        return self.type in EXTYPES.keys()
 
     def get_missing_parameter(self):
         try:
@@ -303,13 +271,3 @@ class ItemMetaInfo(ItemSection):
             return {}
 
         return {k: v for k, v in parameter.items() if k not in self.parameter}
-
-    def get_invalid_taxonomy_levels(self):
-        """returns incorrect level descriptors"""
-        incorrect_level = []
-        for tax in self.taxonomy.split(","):
-            valid, level = ItemMetaInfo.TAXONOMY.is_valid_taxonomy(tax)
-            if not valid:
-                incorrect_level.append(level)
-        return incorrect_level
-

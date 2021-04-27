@@ -4,7 +4,7 @@ from copy import copy
 
 from .item_sections import ItemSection, ItemMetaInfo
 from .files import RmdFile
-from .. import consts
+from . import extypes
 
 class Issue(object):
 
@@ -24,14 +24,17 @@ class Issue(object):
 
 class RExamItem(object):
 
-    def __init__(self, filename=None):
+    META_INFO_CLASS = ItemMetaInfo
+
+    def __init__(self, filename=None, meta_info_class=None):
         if isinstance(filename, RmdFile):
             self.filename = filename
         else:
             self.filename = RmdFile(filename)
         self.question = ItemSection(self, "Question", "=")
         self.solution = ItemSection(self, "Solution", "=")
-        self.meta_info = ItemMetaInfo(self)
+        self.meta_info = RExamItem.META_INFO_CLASS(self)
+
         self.header = []
         self.text_array = []
 
@@ -62,7 +65,7 @@ class RExamItem(object):
         self.update_solution(self.meta_info.solution)
 
     def requires_answer_list(self):
-        return self.meta_info.type in consts.HAVE_ANSWER_LIST
+        return self.meta_info.type in extypes.HAVE_ANSWER_LIST
 
     def __str__(self):
         rtn = "".join(self.header)

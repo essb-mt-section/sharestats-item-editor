@@ -10,5 +10,3 @@ FILES = {"schoice": _path.join(_fldir, "TemplateMultipleChoice.Rmd"),
 
 
 
-
-

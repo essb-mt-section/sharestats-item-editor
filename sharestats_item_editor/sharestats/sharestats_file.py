@@ -1,4 +1,4 @@
-from sharestats_item_editor.rexam.files import RmdFile
+from ..rexam import RmdFile
 #TODO redundent file
 
 class ShareStatsFile(RmdFile):

@@ -1,22 +1,3 @@
-import sys as _sys
-
-APPNAME = "ShareStats Item Editor"
-PYTHON_VERSION = "{0}.{1}.{2}".format(_sys.version_info[0],
-                                      _sys.version_info[1],
-                                      _sys.version_info[2])
-UNKNOWN_TYPE = "unknown"
-EXTYPES = {"schoice": "Multiple choice",
-           "mchoice": "Multiple answer",
-           "num": "Fill in the blank numbers",
-           "string": "Fill in the blank text/essay",
-           "cloze": "Combinations"}
-
-HAVE_ANSWER_LIST = ["schoice", "mchoice", "cloze"]
-
-TAG_NL = "-nl"
-TAG_ENG = "-en"
-TAG_BILINGUAL = "-[nl/en]"
-
 COLOR_BKG_INACTIVE = "#8A8A8A"
 COLOR_BKG_ACTIVE = "#FFFFFF"
 COLOR_BKG_ACTIVE_INFO = "#f6f6f6"
@@ -33,5 +14,13 @@ SG_COLOR_THEME = {'BACKGROUND': '#E0E0E2',
                   'PROGRESS': ('#D1826B', '#CC8019'),
                   'BORDER': 1, 'SLIDER_DEPTH': 0,
                   'PROGRESS_DEPTH': 0, }
+
+
+WIDTH_ML = 80 # multi line field for text input
+LEN_ML_SMALL = 6
+LEN_ML_LARGE = 15 # tab layout
+LEN_ANSWER_SMALL = 5
+LEN_ANSWER_LARGE = 8
+TAB_LAYOUT = True
 
 MAX_RECENT_DIRS = 5

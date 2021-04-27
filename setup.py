@@ -3,7 +3,7 @@
 Installer
 """
 
-from setuptools import setup
+from setuptools import setup, find_packages
 import codecs
 import os
 from sys import version_info as _vi
@@ -18,10 +18,6 @@ extras_require = {"rendering": ["rpy2>=3.4.3"]}
 
 entry_points = {'console_scripts':
                 ['{}={}.__main__:run'.format(application_name, package_name)]}
-
-packages = [package_name]
-for subp in ["sharestats", "templates", "gui"]:
-    packages.append("{}.{}".format(package_name, subp))
 
 package_data = {'' : ['*.json', '*.png', '*.Rmd']}
 
@@ -60,7 +56,7 @@ if __name__ == '__main__':
         author_email='lindemann@cognitive-psychology.eu',
         license='GNU GPLv3',
         url='https://github.com/essb-mt-section/sharestats-item-editor/',
-        packages=packages,
+        packages=find_packages(),
         include_package_data=True,
         package_data=package_data,
         setup_requires=[],

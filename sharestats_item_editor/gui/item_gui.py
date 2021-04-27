@@ -1,64 +1,56 @@
 from os import listdir, path
 import PySimpleGUI as sg
 
-from .. import consts, misc
-from ..rexam.rmd_exam_item import RExamItem
-from ..rexam.item_sections import AnswerList
-
-
-WIDTH_ML = 80 # multi line field for text input
-LEN_ML_SMALL = 6
-LEN_ML_LARGE = 15 # tab layout
-LEN_ANSWER_SMALL = 5
-LEN_ANSWER_LARGE = 8
-TAB_LAYOUT = True
+from . import consts
+from .. import misc
+from ..rexam import extypes, RExamItem, AnswerList
 
 _EMPTY_ITEM = RExamItem(None)
-
 
 class ItemGUI(object):
 
     def __init__(self, label, key_prefix):
 
-        if TAB_LAYOUT:
-            len_ml = LEN_ML_LARGE
-            len_answer = LEN_ANSWER_LARGE
+        if consts.TAB_LAYOUT:
+            len_ml = consts.LEN_ML_LARGE
+            len_answer = consts.LEN_ANSWER_LARGE
         else:
-            len_ml = LEN_ML_SMALL
-            len_answer = LEN_ANSWER_SMALL
+            len_ml = consts.LEN_ML_SMALL
+            len_answer = consts.LEN_ANSWER_SMALL
 
         self.label =label
         self.key_prefix = key_prefix
         self._ss_item = None
 
         self.ml_quest = sg.Multiline(default_text="",
-                                     size=(WIDTH_ML, len_ml), enable_events=True,
+                                     size=(consts.WIDTH_ML, len_ml),
+                                     enable_events=True,
                                      key="{}_quest".format(key_prefix))
         self.ml_answer = sg.Multiline(default_text="", enable_events=True,
-                                      size=(WIDTH_ML, len_answer),
+                                      size=(consts.WIDTH_ML, len_answer),
                                       key="{}_answer".format(key_prefix))
 
         self.txt_answer_list = sg.Text("Answer list", size=(10, 1),
                                        background_color=consts.COLOR_QUEST)
 
         self.ml_solution = sg.Multiline(default_text="", enable_events=True,
-                                        size=(WIDTH_ML, len_ml),
+                                        size=(consts.WIDTH_ML, len_ml),
                                         key="{}_solution".format(key_prefix))
         self.ml_solution_answ_lst = sg.Multiline(default_text="", enable_events=True,
-                                                 size=(WIDTH_ML, len_answer),
+                                                 size=(consts.WIDTH_ML, len_answer),
                                                  key="{}_solution_feedback".format(key_prefix))
         self.txt_solution_answ_lst = sg.Text("Answer list", size=(10, 1),
                                              background_color=consts.COLOR_SOLUTION)
 
         self.ml_metainfo = sg.Multiline(default_text="",
-                                        size=(WIDTH_ML, 10),  enable_events=True,
+                                        size=(consts.WIDTH_ML, 10),  enable_events=True,
                                         key="{}_meta".format(key_prefix))
 
         self.btn_change_meta = sg.Button("Edit Meta Information",  enable_events=True,
                                          key="{}_btn_change_meta".format(key_prefix))
 
         self.ml_info_validation =sg.Multiline(default_text="",
-                                              size=(WIDTH_ML-26, 4),
+                                              size=(consts.WIDTH_ML-26, 4),
                                               background_color=consts.COLOR_BKG_INACTIVE,
                                               disabled=True)
 
@@ -68,8 +60,8 @@ class ItemGUI(object):
                                      disabled=True,
                                      write_only=False)
 
-        self.dd_types = sg.DropDown(values=[consts.UNKNOWN_TYPE] +
-                                           list(consts.EXTYPES.keys()),
+        self.dd_types = sg.DropDown(values=[extypes.UNKNOWN_TYPE] +
+                                           list(extypes.EXTYPES.keys()),
                                     size=(10,1),  enable_events=True,
                                     key="{}_dd_types".format(key_prefix))
 
@@ -81,16 +73,16 @@ class ItemGUI(object):
                     key="{}_btn_add_feedback_list".format(key_prefix))
 
         self.btn_update_exsolution = sg.Button("update 'exsolution'",
-                                            enable_events=True,
-                                            button_color=consts.COLOR_RED_BTN,
-                                            size=(15,1),
-                    key="{}_btn_update_exsolution".format(key_prefix))
+                                               enable_events=True,
+                                               button_color=consts.COLOR_RED_BTN,
+                                               size=(15,1),
+                                               key="{}_btn_update_exsolution".format(key_prefix))
 
         self.btn_fix_meta_issues = sg.Button("Auto-fix issues",
-                                            enable_events=True,
-                                            button_color=consts.COLOR_RED_BTN,
-                                            size=(15,1),
-                                key="{}_btn_fix_meta_issues".format(key_prefix))
+                                             enable_events=True,
+                                             button_color=consts.COLOR_RED_BTN,
+                                             size=(15,1),
+                                             key="{}_btn_fix_meta_issues".format(key_prefix))
 
         # make main frame
         layout_question =[[self.ml_quest],
@@ -106,7 +98,7 @@ class ItemGUI(object):
                         [self.dd_types, self.btn_change_meta,
                          self.btn_fix_meta_issues]]
 
-        if TAB_LAYOUT:
+        if consts.TAB_LAYOUT:
             tab_group = sg.TabGroup([[sg.Tab("Question", layout_question,
                                              background_color=consts.COLOR_QUEST,
                                              key="{}_tab_quest".format(
@@ -124,7 +116,7 @@ class ItemGUI(object):
             ])
         else:
             self.main_frame = sg.Frame(self.label, [
-                   [sg.Frame("Question", layout_question ,
+                   [sg.Frame("Question", layout_question,
                              background_color=consts.COLOR_QUEST)],
                    [sg.Frame("Solution (feedback)", layout_solution,
                              background_color=consts.COLOR_SOLUTION)],
@@ -256,7 +248,7 @@ class ItemGUI(object):
                                 item.meta_info.str_text)
 
         if not item.meta_info.check_type():
-            t = consts.UNKNOWN_TYPE
+            t = extypes.UNKNOWN_TYPE
         else:
             t = item.meta_info.type
         self.dd_types.update(value=t)

@@ -1,14 +1,12 @@
 import os
 import PySimpleGUI as sg
 
-from . import dialogs
+from . import dialogs, consts
 from .item_gui import ItemGUI
 
-from .. import __version__, consts, settings
-from ..rexam import files
-from ..rexam.rmd_exam_item import RExamItem
-from ..rexam.item_sections import AnswerList
+from .. import APPNAME, __version__, settings
 from ..rexam.r_render import RPY2INSTALLED
+from ..rexam import files, RExamItem, AnswerList
 
 from ..sharestats.dialogs import dialog_new_item, dialog_rename_item, dialog_taxonomy
 
@@ -107,7 +105,7 @@ class MainWin(object):
                 break
         settings.recent_dirs.append(v)
         settings.recent_dirs = settings.recent_dirs[
-                               -1*consts.MAX_RECENT_DIRS:] #limit n elements         self.update_item_list()
+                               -1 * consts.MAX_RECENT_DIRS:] #limit n elements         self.update_item_list()
 
     @property
     def idx_selected_item(self):
@@ -157,7 +155,7 @@ class MainWin(object):
     def update_item_list(self, select_item=None):
         if not os.path.isdir(self.base_directory):
             self.base_directory = sg.PopupGetFolder("Please select item directory:",
-                title="{} ({})".format(consts.APPNAME, __version__))
+                title="{} ({})".format(APPNAME, __version__))
             if not os.path.isdir(self.base_directory):
                 sg.PopupError("No valid item directory selected.")
                 exit()
@@ -181,7 +179,7 @@ class MainWin(object):
         self.unsaved_item = None
 
     def run(self):
-        win = sg.Window("{} ({})".format(consts.APPNAME, __version__),
+        win = sg.Window("{} ({})".format(APPNAME, __version__),
                         self.layout, finalize=True, return_keyboard_events=True,
                         enable_close_attempted_event=True)
 
@@ -376,9 +374,6 @@ class MainWin(object):
     def new_item(self, new_rmd_file_name = None):
         if new_rmd_file_name is None:
             new_items = dialog_new_item(self.base_directory)
-            for x in range(2):
-                if new_items[x] is not None:
-                    new_items[x] = RExamItem(new_items[x])
         else:
             assert (isinstance(new_rmd_file_name, str))
             new_items = [RExamItem(new_rmd_file_name), None]

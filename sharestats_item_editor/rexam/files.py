@@ -1,7 +1,11 @@
 import os
 from os import path
 from copy import deepcopy
-from .. import consts, misc
+from .. import misc
+
+TAG_NL = "-nl"
+TAG_ENG = "-en"
+TAG_BILINGUAL = "-[nl/en]"
 
 class RmdFile(object):
 
@@ -128,11 +132,11 @@ class FileListBilingual(object):
         name = bilingual_file_names[0].name
         if len(name):
             if bilingual_file_names[1] is not None:
-                if name.endswith(consts.TAG_NL) or \
-                        name.endswith(consts.TAG_ENG):
+                if name.endswith(TAG_NL) or \
+                        name.endswith(TAG_ENG):
                     name = name[:-3]
                 if add_bilingual_tag:
-                    name = name + consts.TAG_BILINGUAL
+                    name = name + TAG_BILINGUAL
             return name
 
         else:

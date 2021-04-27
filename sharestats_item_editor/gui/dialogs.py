@@ -1,9 +1,8 @@
 from os import path
 import PySimpleGUI as sg
 
-from .. import consts, __version__, __author__, info
-from ..rexam.files import RmdFile
-from ..rexam import r_render
+from .. import APPNAME, __version__, __author__, info
+from ..rexam import r_render, RmdFile
 
 
 def ask_save(item_name):
@@ -71,12 +70,13 @@ def render(file):
     else:
         sg.Print(error)
 
+
 def about():
     old_theme = sg.theme()
     sg.theme("DarkBlack")
     width = 40
 
-    layout = [[sg.Text(consts.APPNAME, size=(width , 1), font='bold',
+    layout = [[sg.Text(APPNAME, size=(width , 1), font='bold',
                        justification='center')],
               [sg.Text("Version {}".format(__version__), font='bold',
                        size=(width , 1),

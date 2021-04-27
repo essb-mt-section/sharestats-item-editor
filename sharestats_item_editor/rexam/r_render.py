@@ -1,5 +1,5 @@
 import os
-from .. import consts, misc
+from .. import APPNAME, misc
 
 try:
     import rpy2.robjects as robjects
@@ -15,7 +15,7 @@ class RRender(object):
 
     def __init__(self):
         self.html_dir = misc.get_temp_dir(
-                    consts.APPNAME.replace(" ","_").lower(), make_dir=True)
+                    APPNAME.replace(" ","_").lower(), make_dir=True)
 
         r_code = '''library(exams)
         rmd_to_html <- function(filename) {

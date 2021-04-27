@@ -1,10 +1,12 @@
 from os import path
 import PySimpleGUI as sg
 
-from .. import consts, templates
-from ..misc import splitstrip
-from sharestats_item_editor.rexam.item_sections import ItemMetaInfo
 from . import taxonomy
+from ..gui import consts
+from ..misc import splitstrip
+
+from ..rexam import templates, RExamItem, ItemMetaInfo, extypes
+from ..rexam.files import TAG_NL, TAG_ENG, TAG_BILINGUAL
 
 def dialog_taxonomy(meta_info):
     """default_taxonomy needs to be comma separated as specified Rmd file
@@ -140,15 +142,15 @@ class _FrameMakeSSName(object):
 
         default_name = path.splitext(default_name)[0] # remove possible extension
         defaults = [""] * 4
-        if default_name.endswith(consts.TAG_BILINGUAL):
+        if default_name.endswith(TAG_BILINGUAL):
             defaults[3] = "Bilingual"
-            default_name = default_name[:-1*len(consts.TAG_BILINGUAL)]
-        elif default_name.endswith(consts.TAG_NL):
+            default_name = default_name[:-1*len(TAG_BILINGUAL)]
+        elif default_name.endswith(TAG_NL):
             defaults[3] = "Dutch"
-            default_name = default_name[:-1*len(consts.TAG_NL)]
-        elif default_name.endswith(consts.TAG_ENG):
+            default_name = default_name[:-1*len(TAG_NL)]
+        elif default_name.endswith(TAG_ENG):
             defaults[3] = "English"
-            default_name = default_name[:-1*len(consts.TAG_ENG)]
+            default_name = default_name[:-1*len(TAG_ENG)]
         else:
             defaults[3] = ""
 
@@ -209,12 +211,12 @@ class _FrameMakeSSName(object):
         if len(name1) > 0:
             lang = self.fln3.get()
             if lang == "Dutch":
-                name1 = name1 + consts.TAG_NL
+                name1 = name1 + TAG_NL
             elif lang == "English":
-                name1 = name1 + consts.TAG_ENG
+                name1 = name1 + TAG_ENG
             elif lang == "Bilingual":
-                name2 = name1 + consts.TAG_ENG
-                name1 = name1 + consts.TAG_NL
+                name2 = name1 + TAG_ENG
+                name1 = name1 + TAG_NL
 
         self.txt_name1.update(value=name1)
         self.txt_name2.update(value=name2)
@@ -229,7 +231,7 @@ class _FrameMakeSSName(object):
 
 
 def dialog_new_item(base_directory):
-    lb_type = sg.Listbox(values=["None"] + list(consts.EXTYPES.values()),
+    lb_type = sg.Listbox(values=["None"] + list(extypes.EXTYPES.values()),
                          default_values=["None"],
                          select_mode=sg.LISTBOX_SELECT_MODE_SINGLE,
                          size=(26, 6), no_scrollbar=True,
@@ -256,18 +258,18 @@ def dialog_new_item(base_directory):
         # template
         sel = lb_type.get_indexes()[0]
         if sel > 0:
-            template_key = list(consts.EXTYPES.keys())[sel - 1]
+            template_key = list(extypes.EXTYPES.keys())[sel - 1]
         else:
             template_key = None
 
         if len(fr_make_name.name1):
-            item1 = path.join(base_directory, fr_make_name.name1,
-                                        "{}.Rmd".format(fr_make_name.name1))
+            item1 = RExamItem(path.join(base_directory, fr_make_name.name1,
+                                        "{}.Rmd".format(fr_make_name.name1)))
             if template_key is not None:
                 item1.import_file(templates.FILES[template_key])
         if len(fr_make_name.name2):
-            item2 = path.join(base_directory, fr_make_name.name2,
-                                        "{}.Rmd".format(fr_make_name.name2))
+            item2 = RExamItem(path.join(base_directory, fr_make_name.name2,
+                                        "{}.Rmd".format(fr_make_name.name2)))
             if template_key is not None:
                 item2.import_file(templates.FILES[template_key])
 
