@@ -300,7 +300,7 @@ class MainWin(object):
                         new.name = new_name
                         os.rename(old.full_path, new.full_path)
                         if fix_dir:
-                            new.fix_directory_name()
+                            new.set_mirroring_folder_name()
                             os.rename(old.directory, new.directory)
                 self.resit_gui()
 

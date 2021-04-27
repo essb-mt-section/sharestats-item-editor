@@ -1,4 +1,4 @@
-from ..rexam import ItemMetaInfo
+from ..rexam import ItemMetaInfo, Issue
 from ..sharestats import taxonomy
 
 class SSItemMetaInfo(ItemMetaInfo):
@@ -54,3 +54,28 @@ class SSItemMetaInfo(ItemMetaInfo):
                 incorrect_level.append(level)
         return incorrect_level
 
+    def fix_name(self):
+        self.name = self._parent.filename.name
+
+
+    def validate(self):
+        issues = super().validate()
+
+        # item name
+        if self._parent.filename.name != self.name:
+            issues.append(Issue("Item name (exname) does not match filename",
+                                self.fix_name))
+
+        # folder name equals filename
+        # (should be always the last one, because of item saving)
+        if not self._parent.filename.folder_mirrors_filesname():
+            issues.append(Issue("Directory name does not match item name",
+                                self._parent.filename.set_mirroring_folder_name))
+
+        # check taxonomy
+        invalid_tax = self.get_invalid_taxonomy_levels()
+        if len(invalid_tax):
+            issues.append(Issue("Invalid taxonomy levels: {}".format(
+                ", ".join(invalid_tax))))
+
+        return issues

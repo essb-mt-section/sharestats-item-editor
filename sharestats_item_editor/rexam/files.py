@@ -70,13 +70,13 @@ class RmdFile(object):
         except:
             pass
 
-    def is_good_directory_name(self):
+    def folder_mirrors_filesname(self):
         if RmdFile.CASE_SENSITIVE_NAMING:
             return self.name == path.split(self.directory)[1]
         else:
             return self.name == path.split(self.directory)[1].lower()
 
-    def fix_directory_name(self, add_directory_level=False):
+    def set_mirroring_folder_name(self, add_directory_level=False):
         # changes name of sub folder
         if add_directory_level:
             self.directory = path.join(self.directory, self.name)

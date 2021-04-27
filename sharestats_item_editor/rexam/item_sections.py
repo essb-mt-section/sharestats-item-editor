@@ -1,6 +1,7 @@
 from collections import OrderedDict
-from .extypes import EXTYPES
-from . import templates
+
+from . import templates, extypes
+from .issue import Issue
 from ..misc import extract_parameter
 
 class ItemSection(object):
@@ -262,7 +263,10 @@ class ItemMetaInfo(ItemSection):
         """:returns True if known type
         """
 
-        return self.type in EXTYPES.keys()
+        return self.type in extypes.EXTYPES.keys()
+
+    def requires_answer_list(self):
+        return self.type in extypes.HAVE_ANSWER_LIST
 
     def get_missing_parameter(self):
         try:
@@ -271,3 +275,23 @@ class ItemMetaInfo(ItemSection):
             return {}
 
         return {k: v for k, v in parameter.items() if k not in self.parameter}
+
+    def fix_missing_parameter(self):
+        for k, v in self.get_missing_parameter().items():
+            self.parameter[k] = v
+
+    def validate(self):
+        issues = []
+
+        # is type defined type
+        if not self.check_type():
+            issues.append(Issue("Unknown/undefined item type(extype))", None))
+
+        # missing parameter
+        missing_parameter = self.get_missing_parameter()
+        if len(missing_parameter):
+            issues.append(Issue("Missing required meta-information: {}".format(
+                    list(missing_parameter.keys())),
+                    self.fix_missing_parameter))
+
+        return issues
