@@ -1,4 +1,4 @@
-from ..rexam import ItemMetaInfo, Issue
+from ..rexam import ItemMetaInfo, Issue, files
 from ..sharestats import taxonomy
 
 class SSItemMetaInfo(ItemMetaInfo):
@@ -38,6 +38,24 @@ class SSItemMetaInfo(ItemMetaInfo):
         self.parameter["exextra[Language]"] = v
 
     @property
+    def language_code(self):
+        if self.language == "Dutch":
+            return files.TAG_NL[1:]
+        elif self.language == "English":
+            return files.TAG_ENG[1:]
+        else:
+            return None
+
+    @language_code.setter
+    def language_code(self, v):
+        if v == files.TAG_ENG[1:]:
+            self.language = "English"
+        elif v == files.TAG_NL[1:]:
+            self.language = "Dutch"
+        else:
+            self.language = ""
+
+    @property
     def level(self):
         return self._try_parameter("exextra[Level]")
 
@@ -49,14 +67,17 @@ class SSItemMetaInfo(ItemMetaInfo):
         """returns incorrect level descriptors"""
         incorrect_level = []
         for tax in self.taxonomy.split(","):
-            valid, level = SSItemMetaInfo.TAXONOMY.is_valid_taxonomy(tax)
-            if not valid:
-                incorrect_level.append(level)
+            if len(tax):
+                valid, level = SSItemMetaInfo.TAXONOMY.is_valid_taxonomy(tax)
+                if not valid:
+                    incorrect_level.append(level)
         return incorrect_level
 
     def fix_name(self):
         self.name = self._parent.filename.name
 
+    def fix_language(self):
+        self.language_code = self._parent.filename.language_code
 
     def validate(self):
         issues = super().validate()
@@ -77,5 +98,17 @@ class SSItemMetaInfo(ItemMetaInfo):
         if len(invalid_tax):
             issues.append(Issue("Invalid taxonomy levels: {}".format(
                 ", ".join(invalid_tax))))
+
+
+        # check language
+        if self.language_code != self._parent.filename.language_code:
+            if len(self._parent.filename.language_code):
+                fix_function = self.fix_language
+            else:
+                fix_function = None
+            issues.append(Issue("Mismatch languages in meta information and "
+                                "filename", fix_function))
+
+
 
         return issues

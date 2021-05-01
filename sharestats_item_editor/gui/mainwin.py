@@ -353,7 +353,7 @@ class MainWin(object):
             return
 
         fls = self.fl_list_bilingual.files[self.idx_selected_item]
-        if fls[0] is not None and fls[0].get_language() == "en":
+        if fls[0] is not None and fls[0].language_code == "en":
             fls = (fls[1], fls[0]) # swap
 
         if fls[0] is not None:
@@ -401,7 +401,7 @@ class MainWin(object):
 
             self.ig_nl.rexam_item = new_items[0]
             self.ig_en.rexam_item = new_items[1]
-            if self.ig_nl.rexam_item.filename.get_language() == "en":
+            if self.ig_nl.rexam_item.filename.language_code == "en":
                 self.ig_nl.rexam_item, self.ig_en.rexam_item = \
                     self.ig_en.rexam_item, self.ig_nl.rexam_item # swap
             self.update_item_list()

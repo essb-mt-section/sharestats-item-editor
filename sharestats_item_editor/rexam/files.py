@@ -36,12 +36,21 @@ class RmdFile(object):
     def copy(self):
         return deepcopy(self)
 
-    def get_language(self):
-        if len(self.name) >= 3 and self.name[-3] == "-":
+    @property
+    def language_code(self):
+        if self.name[-3] == "-":
             lang = self.name[-2:].lower()
             if lang in ("nl", "en"):
                 return lang
         return ""
+
+    @language_code.setter
+    def language_code(self, v):
+        assert(isinstance(v, str) and len(v)==2)
+        if self.name[-3] == "-":
+            self.name = self.name[-2] + v
+        else:
+            self.name = self.name + "-" + v
 
     @property
     def base_directory(self):
@@ -87,10 +96,9 @@ class RmdFile(object):
         return self.directory
 
     def get_other_language_path(self):
-        lang = self.get_language()
-        if len(lang):
+        if len(self.language_code):
             name = self.name[:-2]
-            if lang == "nl":
+            if self.language_code == "nl":
                 name += "en"
             else:
                 name += "nl"
@@ -115,7 +123,7 @@ class FileListBilingual(object):
             if second is not None:
                 lst = misc.remove_all(lst, second.full_path, ignore_cases=True)  # remove all instance of second in lst
                 if path.isfile(second.full_path):
-                    if second.get_language() == "nl":
+                    if second.language_code == "nl":
                         second, first = first, second  # swap
                 else:
                     second = None

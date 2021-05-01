@@ -144,7 +144,7 @@ def edit_taxonomy(meta_info):
     ml_types = sg.Multiline(default_text=default_type, size=(20, 4),
                             key="result_types")
     fr_types = sg.Frame("Types", [
-        [sg.Listbox(values=tax.get_tags_type(), size=(26, 10),
+        [sg.Listbox(values=tax.get_tag_types(), size=(26, 10),
                     background_color=consts.COLOR_BKG_TAX_LIST, key="L_types"),
          sg.Button(">>", size=(2, 2), key="add_types"),
          ml_types]
@@ -152,16 +152,16 @@ def edit_taxonomy(meta_info):
     # tags
     fr_tags = sg.Frame("Tags", [
         [sg.Text("Language:", size=(13, 1), ),
-         sg.DropDown(values=[""] + tax.get_tags_language(),
+         sg.DropDown(values=[""] + tax.get_tag_languages(),
                      default_value=meta_info.language,
                      size=(20, 10),
                      key="dd_lang")],
         [sg.Text("Program:", size=(13, 1)),
-         sg.DropDown(values=[""] + tax.get_tags_program(),
+         sg.DropDown(values=[""] + tax.get_tag_programs(),
                      default_value=meta_info.program,
                      size=(20, 10), key="dd_progam")],
         [sg.Text("Level:", size=(13, 1)),
-         sg.DropDown(values=[""] + tax.get_tags_level(),
+         sg.DropDown(values=[""] + tax.get_tag_levels(),
                      default_value=meta_info.level,
                      size=(20, 10), key="dd_level")],
     ])

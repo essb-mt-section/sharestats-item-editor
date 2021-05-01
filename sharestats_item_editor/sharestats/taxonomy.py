@@ -35,19 +35,19 @@ class Taxonomy(object):
         else:
             return rtn
 
-    def get_tags_type(self):
+    def get_tag_types(self):
         rtn = self._get_level(Taxonomy.TAGS_KEY, categories=None)
         for x in ("Program", "Language", "Level"):
             rtn.remove(x)
         return rtn
 
-    def get_tags_program(self):
+    def get_tag_programs(self):
         return self._get_level(Taxonomy.TAGS_KEY, "Program")
 
-    def get_tags_language(self):
+    def get_tag_languages(self):
         return self._get_level(Taxonomy.TAGS_KEY, "Language")
 
-    def get_tags_level(self):
+    def get_tag_levels(self):
         return self._get_level(Taxonomy.TAGS_KEY, "Level")
 
     def is_valid_taxonomy(self, tax_string):

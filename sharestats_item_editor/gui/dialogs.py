@@ -2,13 +2,13 @@ from os import path
 import PySimpleGUI as sg
 
 from .. import consts, __version__, __author__
-from ..rexam import r_render, RmdFile, templates, RExamItem, extypes
-from ..rexam.files import TAG_NL, TAG_ENG, TAG_BILINGUAL
+from ..rexam import r_render,  templates, RExamItem, extypes
+from ..rexam.files import RmdFile, TAG_NL, TAG_ENG, TAG_BILINGUAL
 
 def ask_save(item_name):
-    layout = [[sg.Text("Unsave changes in '{}'".format(item_name))]]
-    layout.append([sg.Save("Save item", key="save"),
-                   sg.Cancel("Dismiss changes")])
+    layout = [[sg.Text("Unsave changes in '{}'".format(item_name))],
+              [sg.Save("Save item", key="save"),
+               sg.Cancel("Dismiss changes")]]
     window = sg.Window("Save?", layout, finalize=True)
     while True:
         window.refresh()
