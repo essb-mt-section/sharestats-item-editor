@@ -285,12 +285,13 @@ class ItemMetaInfo(ItemSection):
 
         # is type defined type
         if not self.check_type():
-            issues.append(Issue("Unknown/undefined item type(extype))", None))
+            issues.append(Issue("extype",
+                    "Unknown/undefined item type(extype))", None))
 
         # missing parameter
         missing_parameter = self.get_missing_parameter()
         if len(missing_parameter):
-            issues.append(Issue("Missing required meta-information: {}".format(
+            issues.append(Issue("missings", "Missing required meta-information: {}".format(
                     list(missing_parameter.keys())),
                     self.fix_missing_parameter))
 

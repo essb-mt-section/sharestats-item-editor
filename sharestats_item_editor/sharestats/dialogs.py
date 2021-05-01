@@ -1,4 +1,5 @@
 from os import path
+from copy import deepcopy
 import PySimpleGUI as sg
 
 from . import taxonomy
@@ -102,11 +103,12 @@ class FrameMakeName(object):
         return self.txt_name2.get()
 
 
-def edit_taxonomy(meta_info):
+def edit_taxonomy(current_meta_info):
     """default_taxonomy needs to be comma separated as specified Rmd file
     """
-    assert (isinstance(meta_info, ItemMetaInfo))
+    assert (isinstance(current_meta_info, ItemMetaInfo))
 
+    meta_info = deepcopy(current_meta_info)
     tax = taxonomy.Taxonomy()
     default_taxonomy = "\n".join(splitstrip(meta_info.taxonomy, ","))
     default_type = "\n".join(splitstrip(meta_info.type_tag, ","))

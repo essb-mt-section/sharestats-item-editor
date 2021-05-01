@@ -76,15 +76,17 @@ class RExamItem(object):
         # check answer & feedback list
         if self.meta_info.requires_answer_list():
             if not self.question.has_answer_list_section():
-                issues.append(Issue("No answer list defined",
+                issues.append(Issue("answers", "No answer list defined",
                                     self.fix_add_answer_list))
             if not self.solution.has_answer_list_section():
-                issues.append(Issue("No feedback answer list defined"))
+                issues.append(Issue("feedback",
+                                    "No feedback answer list defined"))
         else:
             if self.question.has_answer_list_section():
-                issues.append(Issue("Answer list not required")) #TODO or even allowed?
+                issues.append(Issue("answers", "Answer list not required")) #TODO or even allowed?
             if  self.solution.has_answer_list_section():
-                issues.append(Issue("Feedback answer list not required")) #TODO or even allowed?
+                issues.append(Issue("feedback",
+                                    "Feedback answer list not required")) #TODO or even allowed?
 
         return issues
 

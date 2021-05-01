@@ -182,7 +182,7 @@ class ItemGUI(object):
         txt = ""
         auto_fix = False
         for i in issues:
-            txt += "* {}\n".format(i.label)
+            txt += "* {}\n".format(i.description)
             if i.fix_fnc is not None:
                 auto_fix = True
 
@@ -304,6 +304,4 @@ class ItemGUI(object):
 #TODO DOCU Rpy2 usage
 # FIXME button label don't shown under MACOS
 # TODO program: none (MACOS)
-# FIXME change language
-# FIXME check meta language
 # FIXME add refresh-function

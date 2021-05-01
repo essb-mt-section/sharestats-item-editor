@@ -22,11 +22,21 @@ class SSItemEditorMainWin(MainWin):
             ig.update_ss_item()
             new_meta = edit_taxonomy(ig.rexam_item.meta_info)
             if new_meta is not None:
+                old_lang = ig.rexam_item.meta_info.language
                 ig.rexam_item.meta_info = new_meta
                 ig.ml_metainfo.update(value=new_meta.str_parameter +
                                             new_meta.str_text)
                 ig.rexam_item.meta_info.sort_parameter()
                 ig.update_gui()
+                if old_lang != new_meta.language:
+                    lang_mismatch = list(filter(lambda x: x.label == "language",
+                                    ig.rexam_item.meta_info.validate()))
+                    if len(lang_mismatch):
+
+                        print("DOIT") #FIXME rename
+
+
+
 
         else:
             super().process_item_gui_event(event, values)

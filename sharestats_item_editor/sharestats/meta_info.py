@@ -84,21 +84,23 @@ class SSItemMetaInfo(ItemMetaInfo):
 
         # item name
         if self._parent.filename.name != self.name:
-            issues.append(Issue("Item name (exname) does not match filename",
+            issues.append(Issue("exanme",
+                        "Item name (exname) does not match filename",
                                 self.fix_name))
 
         # folder name equals filename
         # (should be always the last one, because of item saving)
         if not self._parent.filename.folder_mirrors_filesname():
-            issues.append(Issue("Directory name does not match item name",
-                                self._parent.filename.set_mirroring_folder_name))
+            issues.append(Issue("folder",
+                    "Directory name does not match item name",
+                    self._parent.filename.set_mirroring_folder_name))
 
         # check taxonomy
         invalid_tax = self.get_invalid_taxonomy_levels()
         if len(invalid_tax):
-            issues.append(Issue("Invalid taxonomy levels: {}".format(
+            issues.append(Issue("tax levels",
+                                "Invalid taxonomy levels: {}".format(
                 ", ".join(invalid_tax))))
-
 
         # check language
         if self.language_code != self._parent.filename.language_code:
@@ -106,9 +108,9 @@ class SSItemMetaInfo(ItemMetaInfo):
                 fix_function = self.fix_language
             else:
                 fix_function = None
-            issues.append(Issue("Mismatch languages in meta information and "
-                                "filename", fix_function))
 
-
+            issues.append(Issue("language",
+                    "Mismatch languages in meta information and filename",
+                                fix_function))
 
         return issues
