@@ -27,9 +27,11 @@ class MainWin(object):
         self.ig_en = ItemGUI("English", "en", change_meta_info_button)
 
         self.lb_items = sg.Listbox(values=[], enable_events=True,
-                                   key="lb_files", size=(30, 40))
+                                   key="lb_files", size=(30, 39))
 
-        fr_items = sg.Frame("Item list", [
+        self.txt_item_cnt = sg.Text("...", size=(28, 1))
+        self.fr_items = sg.Frame("Items", [
+            [self.txt_item_cnt],
             [self.lb_items],
             [sg.Button(button_text="<<", size=(11, 1), key="btn_previous"),
              sg.Button(button_text=">>", size=(11, 1), key="btn_next")]])
@@ -56,7 +58,7 @@ class MainWin(object):
                                self.btn_second_lang]])
 
         fr_btns =sg.Frame("", [[self.btn_save]])
-        left_frame = sg.Frame("", [[fr_items], [fr_btns]],
+        left_frame = sg.Frame("", [[self.fr_items], [fr_btns]],
                               border_width=0)
 
         self.menu = sg.Menu(menu_definition=self.menu_definition(),
@@ -167,6 +169,16 @@ class MainWin(object):
                 exit()
 
         self.fl_list_bilingual = files.FileListBilingual(self.base_directory)
+
+        cnt = self.fl_list_bilingual.get_count()
+        self.fr_items.update(value="{} items".format(cnt["total"]))
+
+        cnt_txt = "{} nl, {} en, {} nl/en".format(
+             cnt["nl"], cnt["en"], cnt["bilingual"])
+        if cnt["undef"] > 0:
+            cnt_txt += ", {} undef".format(cnt["undef"])
+        self.txt_item_cnt.update(value=cnt_txt)
+
         list_display = self.fl_list_bilingual.get_shared_names()
         self.lb_items.update(values=list_display)
         try:

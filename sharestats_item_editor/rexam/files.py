@@ -156,6 +156,23 @@ class FileListBilingual(object):
         self.files = sorted(self.files,
                              key=FileListBilingual.shared_name)
 
+    def get_count(self):
+
+        rtn = {"total": len(self.files),
+                "nl": 0, "en": 0,
+                "bilingual": 0,
+                "undef": 0}
+        for a, b in self.files:
+            if b is not None:
+                rtn["bilingual"] += 1
+            if a.language_code == "en":
+                rtn["en"] += 1
+            elif a.language_code == "nl":
+                rtn["nl"] += 1
+            else:
+                rtn["undef"] += 1
+
+        return rtn
 
     @staticmethod
     def shared_name(bilingual_file_names, add_bilingual_tag=True):
