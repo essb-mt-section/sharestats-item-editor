@@ -106,6 +106,31 @@ class RmdFile(object):
         else:
             return None
 
+def get_rmd_files_second_level(folder, suffix=".Rmd"):
+    """returns list with Rmd files at the second levels that has the same
+    name as the folder. Otherwise first rexam found is return."""
+
+    lst = []
+    for name in os.listdir(folder):
+        fld = path.join(folder, name)
+        if path.isdir(fld):
+            good_fl_name = path.join(fld, name+suffix)
+            if path.isfile(good_fl_name):
+                lst.append(good_fl_name)
+            else:
+                # search for rexam file
+                try:
+                    subdir_lst = os.listdir(fld)
+                except:
+                    subdir_lst=[] # no permission to access dir
+                for fl_name in map(lambda x: path.join(fld, x), subdir_lst):
+                    # no permission
+                    if fl_name.lower().endswith(suffix.lower()):
+                        # best guess
+                        lst.append(fl_name)
+                        break
+
+    return lst
 
 class FileListBilingual(object):
 
@@ -114,8 +139,10 @@ class FileListBilingual(object):
         if folder is None:
             return
 
+        self.folder = folder
         # check for matching languages
-        lst = FileListBilingual._get_rmd_files_second_level(folder)
+        lst = get_rmd_files_second_level(folder)
+        self._file_list_hash = hash(tuple(lst))
         while len(lst) > 0:
             first = RmdFile(lst.pop(0))
             second = RmdFile(first.get_other_language_path())
@@ -132,6 +159,7 @@ class FileListBilingual(object):
 
         self.files = sorted(self.files,
                              key=FileListBilingual.shared_name)
+
 
     @staticmethod
     def shared_name(bilingual_file_names, add_bilingual_tag=True):
@@ -150,36 +178,13 @@ class FileListBilingual(object):
         else:
             return bilingual_file_names[0].filename
 
+    def file_list_changed(self):
+        lst = get_rmd_files_second_level(self.folder)
+        return hash(tuple(lst)) != self._file_list_hash
+
     def get_shared_names(self, bilingual_tag=True):
         return [FileListBilingual.shared_name(x, bilingual_tag)
                     for x in self.files]
-
-    @staticmethod
-    def _get_rmd_files_second_level(folder, suffix=".Rmd"):
-        """returns list with Rmd files at the second levels that has the same
-        name as the folder. Otherwise first rexam found is return."""
-
-        lst = []
-        for name in os.listdir(folder):
-            fld = path.join(folder, name)
-            if path.isdir(fld):
-                good_fl_name = path.join(fld, name+suffix)
-                if path.isfile(good_fl_name):
-                    lst.append(good_fl_name)
-                else:
-                    # search for rexam file
-                    try:
-                        subdir_lst = os.listdir(fld)
-                    except:
-                        subdir_lst=[] # no permission to acces dir
-                    for fl_name in map(lambda x: path.join(fld, x), subdir_lst):
-                        # not permission
-                        if fl_name.lower().endswith(suffix.lower()):
-                            # best guess
-                            lst.append(fl_name)
-                            break
-
-        return sorted(lst)
 
     def find_filename(self, fl_name):
         # find filename in first item of bilingual file list
@@ -194,3 +199,4 @@ class FileListBilingual(object):
             return None not in self.files[idx]
         except:
             return None
+

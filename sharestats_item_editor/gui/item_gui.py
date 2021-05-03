@@ -300,8 +300,6 @@ class ItemGUI(object):
             self.update_gui()
 
 
-
 #TODO DOCU Rpy2 usage
 # FIXME button label don't shown under MACOS
 # TODO program: none (MACOS)
-# FIXME add refresh-function

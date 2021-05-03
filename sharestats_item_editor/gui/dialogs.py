@@ -5,11 +5,16 @@ from .. import consts, __version__, __author__
 from ..rexam import r_render,  templates, RExamItem, extypes
 from ..rexam.files import RmdFile, TAG_NL, TAG_ENG, TAG_BILINGUAL
 
-def ask_save(item_name):
-    layout = [[sg.Text("Unsave changes in '{}'".format(item_name))],
+def ask_save(item_name, txt=None):
+    if txt is None:
+        layout = []
+    else:
+        layout = [[sg.Text(txt)], [sg.Text("")]]
+    layout.extend([[sg.Text("There are unsaved changes in '{}'.".format(
+        item_name))],
               [sg.Save("Save item", key="save"),
-               sg.Cancel("Dismiss changes")]]
-    window = sg.Window("Save?", layout, finalize=True)
+               sg.Cancel("Dismiss changes")]])
+    window = sg.Window("{}".format(item_name), layout, finalize=True)
     while True:
         window.refresh()
         event, v = window.read()

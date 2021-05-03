@@ -184,7 +184,6 @@ class MainWin(object):
         self.update_name()
         self.unsaved_item = None
 
-
     def run(self):
         win = sg.Window("{} ({})".format(consts.APPNAME, __version__),
                         self.layout, finalize=True, return_keyboard_events=True,
@@ -199,18 +198,17 @@ class MainWin(object):
 
         while True:
             win.refresh()
-            event, values = win.read()
+            event, values = win.read(timeout=5000)
             if event == sg.WINDOW_CLOSE_ATTEMPTED_EVENT or \
                     event == "Close" or event is None:
                 self.save_items(ask=True)
                 break
 
-            if event.startswith("nl_") or event.startswith("en_"):
+            elif event.startswith("nl_") or event.startswith("en_"):
                 #ItemGUI event
                 self.process_item_gui_event(event, values)
 
-                if self.unsaved_item is None:
-                    # if change in any text boxes
+                if self.unsaved_item is None: # if change in any text boxes
                     self.unsaved_item = self.idx_selected_item
 
             self.process_event(event, values)
@@ -265,7 +263,13 @@ class MainWin(object):
 
     def process_event(self, event, values):
 
-        if event in ("lb_files", "btn_next", "btn_previous"):
+        if event == "__TIMEOUT__":
+            if self.fl_list_bilingual.file_list_changed():
+                self.save_items(ask=True, info_text=
+                        "Changes in base directory detected.")
+                self.resit_gui()
+
+        elif event in ("lb_files", "btn_next", "btn_previous"):
             self.save_items(ask=True)
             if event == "btn_next":
                 if self.idx_selected_item is None:
@@ -370,11 +374,11 @@ class MainWin(object):
         self.update_name()
         self.menu.update(menu_definition=self.menu_definition())
 
-    def save_items(self, ask=False):
+    def save_items(self, ask=False, info_text=None):
         if self.unsaved_item is not None:
             if ask:
                 item_name = self.lb_items.get_list_values()[self.unsaved_item]
-                if not dialogs.ask_save(item_name):
+                if not dialogs.ask_save(item_name, txt = info_text):
                     self.unsaved_item = None
                     return
             self.ig_nl.save_item()

@@ -33,7 +33,7 @@ class SSItemEditorMainWin(MainWin):
                                     ig.rexam_item.meta_info.validate()))
                     if len(lang_mismatch):
 
-                        print("DOIT") #FIXME rename
+                        print("RENAME") #FIXME rename
 
 
 
