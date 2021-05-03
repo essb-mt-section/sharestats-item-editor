@@ -45,15 +45,10 @@ def remove_all(str_list, element, ignore_cases=False):
     optionally letter cases"""
 
     if ignore_cases:
-        new_list = [e for e in str_list \
+        return [e for e in str_list \
                     if str(e).lower() != str(element).lower()]
     else:
-        new_list = [e for e in str_list if e != element]
-
-    if len(str_list) == len(new_list): # no items anymore
-        return new_list
-    else:
-        return remove_all(new_list, element, ignore_cases)
+        return [e for e in str_list if e != element]
 
 
 def extract_parameter(txt):
