@@ -315,8 +315,7 @@ class MainWin(object):
                     new.name = new_name
                     os.rename(old.full_path, new.full_path)
                     if fix_dir:
-                        new.set_mirroring_folder_name()
-                        os.rename(old.directory, new.directory)
+                        os.rename(old.directory, new.get_mirroring_folder_name())
             self.resit_gui()
 
         elif event == "second_lang":

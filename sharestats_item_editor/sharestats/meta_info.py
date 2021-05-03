@@ -90,10 +90,10 @@ class SSItemMetaInfo(ItemMetaInfo):
 
         # folder name equals filename
         # (should be always the last one, because of item saving)
-        if not self._parent.filename.folder_mirrors_filesname():
+        if not self._parent.filename.folder_mirrors_filename():
             issues.append(Issue("folder",
                     "Directory name does not match item name",
-                    self._parent.filename.set_mirroring_folder_name))
+                    self._parent.fix_directory_name))
 
         # check taxonomy
         invalid_tax = self.get_invalid_taxonomy_levels()
@@ -114,3 +114,6 @@ class SSItemMetaInfo(ItemMetaInfo):
                                 fix_function))
 
         return issues
+
+#FIXME fix id lower-uppercase dublicate exsist
+#FIXME rename to bilingual

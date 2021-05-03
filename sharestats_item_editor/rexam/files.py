@@ -79,21 +79,16 @@ class RmdFile(object):
         except:
             pass
 
-    def folder_mirrors_filesname(self):
-        if RmdFile.CASE_SENSITIVE_NAMING:
-            return self.name == path.split(self.directory)[1]
-        else:
-            return self.name == path.split(self.directory)[1].lower()
+    def folder_mirrors_filename(self):
+        return self.name == path.split(self.directory)[1]
 
-    def set_mirroring_folder_name(self, add_directory_level=False):
+    def get_mirroring_folder_name(self, add_directory_level=False):
         # changes name of sub folder
         if add_directory_level:
-            self.directory = path.join(self.directory, self.name)
+            return path.join(self.directory, self.name)
         else:
             d = path.split(self.directory)
-            self.directory = path.join(d[0], self.name)
-
-        return self.directory
+            return path.join(d[0], self.name)
 
     def get_other_language_path(self):
         if len(self.language_code):
@@ -143,18 +138,19 @@ class FileListBilingual(object):
         # check for matching languages
         lst = get_rmd_files_second_level(folder)
         self._file_list_hash = hash(tuple(lst))
+
         while len(lst) > 0:
             first = RmdFile(lst.pop(0))
             second = RmdFile(first.get_other_language_path())
 
-            if second is not None:
-                lst = misc.remove_all(lst, second.full_path, ignore_cases=True)  # remove all instance of second in lst
-                if path.isfile(second.full_path):
-                    if second.language_code == "nl":
-                        second, first = first, second  # swap
-                else:
-                    second = None
-
+            if second.full_path in lst:
+                lst = misc.remove_all(lst, second.full_path,
+                                      ignore_cases=True)  # remove all
+                # instance of second in lst
+                if second.language_code == "nl":
+                    second, first = first, second  # swap
+            else:
+                second = None
             self.files.append((first, second))
 
         self.files = sorted(self.files,
