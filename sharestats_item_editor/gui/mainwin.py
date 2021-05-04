@@ -133,6 +133,8 @@ class MainWin(object):
         elif index > n-1:
             index = n-1
         self.lb_items.update(set_to_index=index)
+        self.load_selected_item()
+
 
     @property
     def unsaved_item(self):
@@ -161,7 +163,7 @@ class MainWin(object):
         # dir information
         self.txt_base_directory.update(value=self.base_directory)
 
-    def update_item_list(self, select_item=None):
+    def update_item_list(self):
         if not os.path.isdir(self.base_directory):
             self.base_directory = sg.PopupGetFolder("Please select item directory:",
                 title="{} ({})".format(consts.APPNAME, __version__))
@@ -182,10 +184,6 @@ class MainWin(object):
 
         list_display = self.fl_list_bilingual.get_shared_names()
         self.lb_items.update(values=list_display)
-        try:
-            self.idx_selected_item = list_display.index(select_item)
-        except:
-            pass
 
     def resit_gui(self):
         self.update_item_list()
@@ -207,7 +205,6 @@ class MainWin(object):
 
         self.resit_gui()
         self.idx_selected_item = 0
-        self.load_selected_item()
 
         while True:
             win.refresh()
@@ -294,7 +291,9 @@ class MainWin(object):
                     self.idx_selected_item = 0
                 else:
                     self.idx_selected_item -= 1
-            self.load_selected_item()
+
+            else: # selected
+                self.load_selected_item()
 
         elif event == "Open Directory" or event in self.settings.recent_dirs:
             self.save_items(ask=True)
@@ -318,21 +317,26 @@ class MainWin(object):
         elif event == "Reload Item List":
             self.resit_gui()
 
-        elif event == "rename" or event == "Rename Item":
+        elif event == "rename":
             n1, n2, fix_dir = dialogs.rename_item(self.lb_items.get()[0])
             if n1 is not None:
                 self.save_items(ask=True)
 
-            for new_name, old in zip((n1, n2),
-                                     self.fl_list_bilingual.files[
-                                         self.idx_selected_item]):
-                if new_name is not None and old is not None:
-                    new = old.copy()
-                    new.name = new_name
-                    os.rename(old.full_path, new.full_path)
-                    if fix_dir:
-                        os.rename(old.directory, new.get_mirroring_folder_name())
-            self.resit_gui()
+                for new_name, old in zip((n1, n2),
+                            self.fl_list_bilingual.files[self.idx_selected_item]):
+                    if new_name is not None and old is not None:
+                        new = old.copy()
+                        new.name = new_name
+                        os.rename(old.full_path, new.full_path)
+                        if fix_dir:
+                            os.rename(old.directory, new.get_mirroring_folder_name())
+
+                self.resit_gui()
+
+                idx = self.fl_list_bilingual.find_shared_name(n1)
+                if idx is not None:
+                    self.idx_selected_item = idx
+
 
         elif event == "second_lang":
             self.save_items()
@@ -364,8 +368,6 @@ class MainWin(object):
             if fl is not None:
                 self.save_items(ask=True)
                 dialogs.render(two_files[0])
-
-
 
     def load_selected_item(self):
         if self.idx_selected_item is None:
@@ -428,10 +430,8 @@ class MainWin(object):
             idx = self.fl_list_bilingual.find_filename(fl_name)
             if idx is not None:
                 self.idx_selected_item = idx
-            self.update_item_list(select_item=idx)
+
             self.ig_en.update_gui()
             self.ig_nl.update_gui()
             self.update_name()
             self.menu.update(menu_definition=self.menu_definition())
-
-#FIXME new item not selected

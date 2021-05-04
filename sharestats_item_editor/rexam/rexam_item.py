@@ -81,10 +81,10 @@ class RExamItem(object):
                                     "No feedback answer list defined"))
         else:
             if self.question.has_answer_list_section():
-                issues.append(Issue("answers", "Answer list not required")) #TODO or even allowed?
+                issues.append(Issue("answers", "Answer list not required"))
             if  self.solution.has_answer_list_section():
                 issues.append(Issue("feedback",
-                                    "Feedback answer list not required")) #TODO or even allowed?
+                                    "Feedback answer list not required"))
 
         return issues
 

@@ -199,6 +199,14 @@ class FileListBilingual(object):
         return [FileListBilingual.shared_name(x, bilingual_tag)
                     for x in self.files]
 
+    def find_shared_name(self, name):
+        tmp = self.get_shared_names(bilingual_tag=False)
+        try:
+            return tmp.index(name)
+        except:
+            return None
+
+
     def find_filename(self, fl_name):
         # find filename in first item of bilingual file list
         tmp = [x[0].filename==fl_name for x in self.files]

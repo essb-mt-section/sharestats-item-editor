@@ -31,9 +31,9 @@ class SSItemEditorMainWin(MainWin):
                 if old_lang != new_meta.language:
                     lang_mismatch = list(filter(lambda x: x.label == "language",
                                     ig.rexam_item.meta_info.validate()))
-                    if len(lang_mismatch):
 
-                        print("RENAME") #FIXME rename
+                    if len(lang_mismatch):
+                        pass
 
 
 
