@@ -1,7 +1,7 @@
 from os import path
 import json as json
 
-from .. import misc
+from .item_editor import misc
 
 class Taxonomy(object):
 

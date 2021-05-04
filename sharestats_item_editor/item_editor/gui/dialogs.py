@@ -1,7 +1,7 @@
 from os import path
 import PySimpleGUI as sg
 
-from .. import consts, __version__, __author__
+from .. import consts, __version__, __author__, APPNAME
 from ..rexam import r_render,  templates, RExamItem, extypes
 from ..rexam.files import RmdFile, TAG_NL, TAG_ENG, TAG_BILINGUAL
 
@@ -81,7 +81,7 @@ def about():
     sg.theme("DarkBlack")
     width = 40
 
-    layout = [[sg.Text(consts.APPNAME, size=(width , 1), font='bold',
+    layout = [[sg.Text(APPNAME, size=(width , 1), font='bold',
                        justification='center')],
               [sg.Text("Version {}".format(__version__), font='bold',
                        size=(width , 1),
@@ -90,9 +90,7 @@ def about():
                                                      "essb.png"))],
               [sg.Text("")] ]
 
-    info_array = ["(c) {}".format(__author__), ""] + consts.info() +\
-            ["", "website: https://github.com/essb-mt-section/sharestats-item" \
-                                        "-editor"]
+    info_array = ["(c) {}".format(__author__), ""] + consts.info()
 
     layout.append([sg.Multiline(default_text="\n".join(info_array),
                                 size=(55, len(info_array)),

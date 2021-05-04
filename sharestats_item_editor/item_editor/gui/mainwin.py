@@ -4,7 +4,7 @@ import PySimpleGUI as sg
 from . import dialogs
 from .item_gui import ItemGUI
 
-from .. import __version__, consts
+from .. import __version__, consts, APPNAME
 from .json_settings import JSONSettings
 from ..rexam.r_render import RPY2INSTALLED
 from ..rexam import files, RExamItem, AnswerList
@@ -16,7 +16,7 @@ class MainWin(object):
 
     def __init__(self, reset_settings=False, change_meta_info_button=False):
         self.settings = JSONSettings(
-                         appname=consts.APPNAME.replace(" ", "_").lower(),
+                         appname=APPNAME.replace(" ", "_").lower(),
                          settings_file_name="settings.json",
                          defaults= {"recent_dirs": []},
                          reset=reset_settings)
@@ -166,7 +166,7 @@ class MainWin(object):
     def update_item_list(self):
         if not os.path.isdir(self.base_directory):
             self.base_directory = sg.PopupGetFolder("Please select item directory:",
-                title="{} ({})".format(consts.APPNAME, __version__))
+                title="{} ({})".format(APPNAME, __version__))
             if not os.path.isdir(self.base_directory):
                 sg.PopupError("No valid item directory selected.")
                 exit()
@@ -196,7 +196,7 @@ class MainWin(object):
         self.unsaved_item = None
 
     def run(self):
-        win = sg.Window("{} ({})".format(consts.APPNAME, __version__),
+        win = sg.Window("{} ({})".format(APPNAME, __version__),
                         self.layout, finalize=True, return_keyboard_events=True,
                         enable_close_attempted_event=True)
 

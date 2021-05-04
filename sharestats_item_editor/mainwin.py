@@ -1,5 +1,5 @@
-from ..gui.mainwin import MainWin
-from ..gui import dialogs as base_dialogs
+from .item_editor.gui.mainwin import MainWin
+from .item_editor.gui import dialogs as base_dialogs
 
 from .dialogs import edit_taxonomy,FrameMakeName
 base_dialogs.FrameMakeName = FrameMakeName

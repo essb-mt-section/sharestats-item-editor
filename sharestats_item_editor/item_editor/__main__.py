@@ -1,12 +1,7 @@
 import sys
+from . import consts, __version__, APPNAME
 
-from . import  __version__
-from .meta_info import SSItemMetaInfo
-from .mainwin import SSItemEditorMainWin
-
-from .item_editor import consts, APPNAME
-from .item_editor.rexam import RExamItem
-RExamItem.META_INFO_CLASS = SSItemMetaInfo
+from .gui.mainwin import MainWin
 
 def run():
     if sys.version_info[0] != 3 or sys.version_info[1] < 5:
@@ -27,7 +22,7 @@ def run():
         print("\n".join(consts.info()))
         exit()
 
-    SSItemEditorMainWin(reset_settings=reset).run()
+    MainWin(reset_settings=reset).run()
 
 if __name__ == "__main__":
     run()

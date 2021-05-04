@@ -3,11 +3,11 @@ from copy import deepcopy
 import PySimpleGUI as sg
 
 from . import taxonomy
-from .. import consts
-from ..misc import splitstrip
+from .item_editor import consts
+from .item_editor.misc import splitstrip
 
-from ..rexam import ItemMetaInfo
-from ..rexam.files import TAG_NL, TAG_ENG, TAG_BILINGUAL
+from .item_editor.rexam import ItemMetaInfo
+from .item_editor.rexam.files import TAG_NL, TAG_ENG, TAG_BILINGUAL
 
 class FrameMakeName(object):
 

@@ -1,7 +1,5 @@
 import sys as _sys
 
-APPNAME = "Item Editor"
-
 PYTHON_VERSION = "{0}.{1}.{2}".format(_sys.version_info[0],
                                       _sys.version_info[1],
                                       _sys.version_info[2])
@@ -34,11 +32,13 @@ TAB_LAYOUT = True
 MAX_RECENT_DIRS = 5
 
 def info():
+    from . import WEBSITE
     from .gui.mainwin import sg, RPY2INSTALLED, MainWin
     from .misc import yesno
 
     settings_file = MainWin().settings.settings_file
     return ["Python {}".format(PYTHON_VERSION),
         "PySimpleGui {}".format(sg.version),
-        "RPY2 installed {}".format(yesno(RPY2INSTALLED)),
-        "Settings {}".format(settings_file)]
+        "RPY2 installed: {}".format(yesno(RPY2INSTALLED)),
+        "Settings: {}".format(settings_file),
+        "Web: {}".format(WEBSITE)]
