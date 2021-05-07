@@ -26,7 +26,6 @@ def yesno(bool):
     else:
         return "No"
 
-
 def get_temp_dir(appname, make_dir=True):
     # creates and returns a temp folder
 

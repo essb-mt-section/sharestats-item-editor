@@ -15,6 +15,6 @@ def info():
     settings_file = MainWin().settings.settings_file
     return ["Python {}".format(PYTHON_VERSION),
         "PySimpleGui {}".format(sq_version),
-        "RPY2 installed: {}".format(yesno(RPY2INSTALLED)),
+        "RPy2 installed: {}".format(yesno(RPY2INSTALLED)),
         "Settings: {}".format(settings_file),
         "Web: {}".format(WEBSITE)]

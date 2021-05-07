@@ -1,5 +1,5 @@
 """
-The module contain all modification of the item editor for the stats share
+This module contains all modification of the item editor for the stats share
 projects.
 
 (c) O. Lindemann
