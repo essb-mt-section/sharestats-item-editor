@@ -1,4 +1,5 @@
-from .item_editor.rexam import ItemMetaInfo, Issue, files
+from .item_editor.rexam.item_sections import ItemMetaInfo, Issue
+from .item_editor.rexam import files
 from . import taxonomy
 
 class SSItemMetaInfo(ItemMetaInfo):

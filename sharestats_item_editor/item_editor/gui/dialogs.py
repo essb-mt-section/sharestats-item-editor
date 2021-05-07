@@ -1,8 +1,9 @@
 from os import path
 import PySimpleGUI as sg
 
-from .. import consts, __version__, __author__, APPNAME
-from ..rexam import r_render,  templates, RExamItem, extypes
+from .. import sysinfo, __version__, __author__, APPNAME
+from ..rexam import r_render, templates, extypes
+from ..rexam.rexam_item import RExamItem
 from ..rexam.files import RmdFile, TAG_NL, TAG_ENG, TAG_BILINGUAL
 
 def ask_save(item_name, txt=None):
@@ -90,7 +91,7 @@ def about():
                                                      "essb.png"))],
               [sg.Text("")] ]
 
-    info_array = ["(c) {}".format(__author__), ""] + consts.info()
+    info_array = ["(c) {}".format(__author__), ""] + sysinfo.info()
 
     layout.append([sg.Multiline(default_text="\n".join(info_array),
                                 size=(55, len(info_array)),

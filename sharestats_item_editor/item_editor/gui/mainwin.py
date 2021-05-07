@@ -6,8 +6,10 @@ from .item_gui import ItemGUI
 
 from .. import __version__, consts, APPNAME
 from .json_settings import JSONSettings
+from ..rexam import files
 from ..rexam.r_render import RPY2INSTALLED
-from ..rexam import files, RExamItem, AnswerList
+from ..rexam.rexam_item import RExamItem
+from ..rexam.item_sections import AnswerList
 
 sg.theme_add_new("mytheme", consts.SG_COLOR_THEME)
 sg.theme("mytheme")
