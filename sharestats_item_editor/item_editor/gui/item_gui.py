@@ -1,10 +1,11 @@
 from os import listdir, path
 import PySimpleGUI as sg
 
-from .. import misc, consts
+from .. import misc
 from ..rexam import extypes
 from ..rexam.rexam_item import RExamItem
 from ..rexam.item_sections import AnswerList
+from . import consts
 
 _EMPTY_ITEM = RExamItem(None)
 
@@ -40,7 +41,7 @@ class ItemGUI(object):
                                         key="{}_solution".format(key_prefix))
         self.ml_solution_answ_lst = sg.Multiline(default_text="", enable_events=True,
                                                  size=(
-                                                 consts.WIDTH_ML, len_answer),
+                                                     consts.WIDTH_ML, len_answer),
                                                  key="{}_solution_feedback".format(key_prefix))
         self.txt_solution_answ_lst = sg.Text("Answer list", size=(10, 1),
                                              background_color=consts.COLOR_SOLUTION)

@@ -1,15 +1,14 @@
 import os
 import PySimpleGUI as sg
 
-from . import dialogs
-from .item_gui import ItemGUI
-
-from .. import __version__, consts, APPNAME
-from .json_settings import JSONSettings
+from .. import __version__, APPNAME
 from ..rexam import files
 from ..rexam.r_render import RPY2INSTALLED
 from ..rexam.rexam_item import RExamItem
 from ..rexam.item_sections import AnswerList
+from . import dialogs, consts
+from .json_settings import JSONSettings
+from .item_gui import ItemGUI
 
 sg.theme_add_new("mytheme", consts.SG_COLOR_THEME)
 sg.theme("mytheme")
@@ -116,7 +115,7 @@ class MainWin(object):
                 break
         self.settings.recent_dirs.append(v)
         self.settings.recent_dirs = self.settings.recent_dirs[
-                               -1 * consts.MAX_RECENT_DIRS:] #limit n elements         self.update_item_list()
+                                    -1 * consts.MAX_RECENT_DIRS:] #limit n elements         self.update_item_list()
 
     @property
     def idx_selected_item(self):

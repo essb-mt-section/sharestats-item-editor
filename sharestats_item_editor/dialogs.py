@@ -3,7 +3,7 @@ from copy import deepcopy
 import PySimpleGUI as sg
 
 from . import taxonomy
-from .item_editor import consts
+from .item_editor.gui import consts
 from .item_editor.misc import splitstrip
 
 from .item_editor.rexam.item_sections import ItemMetaInfo
