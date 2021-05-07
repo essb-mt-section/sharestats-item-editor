@@ -1,6 +1,7 @@
 import os
 from os import path
 from copy import deepcopy
+import shutil
 from .. import misc
 
 TAG_NL = "-nl"
@@ -32,9 +33,6 @@ class RmdFile(object):
     def make_path(base_directory, name):
         # includes name also subdir
         return path.join(base_directory, name, "{}.Rmd".format(name))
-
-    def copy(self):
-        return deepcopy(self)
 
     @property
     def language_code(self):
@@ -82,7 +80,7 @@ class RmdFile(object):
     def folder_mirrors_filename(self):
         return self.name == path.split(self.directory)[1]
 
-    def get_mirroring_folder_name(self, add_directory_level=False):
+    def get_mirroring_dir_name(self, add_directory_level=False):
         # changes name of sub folder
         if add_directory_level:
             return path.join(self.directory, self.name)
@@ -100,6 +98,48 @@ class RmdFile(object):
             return self.make_path(self.base_directory, name)
         else:
             return None
+
+    def rename(self, new_name, rename_dir = True, rename_on_disk=False):
+        """Returns io error, if it occurs"""
+        new = deepcopy(self)
+        new.name = new_name
+        if rename_dir:
+            new_dir = new.get_mirroring_dir_name()
+        else:
+            new_dir = None
+
+        if rename_on_disk:
+            io_error = os_rename(self.full_path, new.full_path)
+            if io_error:
+                return "Can't rename directory: {}".format(io_error)
+            elif new_dir is not None:
+                io_error = os_rename(self.directory, new_dir)
+                if io_error:
+                    return "Can't rename directory: {}".format(io_error)
+
+        self.filename = new.filename
+        if new_dir:
+            self.directory = new_dir
+
+    def copy_files(self, new_name):
+        """Returns io error, if it occurs other the new RmdFile object"""
+        new = deepcopy(self)
+        new.name = new_name
+        new.directory = new.get_mirroring_dir_name()
+
+        #copy fiels
+        ioerror = copytree(self.directory, new.directory)
+        if ioerror:
+            return ioerror
+        else:
+            copied_rmd = deepcopy(new)
+            copied_rmd.name = self.name # has still old name
+            ioerror = os_rename(copied_rmd.full_path, new.full_path)
+            if ioerror:
+                return ioerror
+
+        return new
+
 
 def get_rmd_files_second_level(folder, suffix=".Rmd"):
     """returns list with Rmd files at the second levels that has the same
@@ -126,6 +166,7 @@ def get_rmd_files_second_level(folder, suffix=".Rmd"):
                         break
 
     return lst
+
 
 class FileListBilingual(object):
 
@@ -206,7 +247,6 @@ class FileListBilingual(object):
         except:
             return None
 
-
     def find_filename(self, fl_name):
         # find filename in first item of bilingual file list
         tmp = [x[0].filename==fl_name for x in self.files]
@@ -221,3 +261,17 @@ class FileListBilingual(object):
         except:
             return None
 
+
+def os_rename(source, destination):
+    """rename file or folder and return error if it occurs"""
+    try:
+        return os.rename(source, destination)
+    except IOError as io_error:
+        return io_error
+
+def copytree(source_folder, destination_folder):
+    """copies a folder and return error if it occurs"""
+    try:
+        shutil.copytree(source_folder, destination_folder)
+    except IOError as io_error:
+        return io_error

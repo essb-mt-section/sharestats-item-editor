@@ -1,4 +1,5 @@
-import os
+from os import path, getcwd
+from copy import deepcopy
 import PySimpleGUI as sg
 
 from .. import __version__, APPNAME
@@ -9,6 +10,7 @@ from ..rexam.item_sections import AnswerList
 from . import dialogs, consts
 from .json_settings import JSONSettings
 from .item_gui import ItemGUI
+from .log import log
 
 sg.theme_add_new("mytheme", consts.SG_COLOR_THEME)
 sg.theme("mytheme")
@@ -165,10 +167,10 @@ class MainWin(object):
         self.txt_base_directory.update(value=self.base_directory)
 
     def update_item_list(self):
-        if not os.path.isdir(self.base_directory):
+        if not path.isdir(self.base_directory):
             self.base_directory = sg.PopupGetFolder("Please select item directory:",
                 title="{} ({})".format(APPNAME, __version__))
-            if not os.path.isdir(self.base_directory):
+            if not path.isdir(self.base_directory):
                 sg.PopupError("No valid item directory selected.")
                 exit()
 
@@ -202,7 +204,7 @@ class MainWin(object):
                         enable_close_attempted_event=True)
 
         if len(self.settings.recent_dirs) == 0: # very first launch
-            self.base_directory = os.getcwd()
+            self.base_directory = getcwd()
 
         self.resit_gui()
         self.idx_selected_item = 0
@@ -319,25 +321,7 @@ class MainWin(object):
             self.resit_gui()
 
         elif event == "rename":
-            n1, n2, fix_dir = dialogs.rename_item(self.lb_items.get()[0])
-            if n1 is not None:
-                self.save_items(ask=True)
-
-                for new_name, old in zip((n1, n2),
-                            self.fl_list_bilingual.files[self.idx_selected_item]):
-                    if new_name is not None and old is not None:
-                        new = old.copy()
-                        new.name = new_name
-                        os.rename(old.full_path, new.full_path)
-                        if fix_dir:
-                            os.rename(old.directory, new.get_mirroring_folder_name())
-
-                self.resit_gui()
-
-                idx = self.fl_list_bilingual.find_shared_name(n1)
-                if idx is not None:
-                    self.idx_selected_item = idx
-
+            self.rename()
 
         elif event == "second_lang":
             self.save_items()
@@ -436,3 +420,46 @@ class MainWin(object):
             self.ig_nl.update_gui()
             self.update_name()
             self.menu.update(menu_definition=self.menu_definition())
+
+    def rename(self):
+        n1, n2, fix_dir = dialogs.rename_item(self.lb_items.get()[0])
+        if n1 is not None:
+            self.save_items(ask=True)
+
+            old_rmd_files = self.fl_list_bilingual.files[self.idx_selected_item]
+
+            old_bilingual = self.fl_list_bilingual.is_bilingual(self.idx_selected_item)
+            if len(n2)>0 and not old_bilingual: #new and not old is bilingual
+                # new item: copy folder and files
+                old = old_rmd_files[0]
+                if old.language_code == "nl":
+                    new_name = files.RmdFile(n2).name
+                else:
+                    new_name = files.RmdFile(n1).name
+
+                new = old.copy_files(new_name)
+                if not isinstance(new, files.RmdFile):
+                    # io error
+                    log(new)
+                    self.resit_gui()
+                    return
+
+                if old.language_code == "nl":
+                    old_rmd_files = (old, new)
+                else:
+                    old_rmd_files = (new, old)
+
+            for new_name, old in zip((n1, n2), old_rmd_files):
+                if new_name is not None and isinstance(old, files.RmdFile):
+                    log(old.rename(new_name,
+                                rename_dir=fix_dir, rename_on_disk=True))
+
+            self.resit_gui()
+
+            idx = self.fl_list_bilingual.find_shared_name(n1)
+            if idx is not None:
+                self.idx_selected_item = idx
+
+
+# FIXME: rename biligual -> single language
+# FIXME: add languages, ask for copy

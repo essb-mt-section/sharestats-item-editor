@@ -65,7 +65,7 @@ class RExamItem(object):
 
     def fix_directory_name(self):
         self.save()
-        rename(self.filename.directory, self.filename.get_mirroring_folder_name())
+        rename(self.filename.directory, self.filename.get_mirroring_dir_name())
 
     def validate(self):
         """Validates the item and returns a list of issues"""
