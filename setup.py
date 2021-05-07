@@ -8,6 +8,8 @@ import codecs
 import os
 from sys import version_info as _vi
 
+from sharestats_item_editor import __version__ as version
+
 package_name = "sharestats_item_editor"
 application_name = "sharestats-item-editor"
 
@@ -49,7 +51,7 @@ def get_version(package):
 if __name__ == '__main__':
     setup(
         name = application_name,
-        version=get_version(package_name),
+        version=version,
         description='Editor and validator for Rexam items in the ShareStats '
                     'project',
         author='Oliver Lindemann',
