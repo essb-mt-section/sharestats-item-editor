@@ -247,9 +247,11 @@ class FileListBilingual(object):
         except:
             return None
 
-    def find_filename(self, fl_name):
-        # find filename in first item of bilingual file list
-        tmp = [x[0].filename==fl_name for x in self.files]
+    def find_filename(self, fl_name, second_language=False):
+        """find idx by file name of first or second language"""
+
+        item = int(second_language)
+        tmp = [x[item].filename==fl_name for x in self.files]
         try:
             return tmp.index(True)
         except:
