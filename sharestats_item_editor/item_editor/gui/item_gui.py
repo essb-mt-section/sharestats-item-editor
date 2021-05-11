@@ -304,5 +304,3 @@ class ItemGUI(object):
 
 
 #TODO DOCU Rpy2 usage
-# FIXME button label don't shown under MACOS
-# TODO program: none (MACOS)

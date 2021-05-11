@@ -117,4 +117,3 @@ class SSItemMetaInfo(ItemMetaInfo):
         return issues
 
 #FIXME fix id lower-uppercase dublicate exist (try:..except:..)
-#FIXME rename to bilingual

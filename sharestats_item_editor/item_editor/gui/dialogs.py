@@ -15,7 +15,8 @@ def ask_save(item_name, txt=None):
         item_name))],
               [sg.Save("Save item", key="save"),
                sg.Cancel("Dismiss changes")]])
-    window = sg.Window("{}".format(item_name), layout, finalize=True)
+    window = sg.Window("{}".format(item_name), layout, finalize=True,
+                       modal=True, keep_on_top=True)
     while True:
         window.refresh()
         event, v = window.read()
@@ -101,7 +102,8 @@ def about():
                                 no_scrollbar=True,
                                 text_color='white')])
 
-    window = sg.Window("About", layout, finalize=True)
+    window = sg.Window("About", layout, finalize=True,
+                       modal=True, keep_on_top=True)
     window.refresh()
     while True:
         window.refresh()
@@ -211,7 +213,8 @@ def new_item(base_directory):
     layout.append([sg.Frame("Template", [[lb_type]]),
                    sg.Cancel(size=(10, 2)),
                    sg.Button("Create", size=(10, 2), key="create")])
-    window = sg.Window("New Item(s)", layout, finalize=True)
+    window = sg.Window("New Item(s)", layout, finalize=True,
+                       modal=True, keep_on_top=True)
     fr_make_name.update_names()
     while True:
         window.refresh()
@@ -253,7 +256,8 @@ def rename_item(item_name):
                    sg.Text(" "*10),
                    sg.Cancel(size=(10, 2)),
                    sg.Button("Rename", size=(10, 2), key="rename")])
-    window = sg.Window("Rename", layout, finalize=True)
+    window = sg.Window("Rename", layout, finalize=True,
+                       modal=True, keep_on_top=True)
     fr_make_name.update_names()
 
     while True:
