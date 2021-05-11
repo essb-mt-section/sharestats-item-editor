@@ -1,11 +1,10 @@
 from os import path, getcwd
-from copy import deepcopy
 import PySimpleGUI as sg
 
 from .. import __version__, APPNAME
-from ..rexam import files
+from ..rexam.rexam_item import RExamItem, RmdFilename
+from ..rexam.file_list import FileListBilingual
 from ..rexam.r_render import RPY2INSTALLED
-from ..rexam.rexam_item import RExamItem
 from ..rexam.item_sections import AnswerList
 from . import dialogs, consts
 from .json_settings import JSONSettings
@@ -18,6 +17,7 @@ sg.theme("mytheme")
 class MainWin(object):
 
     def __init__(self, reset_settings=False, change_meta_info_button=False):
+
         self.settings = JSONSettings(
                          appname=APPNAME.replace(" ", "_").lower(),
                          settings_file_name="settings.json",
@@ -73,7 +73,7 @@ class MainWin(object):
                    self.ig_nl.main_frame,
                    self.ig_en.main_frame]]
 
-        self.fl_list_bilingual = files.FileListBilingual()
+        self.fl_list = FileListBilingual()
         self._unsaved_item = None
 
     def menu_definition(self):
@@ -140,11 +140,11 @@ class MainWin(object):
 
     def select_item_by_filename(self, item_name):
         """select by file name"""
-        idx = self.fl_list_bilingual.find_filename(item_name,
-                                                    second_language=False)
+        idx = self.fl_list.find_filename(item_name,
+                                         second_language=False)
         if idx is None:
-            idx = self.fl_list_bilingual.find_filename(item_name,
-                                                       second_language=True)
+            idx = self.fl_list.find_filename(item_name,
+                                             second_language=True)
         if idx is not None:
             self.idx_selected_item = idx
 
@@ -162,10 +162,10 @@ class MainWin(object):
     def update_name(self):
         if self.idx_selected_item is not None:
             #update name
-            names = self.fl_list_bilingual.get_shared_names(bilingual_tag=False)
+            names = self.fl_list.get_shared_names(bilingual_tag=False)
             self.txt_name.update(value=names[self.idx_selected_item])
             self.btn_rename.update(disabled=False)
-            if self.fl_list_bilingual.is_bilingual(self.idx_selected_item):
+            if self.fl_list.is_bilingual(self.idx_selected_item):
                 self.btn_second_lang.update(disabled=True)
             else:
                 self.btn_second_lang.update(disabled=False)
@@ -185,9 +185,9 @@ class MainWin(object):
                 sg.PopupError("No valid item directory selected.")
                 exit()
 
-        self.fl_list_bilingual = files.FileListBilingual(self.base_directory)
+        self.fl_list = FileListBilingual(self.base_directory)
 
-        cnt = self.fl_list_bilingual.get_count()
+        cnt = self.fl_list.get_count()
         self.fr_items.update(value="{} items".format(cnt["total"]))
 
         cnt_txt = "{} nl, {} en, {} nl/en".format(
@@ -196,14 +196,14 @@ class MainWin(object):
             cnt_txt += ", {} undef".format(cnt["undef"])
         self.txt_item_cnt.update(value=cnt_txt)
 
-        list_display = self.fl_list_bilingual.get_shared_names()
+        list_display = self.fl_list.get_shared_names()
         self.lb_items.update(values=list_display)
 
     def reset_gui(self):
 
         if self.idx_selected_item is not None:
             # keep selected
-            selected_file = self.fl_list_bilingual.files[
+            selected_file = self.fl_list.files[
                 self.idx_selected_item][0].filename
         else:
             selected_file = None
@@ -299,7 +299,7 @@ class MainWin(object):
     def process_event(self, event, values):
 
         if event == "__TIMEOUT__":
-            if self.fl_list_bilingual.file_list_changed():
+            if self.fl_list.file_list_changed():
                 self.save_items(ask=True, info_text=
                         "Changes in base directory detected.")
                 self.reset_gui()
@@ -351,7 +351,7 @@ class MainWin(object):
 
         elif event == "Raw files":
             try:
-                two_files = self.fl_list_bilingual.files[self.idx_selected_item]
+                two_files = self.fl_list.files[self.idx_selected_item]
             except:
                 return
             self.save_items(ask=True)
@@ -359,7 +359,7 @@ class MainWin(object):
 
         elif event.endswith("render"):
             try:
-                two_files = self.fl_list_bilingual.files[self.idx_selected_item]
+                two_files = self.fl_list.files[self.idx_selected_item]
             except:
                 return
             if event.startswith("Dutch"):
@@ -374,18 +374,14 @@ class MainWin(object):
         if self.idx_selected_item is None:
             return
 
-        fls = self.fl_list_bilingual.files[self.idx_selected_item]
+        rexam_items = self.fl_list.load_files(self.idx_selected_item)
+        fls = self.fl_list.files[self.idx_selected_item]
         if fls[0] is not None and fls[0].language_code == "en":
-            fls = (fls[1], fls[0]) # swap
-
-        if fls[0] is not None:
-            self.ig_nl.rexam_item = RExamItem(fls[0])
+            self.ig_nl.rexam_item = rexam_items[1]
+            self.ig_en.rexam_item = rexam_items[0]
         else:
-            self.ig_nl.rexam_item = None
-        if fls[1] is not None:
-            self.ig_en.rexam_item = RExamItem(fls[1])
-        else:
-            self.ig_en.rexam_item = None
+            self.ig_nl.rexam_item = rexam_items[0]
+            self.ig_en.rexam_item = rexam_items[1]
 
         self.ig_en.update_gui()
         self.ig_nl.update_gui()
@@ -435,14 +431,14 @@ class MainWin(object):
             self.menu.update(menu_definition=self.menu_definition())
 
     def add_second_language(self):
-            fl = self.fl_list_bilingual.files[self.idx_selected_item]
+            fl = self.fl_list.files[self.idx_selected_item]
             fl_path = fl[0].get_other_language_path()
             copy_content = sg.popup_yes_no("Copy content of {}?".format(
                         fl[0].name))
             if copy_content == "Yes":
-                new_name = files.RmdFile(fl_path).name
+                new_name = RmdFilename(fl_path).name
                 new = fl[0].copy_files(new_name)
-                if not isinstance(new, files.RmdFile):
+                if not isinstance(new, RmdFilename):
                     # io error
                     log(new)
                     self.reset_gui()
@@ -456,21 +452,21 @@ class MainWin(object):
         if n1 is not None:
             self.save_items(ask=False)
 
-            add_language = len(n2) and not self.fl_list_bilingual.is_bilingual(
+            add_language = len(n2) and not self.fl_list.is_bilingual(
                                             self.idx_selected_item) #new and not old is bilingual
             # rename
             for new_name, old in zip((n1, n2),
-                        self.fl_list_bilingual.files[self.idx_selected_item]):
+                                     self.fl_list.files[self.idx_selected_item]):
                 if new_name is not None and old is not None:
                     log(old.rename(new_name, rename_dir=fix_dir,
                                    rename_on_disk=True))
 
             self.reset_gui()
-            self.select_item_by_filename(n1 + ".Rmd")
+            self.select_item_by_filename(n1 + RmdFilename.RMDFILE_SUFFIX)
             if add_language:
                 self.add_second_language()
                 self.reset_gui()
-                self.select_item_by_filename(n1 + ".Rmd")
+                self.select_item_by_filename(n1 + RmdFilename.RMDFILE_SUFFIX)
 
 
 # FIXME: ".Rmd" not with capitol R --> not shared filename
