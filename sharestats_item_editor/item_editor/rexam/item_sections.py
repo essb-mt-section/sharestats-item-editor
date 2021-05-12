@@ -72,6 +72,23 @@ class ItemSection(object):
     def str_text(self):
         return "".join(self.text_array).rstrip()
 
+    def str_text_short(self, max_lines=2, ignore_empty_lines=True):
+        """return x lines for the section and ignores empty lines"""
+        if ignore_empty_lines:
+            cnt = 0
+            rtn = ""
+            for x in self.text_array:
+                x = x.strip()
+                if len(x):
+                    rtn += x + "\n"
+                    cnt += 1
+                    if cnt >= max_lines:
+                        break
+            return rtn
+
+        else:
+            return "".join(self.text_array[:max_lines])
+
     def __str__(self):
         # section as string
         rtn = self.str_markdown_heading + self.str_text

@@ -144,9 +144,13 @@ class FileListBilingual(object):
             a = RExamItem(fls[0])
         else:
             a = None
+
         if fls[1] is not None:
             b = RExamItem(fls[1])
         else:
             b = None
 
         return a, b
+
+    def iter_all_files(self):
+        return map(self.load_files, range(len(self.files)))
