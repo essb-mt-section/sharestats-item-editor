@@ -1,3 +1,4 @@
+import hashlib
 from os import path, rename, makedirs
 import shutil
 from copy import deepcopy
@@ -23,9 +24,6 @@ class RmdFilename(object):
                 return self.full_path.lower() == other.full_path.lower()
         except:
             return False
-
-    def __str__(self):
-        return str(self.full_path)
 
     @staticmethod
     def make_path(base_directory, name):
@@ -68,6 +66,12 @@ class RmdFilename(object):
     @property
     def full_path(self):
         return path.join(self.directory, self.filename)
+
+    @property
+    def relative_path(self):
+        """path relative to base director"""
+        return path.join(path.split(self.directory)[1],
+                         self.filename)
 
     def make_dirs(self):
         try:
@@ -246,6 +250,11 @@ class RExamItem(object):
         self.meta_info.sort_parameter()
         if self.question.has_answer_list_section():
             self.question.answer_list.solution_str = solution_str
+
+    def version_id(self):
+        """question id is based on the filename and file folder"""
+        txt = str(self.question) + str(self.solution) + str(self.meta_info)
+        return hashlib.md5(txt.encode()).hexdigest()
 
 
 

@@ -4,7 +4,7 @@ import PySimpleGUI as sg
 from .. import sysinfo, __version__, __author__, APPNAME
 from ..rexam import r_render, templates, extypes
 from ..rexam.rexam_item import RExamItem, RmdFilename
-from ..rexam.file_list import TAG_NL, TAG_ENG, TAG_BILINGUAL
+from ..rexam.bilingual import TAG_NL, TAG_ENG, TAG_BILINGUAL
 
 def ask_save(item_name, txt=None):
     if txt is None:
