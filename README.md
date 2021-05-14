@@ -1,5 +1,9 @@
 # ShareStats Item Editor
 
+![GitHub](https://img.shields.io/github/license/essb-mt-section/sharestats-item-editor?style=flat) 
+![PyPI- Python Version](https://img.shields.io/pypi/pyversions/sharestats-item-editor?style=flat) 
+![PyPI](https://img.shields.io/pypi/v/sharestats-item-editor?style=flat)
+
 **Editor and validator for Rexam items in the ShareStats project**
 
 Feature overview

@@ -374,7 +374,7 @@ class MainWin(object):
         if self.idx_selected_item is None:
             return
 
-        rexam_items = self.fl_list.load_files(self.idx_selected_item)
+        rexam_items = self.fl_list.load_rexam_files(self.idx_selected_item)
         fls = self.fl_list.files[self.idx_selected_item]
         if fls[0] is not None and fls[0].language_code == "en":
             self.ig_nl.rexam_item = rexam_items[1]
