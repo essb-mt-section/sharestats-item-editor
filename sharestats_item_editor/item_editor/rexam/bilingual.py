@@ -13,6 +13,8 @@ def _get_rmd_files_second_level(folder,
     """returns list with Rmd files at the second levels that has the same
     name as the folder. Otherwise first rexam found is return."""
 
+    if folder is None:
+        return []
     lst = []
     for name in os.listdir(folder):
         fld = path.join(folder, name)
@@ -38,6 +40,7 @@ def _get_rmd_files_second_level(folder,
 
 class BilingualRmdFiles(object):
     """representation of two RMD Files"""
+    
     def __init__(self, filename_item, filename_translation=None):
 
         if filename_item is None and filename_translation is not None:
@@ -63,11 +66,11 @@ class BilingualRmdFiles(object):
         self._translation = b
 
     @property
-    def item_filename(self):
+    def filename_item(self):
         return self._item
 
     @property
-    def translation_filename(self):
+    def filename_translation(self):
         return self._translation
 
     def shared_name(self, add_bilingual_tag=True):
@@ -106,9 +109,6 @@ class BilingualFileList(object):
 
     def __init__(self, folder=None):
         self.files = []
-        if folder is None:
-            return
-
         self.folder = folder
         # check for matching languages
         lst = _get_rmd_files_second_level(folder)
@@ -128,7 +128,6 @@ class BilingualFileList(object):
 
         self.files = sorted(self.files, key=lambda x:x.shared_name())
 
-
     def get_count(self):
 
         rtn = {"total": len(self.files),
@@ -138,9 +137,9 @@ class BilingualFileList(object):
         for f in self.files:
             if f.is_bilingual():
                 rtn["bilingual"] += 1
-            elif f.item_filename.language_code == "en":
+            elif f.filename_item.language_code == "en":
                 rtn["en"] += 1
-            elif f.item_filename.language_code == "nl":
+            elif f.filename_item.language_code == "nl":
                 rtn["nl"] += 1
             else:
                 rtn["undef"] += 1
@@ -165,22 +164,18 @@ class BilingualFileList(object):
         """find idx by file name of first or second language"""
 
         for cnt, fl in enumerate(self.files):
-            if fl.item_filename.filename == fl_name or \
-                    (fl.translation_filename is not None and
-                            fl.translation_filename.filename == fl_name):
+            if fl.filename_item.filename == fl_name or \
+                    (fl.filename_translation is not None and
+                     fl.filename_translation.filename == fl_name):
                 return cnt
 
         return None
 
     def load_rexam_files(self, idx):
         """returns tuple of RExam files or None if file does not exist."""
-
         try:
             fls = self.files[idx]
         except:
             return None, None
 
         return fls.load_item(), fls.load_translation()
-
-    def iter_rexam_files(self):
-        return map(self.load_rexam_files, range(len(self.files)))

@@ -200,7 +200,7 @@ class MainWin(object):
         if self.idx_selected_item is not None:
             # keep selected
             selected_file = self.fl_list.files[
-                                    self.idx_selected_item].item_filename
+                                    self.idx_selected_item].filename_item
         else:
             selected_file = None
 
@@ -351,7 +351,7 @@ class MainWin(object):
             except:
                 return
             self.save_items(ask=True)
-            dialogs.show_text_file(flns.item_filename, flns.translation_filename)
+            dialogs.show_text_file(flns.filename_item, flns.filename_translation)
 
         elif event.endswith("render"):
             try:
@@ -359,9 +359,9 @@ class MainWin(object):
             except:
                 return
             if event.startswith("Dutch"):
-                fl = flns.item_filename
+                fl = flns.filename_item
             else:
-                fl = flns.translation_filename
+                fl = flns.filename_translation
             if fl is not None:
                 self.save_items(ask=True)
                 dialogs.render(flns[0])
@@ -371,7 +371,7 @@ class MainWin(object):
             return
 
         rexam_items = self.fl_list.load_rexam_files(self.idx_selected_item)
-        ifln = self.fl_list.files[self.idx_selected_item].item_filename
+        ifln = self.fl_list.files[self.idx_selected_item].filename_item
         if ifln is not None and ifln.language_code == "en":
             self.ig_nl.rexam_item = rexam_items[1]
             self.ig_en.rexam_item = rexam_items[0]
@@ -427,7 +427,7 @@ class MainWin(object):
             self.menu.update(menu_definition=self.menu_definition())
 
     def add_second_language(self):
-            ifln = self.fl_list.files[self.idx_selected_item].item_filename
+            ifln = self.fl_list.files[self.idx_selected_item].filename_item
             fl_path = ifln.get_other_language_path()
             copy_content = sg.popup_yes_no("Copy content of {}?".format(
                         ifln.name))
@@ -452,8 +452,8 @@ class MainWin(object):
             add_language = len(n2) and not flns.is_bilingual()
             # rename
             for new_name, old in zip((n1, n2),
-                                     (flns.item_filename,
-                                      flns.translation_filename)):
+                                     (flns.filename_item,
+                                      flns.filename_translation)):
                 if new_name is not None and old is not None:
                     log(old.rename(new_name, rename_dir=fix_dir,
                                    rename_on_disk=True))
