@@ -147,7 +147,7 @@ class BilingualFileList(object):
 
         return rtn
 
-    def file_list_changed(self):
+    def is_file_list_changed(self):
         lst = _get_rmd_files_second_level(self.folder)
         return hash(tuple(lst)) != self._file_list_hash
 
@@ -171,7 +171,6 @@ class BilingualFileList(object):
                 return cnt
 
         return None
-
 
     def load_rexam_files(self, idx):
         """returns tuple of RExam files or None if file does not exist."""

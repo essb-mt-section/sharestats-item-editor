@@ -57,3 +57,16 @@ def extract_parameter(txt):
     if m is not None:
         return {txt[:m.end()-1].strip(): txt[m.end():].strip()}
     return None
+
+def iter_list(data):
+    """Generates iterator over the data.
+    If None, iterator over empty list. If data is not a list or a tuple,
+    iterator over list with one one element [data]
+    """
+    if data is None:
+        return iter([])
+    elif isinstance(data, (list, tuple)):
+        return iter(data)
+    else:
+        return iter([data])
+

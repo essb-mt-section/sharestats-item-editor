@@ -295,7 +295,7 @@ class MainWin(object):
     def process_event(self, event, values):
 
         if event == "__TIMEOUT__":
-            if self.fl_list.file_list_changed():
+            if self.fl_list.is_file_list_changed():
                 self.save_items(ask=True, info_text=
                         "Changes in base directory detected.")
                 self.reset_gui()
