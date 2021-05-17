@@ -3,8 +3,7 @@ import PySimpleGUI as sg
 
 from .. import misc
 from ..rexam import extypes
-from ..rexam.rexam_item import RExamItem
-from ..rexam.item_sections import AnswerList
+from ..rexam.item import RExamItem, AnswerList
 from . import consts
 
 _EMPTY_ITEM = RExamItem(None)

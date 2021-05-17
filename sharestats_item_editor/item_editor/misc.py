@@ -1,6 +1,7 @@
 import os
 import tempfile
 import re
+import shutil
 
 def subdict(d, nested_keys=None):
     """:return the dict nested hierarchically indicated by nested_keys
@@ -48,6 +49,20 @@ def remove_all(str_list, element, ignore_cases=False):
                     if str(e).lower() != str(element).lower()]
     else:
         return [e for e in str_list if e != element]
+
+def os_rename(source, destination):
+    """rename file or folder and return error if it occurs"""
+    try:
+        return os.rename(source, destination)
+    except IOError as io_error:
+        return io_error
+
+def copytree(source_folder, destination_folder):
+    """copies a folder and return error if it occurs"""
+    try:
+        shutil.copytree(source_folder, destination_folder)
+    except IOError as io_error:
+        return io_error
 
 
 def extract_parameter(txt):

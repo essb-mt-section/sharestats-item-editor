@@ -1,5 +1,5 @@
-from .item_editor.rexam.item_sections import ItemMetaInfo, Issue
-from .item_editor.rexam.bilingual import TAG_NL, TAG_ENG
+from .item_editor.rexam.item import ItemMetaInfo, Issue
+from .item_editor.rexam.files import TAG_NL, TAG_ENG
 
 from . import taxonomy
 

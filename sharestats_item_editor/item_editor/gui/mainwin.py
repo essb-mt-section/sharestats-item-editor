@@ -2,10 +2,10 @@ from os import path, getcwd
 import PySimpleGUI as sg
 
 from .. import __version__, APPNAME
-from ..rexam.rexam_item import RExamItem, RmdFilename
-from ..rexam.bilingual import BilingualFileList
+from ..rexam.files import RmdFilename
+from ..rexam.item_database import ItemFileList
 from ..rexam.r_render import RPY2INSTALLED
-from ..rexam.item_sections import AnswerList
+from ..rexam.item import RExamItem, AnswerList
 from . import dialogs, consts
 from .json_settings import JSONSettings
 from .item_gui import ItemGUI
@@ -73,7 +73,7 @@ class MainWin(object):
                    self.ig_nl.main_frame,
                    self.ig_en.main_frame]]
 
-        self.fl_list = BilingualFileList()
+        self.fl_list = ItemFileList()
         self._unsaved_item = None
 
     def menu_definition(self):
@@ -181,7 +181,7 @@ class MainWin(object):
                 sg.PopupError("No valid item directory selected.")
                 exit()
 
-        self.fl_list = BilingualFileList(self.base_directory)
+        self.fl_list = ItemFileList(self.base_directory)
 
         cnt = self.fl_list.get_count()
         self.fr_items.update(value="{} items".format(cnt["total"]))
