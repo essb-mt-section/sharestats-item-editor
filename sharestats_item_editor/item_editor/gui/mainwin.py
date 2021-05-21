@@ -2,7 +2,7 @@ from os import path, getcwd
 import PySimpleGUI as sg
 
 from .. import __version__, APPNAME
-from ..rexam.files import RmdFilename
+from ..rexam.rmd_file import RmdFile
 from ..rexam.item_database import ItemFileList
 from ..rexam.r_render import RPY2INSTALLED
 from ..rexam.item import RExamItem, AnswerList
@@ -200,7 +200,7 @@ class MainWin(object):
         if self.idx_selected_item is not None:
             # keep selected
             selected_file = self.fl_list.files[
-                                    self.idx_selected_item].filename_item
+                                    self.idx_selected_item].rmd_item
         else:
             selected_file = None
 
@@ -351,7 +351,7 @@ class MainWin(object):
             except:
                 return
             self.save_items(ask=True)
-            dialogs.show_text_file(flns.filename_item, flns.filename_translation)
+            dialogs.show_text_file(flns.rmd_item, flns.rmd_translation)
 
         elif event.endswith("render"):
             try:
@@ -359,9 +359,9 @@ class MainWin(object):
             except:
                 return
             if event.startswith("Dutch"):
-                fl = flns.filename_item
+                fl = flns.rmd_item
             else:
-                fl = flns.filename_translation
+                fl = flns.rmd_translation
             if fl is not None:
                 self.save_items(ask=True)
                 dialogs.render(flns[0])
@@ -371,7 +371,7 @@ class MainWin(object):
             return
 
         rexam_items = self.fl_list.load_rexam_files(self.idx_selected_item)
-        ifln = self.fl_list.files[self.idx_selected_item].filename_item
+        ifln = self.fl_list.files[self.idx_selected_item].rmd_item
         if ifln is not None and ifln.language_code == "en":
             self.ig_nl.rexam_item = rexam_items[1]
             self.ig_en.rexam_item = rexam_items[0]
@@ -427,14 +427,14 @@ class MainWin(object):
             self.menu.update(menu_definition=self.menu_definition())
 
     def add_second_language(self):
-            ifln = self.fl_list.files[self.idx_selected_item].filename_item
+            ifln = self.fl_list.files[self.idx_selected_item].rmd_item
             fl_path = ifln.get_other_language_path()
             copy_content = sg.popup_yes_no("Copy content of {}?".format(
                         ifln.name))
             if copy_content == "Yes":
-                new_name = RmdFilename(fl_path).name
+                new_name = RmdFile(fl_path).name
                 new = ifln.copy_files(new_name)
-                if not isinstance(new, RmdFilename):
+                if not isinstance(new, RmdFile):
                     # io error
                     log(new)
                     self.reset_gui()
@@ -452,18 +452,18 @@ class MainWin(object):
             add_language = len(n2) and not flns.is_bilingual()
             # rename
             for new_name, old in zip((n1, n2),
-                                     (flns.filename_item,
-                                      flns.filename_translation)):
+                                     (flns.rmd_item,
+                                      flns.rmd_translation)):
                 if new_name is not None and old is not None:
                     log(old.rename(new_name, rename_dir=fix_dir,
                                    rename_on_disk=True))
 
             self.reset_gui()
-            self.select_item_by_filename(n1 + RmdFilename.RMDFILE_SUFFIX)
+            self.select_item_by_filename(n1 + RmdFile.RMDFILE_SUFFIX)
             if add_language:
                 self.add_second_language()
                 self.reset_gui()
-                self.select_item_by_filename(n1 + RmdFilename.RMDFILE_SUFFIX)
+                self.select_item_by_filename(n1 + RmdFile.RMDFILE_SUFFIX)
 
 
 # FIXME: ".Rmd" not with capitol R --> not shared filename

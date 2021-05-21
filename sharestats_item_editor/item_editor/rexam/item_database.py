@@ -2,12 +2,13 @@ import os
 from os import path
 from .. import misc
 
-from .files import RmdFilename, BilingualRmdFiles
+from .rmd_file import RmdFile
+from .item_bilingual import EntryItemDatabase, EntryItemFileList
 from .item import RExamItem
 from ..misc import iter_list
 
 def _get_rmd_files_second_level(folder,
-                                suffix=RmdFilename.RMDFILE_SUFFIX):
+                                suffix=RmdFile.RMDFILE_SUFFIX):
     """returns list with Rmd files at the second levels that has the same
     name as the folder. Otherwise first rexam found is return."""
 
@@ -74,7 +75,6 @@ class _SearchSchemata(object):
         self.parameter.append(parameter)
         self.search_types.append(search_type)
 
-
 class ItemFileList(object):
 
     def __init__(self, folder=None):
@@ -85,16 +85,16 @@ class ItemFileList(object):
         self._file_list_hash = hash(tuple(lst))
 
         while len(lst) > 0:
-            first = RmdFilename(lst.pop(0))
-            second = RmdFilename(first.get_other_language_path())
+            first = RmdFile(lst.pop(0))
+            second = RmdFile(first.get_other_language_path())
             if second.full_path in lst:
                 lst = misc.remove_all(lst, second.full_path,
                                       ignore_cases=True)  # remove all
             else:
                 second = None
 
-            self.files.append(BilingualRmdFiles(filename_item=first,
-                                                filename_translation=second))
+            self.files.append(EntryItemFileList(rmd_file_item=first,
+                                                rmd_file_translation=second))
 
         self.files = sorted(self.files, key=lambda x:x.shared_name())
 
@@ -107,9 +107,9 @@ class ItemFileList(object):
         for f in self.files:
             if f.is_bilingual():
                 rtn["bilingual"] += 1
-            elif f.filename_item.language_code == "en":
+            elif f.rmd_item.language_code == "en":
                 rtn["en"] += 1
-            elif f.filename_item.language_code == "nl":
+            elif f.rmd_item.language_code == "nl":
                 rtn["nl"] += 1
             else:
                 rtn["undef"] += 1
@@ -134,9 +134,9 @@ class ItemFileList(object):
         """find idx by file name of first or second language"""
 
         for cnt, fl in enumerate(self.files):
-            if fl.filename_item.filename == fl_name or \
-                    (fl.filename_translation is not None and
-                     fl.filename_translation.filename == fl_name):
+            if fl.rmd_item.filename == fl_name or \
+                    (fl.rmd_translation is not None and
+                     fl.rmd_translation.filename == fl_name):
                 return cnt
 
         return None
@@ -148,8 +148,8 @@ class ItemFileList(object):
         except:
             return None, None
 
-        return ItemFileList._load_item(fls.filename_item), \
-               ItemFileList._load_item(fls.filename_translation)
+        return ItemFileList._load_item(fls.rmd_item), \
+               ItemFileList._load_item(fls.rmd_translation)
 
     @staticmethod
     def _load_item(filename):
@@ -157,52 +157,6 @@ class ItemFileList(object):
             return None
         else:
             return RExamItem(filename.full_path)
-
-class ItemDatabaseEntry(object):
-
-    def __init__(self, shared_name, item, translation):
-        assert isinstance(item, RExamItem) or item is None
-        assert isinstance(translation, RExamItem) or translation is None
-        self.shared_name = shared_name
-        self.item = item
-        self.translation = translation
-        try:
-            self.version_item = item.version_id()
-        except:
-            self.version_item = ""
-
-        try:
-            self.version_translation = translation.version_id()
-        except:
-            self.version_translation = ""
-
-    @property
-    def version_item_short(self):
-        return self.version_translation[:7]
-
-    @property
-    def version_translation_short(self):
-        return self.version_item[:7]
-
-    def short_repr(self, max_lines, add_versions=False, short_version=True):
-        try:
-            a_txt = self.item.question.str_text_short(max_lines)
-        except:
-            a_txt = ""
-        try:
-            b_txt = self.translation.question.str_text_short(max_lines)
-        except:
-            b_txt = ""
-
-        rtn = [self.shared_name, a_txt, b_txt]
-        if add_versions:
-            if short_version:
-                rtn.extend([self.version_item_short,
-                            self.version_translation_short])
-            else:
-                rtn.extend([self.version_item, self.version_translation])
-        return rtn
-
 
 class ItemDatabase(ItemFileList):
 
@@ -216,7 +170,7 @@ class ItemDatabase(ItemFileList):
         self.entries = []
         for c in range(len(self.files)):
             rexam_fls = self.load_rexam_files(c)
-            tmp = ItemDatabaseEntry(shared_name=self.files[c].shared_name(
+            tmp = EntryItemDatabase(shared_name=self.files[c].shared_name(
                                                    add_bilingual_tag=False),
                                      item=rexam_fls[0],
                                      translation=rexam_fls[1])

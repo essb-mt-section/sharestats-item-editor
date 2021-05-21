@@ -3,7 +3,7 @@ import PySimpleGUI as sg
 
 from .. import sysinfo, __version__, __author__, APPNAME
 from ..rexam import r_render, templates, extypes
-from ..rexam.files import RmdFilename, TAG_NL, TAG_ENG, TAG_BILINGUAL
+from ..rexam.rmd_file import RmdFile, TAG_NL, TAG_ENG, TAG_BILINGUAL
 from ..rexam.item import RExamItem
 
 def ask_save(item_name, txt=None):
@@ -31,7 +31,7 @@ def show_text_file(file, file2=None):
     content = [None, None]
     files = []
     for i, fl in enumerate((file, file2)):
-        if isinstance(fl, RmdFilename):
+        if isinstance(fl, RmdFile):
             win_titel = "View Files: {}".format(fl.name)
             fl = fl.full_path
         try:
@@ -64,7 +64,7 @@ def show_text_file(file, file2=None):
 
 
 def render(file):
-    if isinstance(file, RmdFilename):
+    if isinstance(file, RmdFile):
         file = file.full_path
     r = r_render.RRender()
     if r.r_init_error is not None:

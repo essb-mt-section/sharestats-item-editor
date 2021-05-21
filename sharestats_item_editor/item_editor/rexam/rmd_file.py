@@ -6,7 +6,7 @@ TAG_NL = "-nl"
 TAG_ENG = "-en"
 TAG_BILINGUAL = "-[nl/en]"
 
-class RmdFilename(object):
+class RmdFile(object):
 
     CASE_SENSITIVE_NAMING = False
     RMDFILE_SUFFIX = ".Rmd"
@@ -18,7 +18,7 @@ class RmdFilename(object):
 
     def __eq__(self, other):
         try:
-            if RmdFilename.CASE_SENSITIVE_NAMING:
+            if RmdFile.CASE_SENSITIVE_NAMING:
                 return self.full_path == other.full_path
             else:
                 return self.full_path.lower() == other.full_path.lower()
@@ -52,7 +52,7 @@ class RmdFilename(object):
 
     @property
     def name(self):
-        if RmdFilename.CASE_SENSITIVE_NAMING:
+        if RmdFile.CASE_SENSITIVE_NAMING:
             return path.splitext(self.filename)[0]
         else:
             return path.splitext(self.filename)[0].lower()
@@ -141,57 +141,3 @@ class RmdFilename(object):
                 return ioerror
 
         return new
-
-class BilingualRmdFiles(object):
-    """representation of two RMD Files"""
-
-    def __init__(self, filename_item, filename_translation=None):
-
-        if filename_item is None and filename_translation is not None:
-            filename_translation, filename_item = \
-                filename_item, filename_translation  # swap
-
-        if isinstance(filename_item, RmdFilename):
-            a = filename_item
-        else:
-            a = RmdFilename(filename_item)
-
-        if filename_translation is not None:
-            if isinstance(filename_translation, RmdFilename):
-                b = filename_translation
-            else:
-                b = RmdFilename(filename_translation)
-            if b.language_code == "nl":  # NL is reference language
-                b, a = a, b
-        else:
-            b = None
-
-        self._item = a
-        self._translation = b
-
-    @property
-    def filename_item(self):
-        return self._item
-
-    @property
-    def filename_translation(self):
-        return self._translation
-
-    def shared_name(self, add_bilingual_tag=True):
-        """bilingual_file_list_entry: tuple of two entries"""
-
-        name = self._item.name
-        if len(name):
-            if self._translation is not None:
-                if name.endswith(TAG_NL) or \
-                        name.endswith(TAG_ENG):
-                    name = name[:-3]
-                if add_bilingual_tag:
-                    name = name + TAG_BILINGUAL
-            return name
-
-        else:
-            return self._item.filename
-
-    def is_bilingual(self):
-        return self._translation is not None and self._item is not None

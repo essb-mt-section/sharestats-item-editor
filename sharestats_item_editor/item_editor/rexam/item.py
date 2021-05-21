@@ -3,7 +3,8 @@ from collections import OrderedDict
 import hashlib
 from copy import deepcopy
 
-from . import templates, extypes, files
+from . import templates, extypes
+from .rmd_file import RmdFile
 from .issue import Issue
 from ..misc import extract_parameter
 
@@ -317,7 +318,7 @@ class ItemMetaInfo(ItemSection):
         return issues
 
 
-class RExamItem(files.RmdFilename):
+class RExamItem(RmdFile):
 
     META_INFO_CLASS = ItemMetaInfo
 

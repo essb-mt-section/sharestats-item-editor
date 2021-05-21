@@ -2,14 +2,14 @@ from os import path, getcwd
 import PySimpleGUI as sg
 
 from .. import __version__, APPNAME
-from ..rexam.item_database import ItemDatabase, ItemDatabaseEntry
+from ..rexam.item_database import ItemDatabase
+from ..rexam.exam import Exam
 from . import consts
 from .json_settings import JSONSettings
 
 
 sg.theme_add_new("mytheme", consts.SG_COLOR_THEME)
 sg.theme("mytheme")
-
 
 class ExamCompiler(object):
     SHOW_HASHES = True

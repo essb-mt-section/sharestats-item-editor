@@ -6,7 +6,7 @@ from . import taxonomy
 from .item_editor.gui import consts
 from .item_editor.misc import splitstrip
 from .item_editor.rexam.item import ItemMetaInfo
-from .item_editor.rexam.files import TAG_NL, TAG_ENG, TAG_BILINGUAL
+from .item_editor.rexam.rmd_file import TAG_NL, TAG_ENG, TAG_BILINGUAL
 
 class FrameMakeName(object):
 
