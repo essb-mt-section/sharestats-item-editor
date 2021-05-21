@@ -408,14 +408,14 @@ class MainWin(object):
 
         if new_items[0] is not None:
             self.save_items()
-            fl_name = new_items[0].filename.filename
+            fl_name = new_items[0].filename
             for n in new_items:
                 if n is not None:
                     n.save()
 
             self.ig_nl.rexam_item = new_items[0]
             self.ig_en.rexam_item = new_items[1]
-            if self.ig_nl.rexam_item.filename.language_code == "en":
+            if self.ig_nl.rexam_item.language_code == "en":
                 self.ig_nl.rexam_item, self.ig_en.rexam_item = \
                     self.ig_en.rexam_item, self.ig_nl.rexam_item # swap
             self.update_item_list()

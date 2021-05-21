@@ -3,7 +3,6 @@ from collections import OrderedDict
 import hashlib
 from copy import deepcopy
 
-
 from . import templates, extypes, files
 from .issue import Issue
 from ..misc import extract_parameter
@@ -88,10 +87,10 @@ class ItemSection(object):
                     cnt += 1
                     if cnt >= max_lines:
                         break
-            return rtn
+            return rtn.strip()
 
         else:
-            return "".join(self.text_array[:max_lines])
+            return "".join(self.text_array[:max_lines]).strip()
 
     def __str__(self):
         # section as string
@@ -318,15 +317,13 @@ class ItemMetaInfo(ItemSection):
         return issues
 
 
-class RExamItem(object):
+class RExamItem(files.RmdFilename):
 
     META_INFO_CLASS = ItemMetaInfo
 
-    def __init__(self, filename=None):
-        if isinstance(filename, files.RmdFilename):
-            self.filename = filename
-        else:
-            self.filename = files.RmdFilename(filename)
+    def __init__(self, file_path=None):
+        assert isinstance(file_path, str) or file_path is None
+        super().__init__(file_path)
         self.question = ItemSection(self, "Question", "=")
         self.solution = ItemSection(self, "Solution", "=")
         self.meta_info = RExamItem.META_INFO_CLASS(self)
@@ -334,8 +331,8 @@ class RExamItem(object):
         self.header = []
         self.text_array = []
 
-        if path.isfile(self.filename.full_path):
-            self.import_file(self.filename.full_path)
+        if path.isfile(self.full_path):
+            self.import_file(self.full_path)
 
     def import_file(self, text_file):
         """import a text file as content"""
@@ -367,10 +364,10 @@ class RExamItem(object):
         return rtn
 
     def save(self):
-        if len(self.filename.full_path):
-            self.filename.make_dirs()
+        if len(self.full_path):
+            self.make_dirs()
             #print("Save {}".format(self.filename.full_path))
-            with open(self.filename.full_path, "w") as fl:
+            with open(self.full_path, "w") as fl:
                 fl.write(str(self))
 
     def fix_add_answer_list(self):
@@ -378,7 +375,7 @@ class RExamItem(object):
 
     def fix_directory_name(self):
         self.save()
-        rename(self.filename.directory, self.filename.get_mirroring_dir_name())
+        rename(self.directory, self.get_mirroring_dir_name())
 
     def validate(self):
         """Validates the item and returns a list of issues"""

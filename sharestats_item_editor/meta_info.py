@@ -76,23 +76,23 @@ class SSItemMetaInfo(ItemMetaInfo):
         return incorrect_level
 
     def fix_name(self):
-        self.name = self._parent.filename.name
+        self.name = self._parent.name
 
     def fix_language(self):
-        self.language_code = self._parent.filename.language_code
+        self.language_code = self._parent.language_code
 
     def validate(self):
         issues = super().validate()
 
         # item name
-        if self._parent.filename.name != self.name:
+        if self._parent.name != self.name:
             issues.append(Issue("exanme",
                         "Item name (exname) does not match filename",
                                 self.fix_name))
 
         # folder name equals filename
         # (should be always the last one, because of item saving)
-        if not self._parent.filename.folder_mirrors_filename():
+        if not self._parent.folder_mirrors_filename():
             issues.append(Issue("folder",
                     "Directory name does not match item name",
                     self._parent.fix_directory_name))
@@ -105,8 +105,8 @@ class SSItemMetaInfo(ItemMetaInfo):
                 ", ".join(invalid_tax))))
 
         # check language
-        if self.language_code != self._parent.filename.language_code:
-            if len(self._parent.filename.language_code):
+        if self.language_code != self._parent.language_code:
+            if len(self._parent.language_code):
                 fix_function = self.fix_language
             else:
                 fix_function = None

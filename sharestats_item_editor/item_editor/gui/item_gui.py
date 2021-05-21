@@ -239,8 +239,8 @@ class ItemGUI(object):
         else:
             item = self.rexam_item
 
-        fl_info = path.join(path.split(item.filename.directory)[1],
-                            item.filename.filename)
+        fl_info = path.join(path.split(item.directory)[1],
+                            item.filename)
         if len(fl_info):
             fl_info = ":  ..." + path.sep + fl_info
         self.main_frame.update(value=self.label + fl_info)
@@ -285,9 +285,9 @@ class ItemGUI(object):
 
         #files
         self.ml_files.update(background_color=col)
-        if self.is_enabled() and len(item.filename.directory):
-            x = listdir(item.filename.directory)
-            x = misc.remove_all(x, item.filename.filename, ignore_cases=True)
+        if self.is_enabled() and len(item.directory):
+            x = listdir(item.directory)
+            x = misc.remove_all(x, item.filename, ignore_cases=True)
             if len(x):
                 self.ml_files(value="\n".join(x))
             else:

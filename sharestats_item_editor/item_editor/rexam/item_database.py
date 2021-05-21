@@ -57,7 +57,7 @@ class _SearchSchemata(object):
 
     def _add(self, search_type, parameter):
         if search_type == "name":
-            f = lambda x: x.filename.name.find(parameter)
+            f = lambda x: x.name.find(parameter)
         elif search_type == "question":
             f = lambda x: x.question.str_text.find(parameter)
         elif search_type == "solution":
@@ -156,7 +156,52 @@ class ItemFileList(object):
         if filename is None:
             return None
         else:
-            return RExamItem(filename)
+            return RExamItem(filename.full_path)
+
+class ItemDatabaseEntry(object):
+
+    def __init__(self, shared_name, item, translation):
+        assert isinstance(item, RExamItem) or item is None
+        assert isinstance(translation, RExamItem) or translation is None
+        self.shared_name = shared_name
+        self.item = item
+        self.translation = translation
+        try:
+            self.version_item = item.version_id()
+        except:
+            self.version_item = ""
+
+        try:
+            self.version_translation = translation.version_id()
+        except:
+            self.version_translation = ""
+
+    @property
+    def version_item_short(self):
+        return self.version_translation[:7]
+
+    @property
+    def version_translation_short(self):
+        return self.version_item[:7]
+
+    def short_repr(self, max_lines, add_versions=False, short_version=True):
+        try:
+            a_txt = self.item.question.str_text_short(max_lines)
+        except:
+            a_txt = ""
+        try:
+            b_txt = self.translation.question.str_text_short(max_lines)
+        except:
+            b_txt = ""
+
+        rtn = [self.shared_name, a_txt, b_txt]
+        if add_versions:
+            if short_version:
+                rtn.extend([self.version_item_short,
+                            self.version_translation_short])
+            else:
+                rtn.extend([self.version_item, self.version_translation])
+        return rtn
 
 
 class ItemDatabase(ItemFileList):
@@ -165,51 +210,37 @@ class ItemDatabase(ItemFileList):
         """file_list_bilingual: path or file_list_biligual
         """
         super().__init__(folder=folder)
-        self.items = []
-        self.translations = []
-        self.marked_items = []
-        self._sel_idx = []
-
-        self.shared_names = self.get_shared_names(bilingual_tag=False)
-        self._all_ids = range(len(self.files))
+        self._found_ids = []
 
         ## LOAD DATA
-        for c in self._all_ids:
+        self.entries = []
+        for c in range(len(self.files)):
             rexam_fls = self.load_rexam_files(c)
-            self.items.append(rexam_fls[0])
-            self.translations.append(rexam_fls[1])
-
-        #version_ids
-        def fnc_version_id(item):
-            try:
-                return item.version_id()
-            except:
-                return ""
-        self.versions_item = list(map(fnc_version_id, self.items))
-        self.versions_translation = list(map(fnc_version_id, self.translations))
+            tmp = ItemDatabaseEntry(shared_name=self.files[c].shared_name(
+                                                   add_bilingual_tag=False),
+                                     item=rexam_fls[0],
+                                     translation=rexam_fls[1])
+            tmp.cnt = c
+            self.entries.append(tmp)
 
         self.select() # select all
 
-    def get_subset_data(self, ids):
-        """returns selection
-         name, item, translation, item_version,
-                    translation_version
-        """
-        data = zip(self._all_ids, self.shared_names, self.items,
-                   self.translations, self.versions_item,
-                   self.versions_translation)
-        return [d for d in data if d[0] in ids] #TODO make dict here?
-
+    def get_entries(self, ids, rm_nones=True):
+        """returns subset of rexam items """
+        rtn = []
+        for i in ids:
+            try:
+                rtn.append(self.entries[i])
+            except:
+                if not rm_nones:
+                    rtn.append(None)
+        return rtn
 
     @property
-    def selected_data(self):
+    def found_entries(self):
         """selected name, item, translation, item_version,
                     translation_version"""
-        return self.get_subset_data(self._sel_idx)
-
-    @property
-    def marked_data(self):
-        return self.get_subset_data(self.marked_items)
+        return self.get_entries(self._found_ids)
 
     def _search(self, search_function, item_ids_subset):
         """searches rexam file using search_function and returns idx,
@@ -221,13 +252,13 @@ class ItemDatabase(ItemFileList):
         for x in item_ids_subset:
 
             try:
-                found = search_function(self.items[x])
+                found = search_function(self.entries[x].item)
             except:
                 found = -1
 
             if found<0:
                 try:
-                    found = search_function(self.translations[x])
+                    found = search_function(self.entries[x].translation)
                 except:
                     found = -1
 
@@ -242,8 +273,7 @@ class ItemDatabase(ItemFileList):
                      search_logic_or=False):
 
         # select all
-        self._sel_idx = self._all_ids
-
+        self._found_ids = range(len(self.entries))
         search = _SearchSchemata()
         search.add("name", iter_list(name))
         search.add("question", iter_list(question))
@@ -255,40 +285,18 @@ class ItemDatabase(ItemFileList):
             # OR
             idx = []
             for fnc in search.functions:
-                for x in self._search(fnc, item_ids_subset=self._sel_idx):
+                for x in self._search(fnc, item_ids_subset=self._found_ids):
                     if x not in idx:
                         idx.append(x)
-            self._sel_idx = sorted(idx)
+            self._found_ids = sorted(idx)
         else:
             # AND
             for fnc in search.functions:
-                self._sel_idx = self._search(fnc, item_ids_subset=self._sel_idx)
+                self._found_ids = self._search(fnc, item_ids_subset=self._found_ids)
 
-        return self._sel_idx
+        return self._found_ids
 
-    def get_question_overview(self, max_lines=3):
-        """returns table with item_id, name, short question item,
-        short question translation, item_version, tranlsation_version"""
+    #def find_entry_id(self, entry):
+    #    assert (entry, ItemDatabaseEntry)
 
-        rtn = []
-        for item_id, name, item, translation, ver_item, ver_translation in \
-                self.selected_data:
-            try:
-                a_txt = item.question.str_text_short(max_lines)
-            except:
-                a_txt = ""
-            try:
-                b_txt = translation.question.str_text_short(max_lines)
-            except:
-                b_txt = ""
-
-            rtn.append([item_id, name, a_txt, b_txt, ver_item, ver_translation])
-
-        return rtn
-
-    def add_mark(self, id):
-        if id not in self.marked_items:
-            self.marked_items.append(id)
-
-    def remove_mark(self, id):
-        self.marked_items = [e for e in self.marked_items if e != id]
+        #for self.entries
