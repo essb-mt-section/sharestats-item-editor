@@ -3,7 +3,7 @@ from os import path
 from .. import misc
 
 from .rmd_file import RmdFile
-from .item_bilingual import EntryItemDatabase, EntryItemFileList
+from .item_bilingual import EntryItemDatabase, EntryBiLingFileList
 from .item import RExamItem
 from ..misc import iter_list
 
@@ -93,8 +93,8 @@ class ItemFileList(object):
             else:
                 second = None
 
-            self.files.append(EntryItemFileList(rmd_file_item=first,
-                                                rmd_file_translation=second))
+            self.files.append(EntryBiLingFileList(rmd_file_item=first,
+                                                  rmd_file_translation=second))
 
         self.files = sorted(self.files, key=lambda x:x.shared_name())
 
@@ -141,22 +141,6 @@ class ItemFileList(object):
 
         return None
 
-    def load_rexam_files(self, idx):
-        """returns tuple of RExam files or None if file does not exist."""
-        try:
-            fls = self.files[idx]
-        except:
-            return None, None
-
-        return ItemFileList._load_item(fls.rmd_item), \
-               ItemFileList._load_item(fls.rmd_translation)
-
-    @staticmethod
-    def _load_item(filename):
-        if filename is None:
-            return None
-        else:
-            return RExamItem(filename.full_path)
 
 class ItemDatabase(ItemFileList):
 
@@ -168,12 +152,8 @@ class ItemDatabase(ItemFileList):
 
         ## LOAD DATA
         self.entries = []
-        for c in range(len(self.files)):
-            rexam_fls = self.load_rexam_files(c)
-            tmp = EntryItemDatabase(shared_name=self.files[c].shared_name(
-                                                   add_bilingual_tag=False),
-                                     item=rexam_fls[0],
-                                     translation=rexam_fls[1])
+        for c, fls in enumerate(self.files):
+            tmp = EntryItemDatabase.load(fls, add_bilingual_tag=False)
             tmp.cnt = c
             self.entries.append(tmp)
 

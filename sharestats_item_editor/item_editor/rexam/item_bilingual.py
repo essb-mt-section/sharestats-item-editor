@@ -1,8 +1,12 @@
 from .rmd_file import RmdFile, TAG_NL, TAG_ENG, TAG_BILINGUAL
 from .item import RExamItem
 
-class EntryItemFileList(object):
-    """representation of two RMD Files"""
+class EntryBiLingFileList(object):
+    """representation of two RMD Files
+    item is always the reference language (NL)
+    """
+
+    REFERENCE_LANGUAGE = "nl"
 
     def __init__(self, rmd_file_item, rmd_file_translation=None):
 
@@ -20,7 +24,8 @@ class EntryItemFileList(object):
                 b = rmd_file_translation
             else:
                 b = RmdFile(rmd_file_translation)
-            if b.language_code == "nl":  # NL is reference language
+            if b.language_code == EntryBiLingFileList.REFERENCE_LANGUAGE:
+                # NL is default reference language
                 b, a = a, b
         else:
             b = None
@@ -101,3 +106,23 @@ class EntryItemDatabase(object):
                 rtn.extend([self.version_item, self.version_translation])
         return rtn
 
+    @staticmethod
+    def load(biling_filelist_entry, add_bilingual_tag=False):
+        assert isinstance(biling_filelist_entry, EntryBiLingFileList)
+
+        if biling_filelist_entry.rmd_item is not None:
+            item = RExamItem(biling_filelist_entry.rmd_item.full_path)
+        else:
+            item = None
+
+        if biling_filelist_entry.rmd_translation is not None:
+            translation = RExamItem(
+                biling_filelist_entry.rmd_translation.full_path)
+        else:
+            translation = None
+
+        return EntryItemDatabase(
+                shared_name=biling_filelist_entry.shared_name(
+                                    add_bilingual_tag=add_bilingual_tag),
+                item=item,
+                translation=translation)

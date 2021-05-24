@@ -48,7 +48,6 @@ class ExamCompiler(object):
              ],
             [self.tab_exam]]
 
-
     def _make_tab(self, n_row, key, tooltip):
         headings = ["cnt", "Name", "Dutch", "English"]
         width = [2, 10, 50, 50]
@@ -129,8 +128,10 @@ class ExamCompiler(object):
         pass
 
     def run(self):
+
         win = sg.Window("{} ({})".format(APPNAME, __version__),
-                        self.layout, finalize=True, return_keyboard_events=True,
+                        self.layout, finalize=True,
+                        return_keyboard_events=True,
                         enable_close_attempted_event=True)
 
         if len(self.settings.recent_dirs) == 0: # very first launch

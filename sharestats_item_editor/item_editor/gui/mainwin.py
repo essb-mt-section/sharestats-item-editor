@@ -370,14 +370,17 @@ class MainWin(object):
         if self.idx_selected_item is None:
             return
 
-        rexam_items = self.fl_list.load_rexam_files(self.idx_selected_item)
-        ifln = self.fl_list.files[self.idx_selected_item].rmd_item
-        if ifln is not None and ifln.language_code == "en":
-            self.ig_nl.rexam_item = rexam_items[1]
-            self.ig_en.rexam_item = rexam_items[0]
+        try:
+            fls = self.fl_list.files[self.idx_selected_item]
+        except:
+            fls = None
+
+        if fls is None:
+            self.ig_nl.rexam_item = None
+            self.ig_en.rexam_item = None
         else:
-            self.ig_nl.rexam_item = rexam_items[0]
-            self.ig_en.rexam_item = rexam_items[1]
+            self.ig_nl.rexam_item = RExamItem.load(fls.rmd_item.full_path)
+            self.ig_en.rexam_item = RExamItem.load(fls.rmd_item.full_path)
 
         self.ig_en.update_gui()
         self.ig_nl.update_gui()

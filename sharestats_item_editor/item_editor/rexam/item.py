@@ -413,3 +413,10 @@ class RExamItem(RmdFile):
         """question id is based on the filename and file folder"""
         txt = str(self.question) + str(self.solution) + str(self.meta_info)
         return hashlib.md5(txt.encode()).hexdigest()
+
+    @staticmethod
+    def load(file_path):
+        if file_path is None:
+            return None
+        else:
+            return RExamItem(file_path)
