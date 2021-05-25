@@ -7,8 +7,7 @@ python -m virtualenv venv
 
 
 .\venv\Scripts\pip.exe install pyinstaller
-.\venv\Scripts\pyinstaller.exe --onefile -w --icon=picts\ESSB_logo.ico sharestats-item-editor.py --add-data "sharestats_item_editor\gui\essb.png;sharestats_item_editor\gui" --add-data "sharestats_item_editor\templates;sharestats_item_editor" --add-data "sharestats_item_editor\taxonomy.json;sharestats_item_editor"
-
+.\venv\Scripts\pyinstaller.exe --onefile -w --icon=picts\ESSB_logo.ico sharestats-item-editor.py --add-data "sharestats_item_editor\item_editor\gui\essb.png;sharestats_item_editor\item_editor\gui" --add-data "sharestats_item_editor\item_editor\rexam\templates;sharestats_item_editor\item_editor\rexam\templates" --add-data "sharestats_item_editor\taxonomy.json;sharestats_item_editor"
 
 % save exe (at another location or upload)
 % delete build folder
