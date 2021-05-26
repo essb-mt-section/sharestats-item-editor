@@ -30,8 +30,8 @@ class ExamCompiler(object):
         fr_base_dir = sg.Frame("Base Directory",
                                [[self.txt_base_directory]])
 
-        self.exam = Exam(self.base_directory)
         self.db = ItemDatabase(self.base_directory)
+        self.exam = Exam(self.db)
         self.tab_db = None
         self.tab_exam = None
         self.marked_entries = [5, 2, 7]
@@ -111,8 +111,10 @@ class ExamCompiler(object):
         self.tab_db.update(values=data)
 
         data = []
+        self.exam.clear()
         for x in self.db.get_entries(self.marked_entries):
             d = [x.cnt]
+            self.exam.add_item(x)
             d.extend(x.short_repr(max_lines,
                             add_versions=ExamCompiler.SHOW_HASHES,
                             short_version=self.short_hashes))
@@ -120,6 +122,7 @@ class ExamCompiler(object):
 
         self.tab_exam.update(values=data)
 
+        self.exam.save("demo.json")
 
     def save_exam(self, ask=True):
         pass
