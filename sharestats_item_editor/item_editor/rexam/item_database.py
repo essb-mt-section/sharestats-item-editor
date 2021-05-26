@@ -82,7 +82,8 @@ class ItemFileList(object):
         self.base_directory = folder
         # check for matching languages
         lst = _get_rmd_files_second_level(folder)
-        self._file_list_hash = hash(tuple(lst))
+        self._file_list_hash = hash(tuple(lst)) # simple hashes for online
+        # change detection, this are not the version IDs!
 
         while len(lst) > 0:
             first = RmdFile(lst.pop(0))
@@ -160,7 +161,7 @@ class ItemDatabase(ItemFileList):
         self.select() # select all
 
     def get_entries(self, ids, rm_nones=True):
-        """returns subset of rexam items """
+        """returns subset of Rexam items """
         rtn = []
         for i in ids:
             try:

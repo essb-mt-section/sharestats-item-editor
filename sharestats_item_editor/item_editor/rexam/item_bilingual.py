@@ -69,15 +69,28 @@ class EntryItemDatabase(object):
         self.shared_name = shared_name
         self.item = item
         self.translation = translation
-        try:
-            self.version_item = item.version_id()
-        except:
-            self.version_item = ""
+        self._version_item = None
+        self._version_translation = None
 
-        try:
-            self.version_translation = translation.version_id()
-        except:
-            self.version_translation = ""
+    @property
+    def version_item(self):
+        if self._version_item is None:
+            try:
+                self._version_item = self.item.version_id()
+            except:
+                self._version_item = ""
+
+        return self._version_item
+
+    @property
+    def version_translation(self):
+        if self._version_translation is None:
+            try:
+                self._version_translation = self.translation.version_id()
+            except:
+                self._version_translation = ""
+
+        return self._version_translation
 
     @property
     def version_item_short(self):
