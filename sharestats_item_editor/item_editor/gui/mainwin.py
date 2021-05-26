@@ -216,6 +216,7 @@ class MainWin(object):
         if selected_file is not None:
             self.select_item_by_filename(selected_file.filename)
 
+
     def run(self):
         win = sg.Window("{} ({})".format(APPNAME, __version__),
                         self.layout, finalize=True, return_keyboard_events=True,
@@ -375,12 +376,16 @@ class MainWin(object):
         except:
             fls = None
 
-        if fls is None:
-            self.ig_nl.rexam_item = None
-            self.ig_en.rexam_item = None
-        else:
-            self.ig_nl.rexam_item = RExamItem.load(fls.rmd_item.full_path)
-            self.ig_en.rexam_item = RExamItem.load(fls.rmd_item.full_path)
+        if fls is not None:
+            if not fls.is_bilingual() and fls.rmd_item.language_code == "en":
+                self.ig_en.rexam_item = RExamItem.load(fls.rmd_item.full_path)
+                self.ig_nl.rexam_item = None
+            else:
+                self.ig_nl.rexam_item = RExamItem.load(fls.rmd_item.full_path)
+                if fls.rmd_translation is not None:
+                    self.ig_en.rexam_item = RExamItem.load(fls.rmd_translation.full_path)
+                else:
+                    self.ig_en.rexam_item = None
 
         self.ig_en.update_gui()
         self.ig_nl.update_gui()

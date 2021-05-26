@@ -10,28 +10,25 @@ class EntryBiLingFileList(object):
 
     def __init__(self, rmd_file_item, rmd_file_translation=None):
 
-        if rmd_file_item is None and rmd_file_translation is not None:
-            rmd_file_translation, rmd_file_item = \
-                rmd_file_item, rmd_file_translation  # swap
-
-        if isinstance(rmd_file_item, RmdFile):
-            a = rmd_file_item
-        else:
-            a = RmdFile(rmd_file_item)
-
-        if rmd_file_translation is not None:
-            if isinstance(rmd_file_translation, RmdFile):
-                b = rmd_file_translation
+        x = []
+        for rmd in (rmd_file_item, rmd_file_translation):
+            if rmd is None:
+                x.append(None)
             else:
-                b = RmdFile(rmd_file_translation)
-            if b.language_code == EntryBiLingFileList.REFERENCE_LANGUAGE:
-                # NL is default reference language
-                b, a = a, b
-        else:
-            b = None
+                if isinstance(rmd_file_item, RmdFile):
+                    x.append(rmd_file_item)
+                else:
+                    x.append(RmdFile(rmd_file_item))
 
-        self._item = a
-        self._translation = b
+        if (x[0] is None and x[1] is not None):
+            x = x[1], x[0]
+        elif x[1] is not None:
+            # --> bilingual: swap, if item 1 is NL
+            if x[1].language_code == EntryBiLingFileList.REFERENCE_LANGUAGE:
+                x = x[1], x[0]
+
+        self._item = x[0]
+        self._translation = x[1]
 
     @property
     def rmd_item(self):
@@ -42,20 +39,22 @@ class EntryBiLingFileList(object):
         return self._translation
 
     def shared_name(self, add_bilingual_tag=True):
-        """bilingual_file_list_entry: tuple of two entries"""
 
-        name = self._item.name
-        if len(name):
-            if self._translation is not None:
-                if name.endswith(TAG_NL) or \
-                        name.endswith(TAG_ENG):
-                    name = name[:-3]
-                if add_bilingual_tag:
-                    name = name + TAG_BILINGUAL
-            return name
-
+        if self._item is not None and self._translation is None:
+            return  self._item.name
+        elif self._item is None and self._translation is not None:
+            return  self._translation.name
+        elif self._item is None and self._translation is None:
+            return None
         else:
-            return self._item.filename
+            # is bilingual
+            name = self._item.name
+            if name.endswith(TAG_NL) or \
+                    name.endswith(TAG_ENG):
+                name = name[:-3]
+            if add_bilingual_tag:
+                name = name + TAG_BILINGUAL
+            return name
 
     def is_bilingual(self):
         return self._translation is not None and self._item is not None

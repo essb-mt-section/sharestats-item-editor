@@ -108,12 +108,15 @@ class ItemFileList(object):
         for f in self.files:
             if f.is_bilingual():
                 rtn["bilingual"] += 1
-            elif f.rmd_item.language_code == "en":
-                rtn["en"] += 1
-            elif f.rmd_item.language_code == "nl":
-                rtn["nl"] += 1
             else:
-                rtn["undef"] += 1
+                try:
+                    lang = f.rmd_item.language_code
+                except:
+                    lang = None
+                try:
+                    rtn[lang] += 1
+                except:
+                    rtn["undef"] += 1
 
         return rtn
 
