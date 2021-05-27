@@ -1,5 +1,5 @@
 from .item_editor.rexam.item import ItemMetaInfo, Issue
-from .item_editor.rexam.rmd_file import TAG_NL, TAG_ENG
+from .item_editor.rexam.rmd_file import RmdFile, TAG_NL, TAG_ENG
 
 from . import taxonomy
 
@@ -90,13 +90,6 @@ class SSItemMetaInfo(ItemMetaInfo):
                         "Item name (exname) does not match filename",
                                 self.fix_name))
 
-        # folder name equals filename
-        # (should be always the last one, because of item saving)
-        if not self._parent.folder_mirrors_filename():
-            issues.append(Issue("folder",
-                    "Directory name does not match item name",
-                    self._parent.fix_directory_name))
-
         # check taxonomy
         invalid_tax = self.get_invalid_taxonomy_levels()
         if len(invalid_tax):
@@ -115,6 +108,23 @@ class SSItemMetaInfo(ItemMetaInfo):
                     "Mismatch languages in meta information and filename",
                                 fix_function))
 
+
+        # folder name equals filename
+        # (should be always the last one, because of item saving)
+        if not self._parent.folder_mirrors_filename():
+            issues.append(Issue("folder",
+                    "Directory name does not match item name",
+                    self._parent.fix_directory_name,
+                    fix_requires_gui_reset=True))
+
+        elif self._parent.relative_path[:-3] != \
+                self._parent.relative_path[:-3].lower():
+            issues.append(Issue("Uppercases",
+                                "Folder or file names contain uppercases",
+                                self._parent.fix_uppercases_in_relative_path,
+                                fix_requires_gui_reset =\
+                                    self._parent.name.lower() + RmdFile.SUFFIX))
+
         return issues
 
-#FIXME fix id lower-uppercase dublicate exist (try:..except:..)
+#FIXME fix id lower-uppercase doublicate exist (try:..except:..)

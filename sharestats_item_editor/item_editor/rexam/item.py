@@ -378,6 +378,14 @@ class RExamItem(RmdFile):
         self.save()
         rename(self.directory, self.get_mirroring_dir_name())
 
+    def fix_uppercases_in_relative_path(self):
+        self.save()
+        old = self.full_path
+        self.name = self.name.lower()
+        rename(old, self.full_path)
+        self.fix_directory_name()
+
+
     def validate(self):
         """Validates the item and returns a list of issues"""
         issues = self.meta_info.validate()

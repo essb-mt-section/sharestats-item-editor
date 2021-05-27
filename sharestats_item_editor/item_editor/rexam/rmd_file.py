@@ -13,12 +13,14 @@ TAG_BILINGUAL = "{}[{}/{}]".format(SEP, NL, ENG)
 
 class RmdFile(object):
 
-    RMDFILE_SUFFIX = ".Rmd"
+    SUFFIX = ".Rmd"
 
     def __init__(self, file_path):
         if file_path is None:
             file_path=""
         self.directory, self.filename = path.split(file_path)
+        #TODO base directory is assumed to be at second level.
+        # define basedirectory explicitily
 
     def __eq__(self, other):
         try:
@@ -29,7 +31,8 @@ class RmdFile(object):
     @staticmethod
     def make_path(base_directory, name):
         # includes name also subdir
-        return path.join(base_directory, name, "{}.Rmd".format(name))
+        return path.join(base_directory, name, "{}{}".format(name,
+                                            RmdFile.SUFFIX))
 
     @property
     def language_code(self):

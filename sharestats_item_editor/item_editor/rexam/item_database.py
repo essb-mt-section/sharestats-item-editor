@@ -7,7 +7,7 @@ from .item_bilingual import EntryItemDatabase, EntryBiLingFileList
 from ..misc import iter_list
 
 def _get_rmd_files_second_level(folder,
-                                suffix=RmdFile.RMDFILE_SUFFIX):
+                                suffix=RmdFile.SUFFIX):
     """returns list with Rmd files at the second levels that has the same
     name as the folder. Otherwise first rexam found is return."""
 

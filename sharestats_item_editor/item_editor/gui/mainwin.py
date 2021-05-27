@@ -2,7 +2,7 @@ from os import path, getcwd
 import PySimpleGUI as sg
 
 from .. import __version__, APPNAME
-from ..rexam.rmd_file import RmdFile
+from ..rexam.rmd_file import RmdFile, ENG
 from ..rexam.item_database import ItemFileList
 from ..rexam.r_render import RPY2INSTALLED
 from ..rexam.item import RExamItem, AnswerList
@@ -140,6 +140,7 @@ class MainWin(object):
 
     def select_item_by_filename(self, item_name):
         """select by file name"""
+
         idx = self.fl_list.find_filename(item_name)
         if idx is not None:
             self.idx_selected_item = idx
@@ -195,14 +196,16 @@ class MainWin(object):
         list_display = self.fl_list.get_shared_names()
         self.lb_items.update(values=list_display)
 
-    def reset_gui(self):
+    def reset_gui(self, select_by_filename=None):
 
-        if self.idx_selected_item is not None:
-            # keep selected
-            selected_file = self.fl_list.files[
-                                    self.idx_selected_item].rmd_item
+        if select_by_filename:
+            selected_file = select_by_filename
         else:
-            selected_file = None
+            try:
+                selected_file = self.fl_list.files[
+                                    self.idx_selected_item].rmd_item.filename
+            except:
+                selected_file = None
 
         self.update_item_list()
         self.ig_nl.rexam_item = None
@@ -214,7 +217,7 @@ class MainWin(object):
         self.unsaved_item = None
 
         if selected_file is not None:
-            self.select_item_by_filename(selected_file.filename)
+            self.select_item_by_filename(selected_file)
 
 
     def run(self):
@@ -284,13 +287,14 @@ class MainWin(object):
             needs_gui_reset = False
             ig.update_ss_item()
             for i in ig.rexam_item.validate():
-                if str(i.fix_fnc).find("fix_directory_name") >= 0:
-                    needs_gui_reset = True
                 i.fix()
-            if needs_gui_reset:
-                self.reset_gui()
-            else:
-                ig.update_gui()
+                if i.fix_requires_gui_reset:
+                    if isinstance(i.fix_requires_gui_reset, str):
+                        self.reset_gui(select_by_filename=i.fix_requires_gui_reset)
+                    else:
+                        self.reset_gui()
+                    return
+            ig.update_gui()
 
 
     def process_event(self, event, values):
@@ -377,7 +381,7 @@ class MainWin(object):
             fls = None
 
         if fls is not None:
-            if not fls.is_bilingual() and fls.rmd_item.language_code == "en":
+            if not fls.is_bilingual() and fls.rmd_item.language_code == ENG:
                 self.ig_en.rexam_item = RExamItem.load(fls.rmd_item.full_path)
                 self.ig_nl.rexam_item = None
             else:
@@ -467,8 +471,8 @@ class MainWin(object):
                                    rename_on_disk=True))
 
             self.reset_gui()
-            self.select_item_by_filename(n1 + RmdFile.RMDFILE_SUFFIX)
+            self.select_item_by_filename(n1 + RmdFile.SUFFIX)
             if add_language:
                 self.add_second_language()
                 self.reset_gui()
-                self.select_item_by_filename(n1 + RmdFile.RMDFILE_SUFFIX)
+                self.select_item_by_filename(n1 + RmdFile.SUFFIX)

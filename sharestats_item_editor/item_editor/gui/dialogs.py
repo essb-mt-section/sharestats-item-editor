@@ -235,12 +235,14 @@ def new_item(base_directory):
 
         if len(fr_make_name.name1):
             item1 = RExamItem(path.join(base_directory, fr_make_name.name1,
-                                        "{}.Rmd".format(fr_make_name.name1)))
+                                        "{}{}".format(fr_make_name.name1,
+                                                        RmdFile.SUFFIX)))
             if template_key is not None:
                 item1.import_file(templates.FILES[template_key])
         if len(fr_make_name.name2):
             item2 = RExamItem(path.join(base_directory, fr_make_name.name2,
-                                        "{}.Rmd".format(fr_make_name.name2)))
+                                        "{}{}".format(fr_make_name.name2,
+                                                        RmdFile.SUFFIX)))
             if template_key is not None:
                 item2.import_file(templates.FILES[template_key])
 
