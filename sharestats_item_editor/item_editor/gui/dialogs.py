@@ -3,7 +3,7 @@ import PySimpleGUI as sg
 
 from .. import sysinfo, __version__, __author__, APPNAME
 from ..rexam import r_render, templates, extypes
-from ..rexam.rmd_file import RmdFile, TAG_NL, TAG_ENG, TAG_BILINGUAL
+from ..rexam.rmd_file import RmdFile, SEP, TAG_NL, TAG_ENG, TAG_BILINGUAL
 from ..rexam.item import RExamItem
 
 def ask_save(item_name, txt=None):
@@ -131,12 +131,12 @@ class FrameMakeName(object):
         else:
             defaults[-1] = ""
 
-        for c, txt in enumerate(default_name.split("-", maxsplit=2)):
+        for c, txt in enumerate(default_name.split(SEP, maxsplit=2)):
             if c == len(defaults)-2: # cast number
                 try:
                     defaults[c] = str(int(txt))
                 except:
-                    defaults[c-1] += "-" + txt
+                    defaults[c-1] += SEP + txt
             else:
                 defaults[c] = txt
 
@@ -160,8 +160,8 @@ class FrameMakeName(object):
         self.frame = sg.Frame("Item Name(s)",[
             [sg.Text("Topic"+" "*24 +
                      "Counter"+" "*7 + "Language")],
-            [self.fln[0], sg.Text("-"),
-             self.fln_cnt, sg.Text("-"),
+            [self.fln[0], sg.Text(SEP),
+             self.fln_cnt, sg.Text(SEP),
              self.fln_lang], [self.fr_names]
         ])
 
@@ -170,12 +170,12 @@ class FrameMakeName(object):
         name_parts = map(lambda x: x.get().strip().lower(), self.fln)
         fln_cnt = self.fln_cnt.get().strip()
 
-        name1 = "-".join(filter(lambda x:len(x), name_parts))
+        name1 = SEP.join(filter(lambda x:len(x), name_parts))
         name2 = ""
 
         if len(name1):
             try:
-                name1 += "-" + str(int(fln_cnt)).zfill(3)
+                name1 += SEP + str(int(fln_cnt)).zfill(3)
             except:
                 pass
 

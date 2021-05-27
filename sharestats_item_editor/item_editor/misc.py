@@ -40,6 +40,48 @@ def get_temp_dir(appname, make_dir=True):
 
     return tmpdir
 
+class CaseInsensitiveStringList(object):
+    """String list that handles string search case insensitive"""
+
+    def __init__(self, str_list=[]):
+        self._str_list = str_list
+        self._str_lower = [x.lower() for x in self._str_list]
+
+    def __len__(self):
+        return len(self._str_list)
+
+    def append(self, new_string):
+        self._str_list.append(new_string)
+        self._str_lower.append(new_string.lower())
+
+    def pop(self, index=-1):
+        self._str_lower.pop(index)
+        return self._str_list.pop(index)
+
+    def remove(self, element):
+        element = str(element).lower()
+        idx = self._str_list.index(element)
+        self._str_list.pop(idx)
+        self._str_lower.pop(idx)
+
+    def remove_all(self, element):
+        element = str(element).lower()
+        while True:
+            try:
+                idx = self._str_list.index(element)
+            except:
+                break
+
+            self._str_list.pop(idx)
+            self._str_lower.pop(idx)
+
+    def __contains__(self, item):
+        return str(item).lower() in self._str_lower
+
+    def get(self):
+        return self._str_list
+
+
 def remove_all(str_list, element, ignore_cases=False):
     """removes all occurrences of element from string list and ignores
     optionally letter cases"""

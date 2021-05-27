@@ -6,7 +6,7 @@ from . import taxonomy
 from .item_editor.gui import consts
 from .item_editor.misc import splitstrip
 from .item_editor.rexam.item import ItemMetaInfo
-from .item_editor.rexam.rmd_file import TAG_NL, TAG_ENG, TAG_BILINGUAL
+from .item_editor.rexam.rmd_file import SEP, TAG_NL, TAG_ENG, TAG_BILINGUAL
 
 class FrameMakeName(object):
 
@@ -26,12 +26,12 @@ class FrameMakeName(object):
         else:
             defaults[3] = ""
 
-        for c, txt in enumerate(default_name.split("-", maxsplit=2)):
+        for c, txt in enumerate(default_name.split(SEP, maxsplit=2)):
             if c == 2: # cast number
                 try:
                     defaults[c] = str(int(txt))
                 except:
-                    defaults[c-1] += "-" + txt
+                    defaults[c-1] += SEP + txt
             else:
                 defaults[c] = txt
 
@@ -59,9 +59,9 @@ class FrameMakeName(object):
         self.frame = sg.Frame("Item Name(s)",[
             [sg.Text("Uni"+" "*11 + "Topic"+" "*24 +
                      "Counter"+" "*7 + "Language")],
-            [self.fln0, sg.Text("-"),
-             self.fln1, sg.Text("-"),
-             self.fln2, sg.Text("-"),
+            [self.fln0, sg.Text(SEP),
+             self.fln1, sg.Text(SEP),
+             self.fln2, sg.Text(SEP),
              self.fln3], [fr_names]
         ])
 
@@ -71,12 +71,12 @@ class FrameMakeName(object):
         fln1 = self.fln1.get().strip().lower()
         fln2 = self.fln2.get().strip()
 
-        name1 = "-".join(filter(len, (fln0, fln1)))
+        name1 = SEP.join(filter(len, (fln0, fln1)))
         name2 = ""
 
         if len(name1):
             try:
-                name1 += "-" + str(int(fln2)).zfill(3)
+                name1 += SEP + str(int(fln2)).zfill(3)
             except:
                 pass
 

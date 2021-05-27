@@ -4,7 +4,6 @@ from .. import misc
 
 from .rmd_file import RmdFile
 from .item_bilingual import EntryItemDatabase, EntryBiLingFileList
-from .item import RExamItem
 from ..misc import iter_list
 
 def _get_rmd_files_second_level(folder,

@@ -15,13 +15,14 @@ class EntryBiLingFileList(object):
             if rmd is None:
                 x.append(None)
             else:
-                if isinstance(rmd_file_item, RmdFile):
-                    x.append(rmd_file_item)
+                if isinstance(rmd, RmdFile):
+                    x.append(rmd)
                 else:
-                    x.append(RmdFile(rmd_file_item))
+                    x.append(RmdFile(rmd))
 
         if (x[0] is None and x[1] is not None):
             x = x[1], x[0]
+
         elif x[1] is not None:
             # --> bilingual: swap, if item 1 is NL
             if x[1].language_code == EntryBiLingFileList.REFERENCE_LANGUAGE:
@@ -29,6 +30,18 @@ class EntryBiLingFileList(object):
 
         self._item = x[0]
         self._translation = x[1]
+
+    def __str__(self):
+        if self._item is None:
+            i = "None"
+        else:
+            i = self._item.relative_path
+        if self._translation is None:
+            t = "None"
+        else:
+            t = self._translation.relative_path
+
+        return "({}, {})".format(i, t)
 
     @property
     def rmd_item(self):

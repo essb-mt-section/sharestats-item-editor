@@ -2,9 +2,14 @@ from os import path, makedirs
 from copy import deepcopy
 from ..misc import os_rename, copytree
 
-TAG_NL = "-nl"
-TAG_ENG = "-en"
-TAG_BILINGUAL = "-[nl/en]"
+SEP = "-"
+NL = "nl"
+ENG = "en"
+
+TAG_NL = SEP + NL
+TAG_ENG = SEP + ENG
+TAG_BILINGUAL = "{}[{}/{}]".format(SEP, NL, ENG)
+
 
 class RmdFile(object):
 
@@ -32,19 +37,19 @@ class RmdFile(object):
 
     @property
     def language_code(self):
-        if self.name[-3] == "-":
+        if self.name[-3] == SEP:
             lang = self.name[-2:].lower()
-            if lang in ("nl", "en"):
+            if lang in (NL, ENG):
                 return lang
         return ""
 
     @language_code.setter
     def language_code(self, v):
         assert(isinstance(v, str) and len(v)==2)
-        if self.name[-3] == "-":
+        if self.name[-3] == SEP:
             self.name = self.name[-2] + v
         else:
-            self.name = self.name + "-" + v
+            self.name = self.name + SEP + v
 
     @property
     def base_directory(self):
@@ -93,10 +98,10 @@ class RmdFile(object):
     def get_other_language_path(self):
         if len(self.language_code):
             name = self.name[:-2]
-            if self.language_code == "nl":
-                name += "en"
+            if self.language_code == NL:
+                name += ENG
             else:
-                name += "nl"
+                name += NL
             return self.make_path(self.base_directory, name)
         else:
             return None
