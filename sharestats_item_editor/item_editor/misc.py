@@ -59,16 +59,17 @@ class CaseInsensitiveStringList(object):
         return self._str_list.pop(index)
 
     def remove(self, element):
+        """removes element and returns it, raises exception in not included"""
         element = str(element).lower()
-        idx = self._str_list.index(element)
-        self._str_list.pop(idx)
+        idx = self._str_lower.index(element)
         self._str_lower.pop(idx)
+        return self._str_list.pop(idx)
 
     def remove_all(self, element):
         element = str(element).lower()
         while True:
             try:
-                idx = self._str_list.index(element)
+                idx = self._str_lower.index(element)
             except:
                 break
 
@@ -80,7 +81,6 @@ class CaseInsensitiveStringList(object):
 
     def get(self):
         return self._str_list
-
 
 def remove_all(str_list, element, ignore_cases=False):
     """removes all occurrences of element from string list and ignores

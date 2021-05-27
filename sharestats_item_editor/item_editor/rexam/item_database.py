@@ -80,16 +80,18 @@ class ItemFileList(object):
         self.files = []
         self.base_directory = folder
         # check for matching languages
-        lst = _get_rmd_files_second_level(folder)
-        self._file_list_hash = hash(tuple(lst)) # simple hashes for online
+        lst = misc.CaseInsensitiveStringList(
+                            _get_rmd_files_second_level(folder))
+        self._file_list_hash = hash(tuple(lst.get())) # simple hashes for online
         # change detection, this are not the version IDs!
 
         while len(lst) > 0:
             first = RmdFile(lst.pop(0))
-            second = RmdFile(first.get_other_language_path())
-            if second.full_path in lst:
-                lst = misc.remove_all(lst, second.full_path,
-                                      ignore_cases=True)  # remove all
+            second = first.get_other_language_path()
+            if second in lst:
+                second = lst.remove(second) # get in correct cases
+                lst.remove_all(second) # remove all others versions (should not be the case)
+                second = RmdFile(second)
             else:
                 second = None
 

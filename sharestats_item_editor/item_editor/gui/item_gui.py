@@ -286,10 +286,10 @@ class ItemGUI(object):
         #files
         self.ml_files.update(background_color=col)
         if self.is_enabled() and len(item.directory):
-            x = listdir(item.directory)
-            x = misc.remove_all(x, item.filename, ignore_cases=True)
+            x = misc.CaseInsensitiveStringList(listdir(item.directory))
+            x.remove_all(item.filename)
             if len(x):
-                self.ml_files(value="\n".join(x))
+                self.ml_files(value="\n".join(x.get()))
             else:
                 self.ml_files(value="")
         else:
@@ -300,6 +300,3 @@ class ItemGUI(object):
             self.update_ss_item()
             self.rexam_item.save()
             self.update_gui()
-
-
-#TODO DOCU Rpy2 usage

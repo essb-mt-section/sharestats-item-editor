@@ -472,6 +472,3 @@ class MainWin(object):
                 self.add_second_language()
                 self.reset_gui()
                 self.select_item_by_filename(n1 + RmdFile.RMDFILE_SUFFIX)
-
-
-# FIXME: ".Rmd" not with capitol R --> not shared filename

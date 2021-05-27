@@ -13,7 +13,6 @@ TAG_BILINGUAL = "{}[{}/{}]".format(SEP, NL, ENG)
 
 class RmdFile(object):
 
-    CASE_SENSITIVE_NAMING = False
     RMDFILE_SUFFIX = ".Rmd"
 
     def __init__(self, file_path):
@@ -23,10 +22,7 @@ class RmdFile(object):
 
     def __eq__(self, other):
         try:
-            if RmdFile.CASE_SENSITIVE_NAMING:
-                return self.full_path == other.full_path
-            else:
-                return self.full_path.lower() == other.full_path.lower()
+            return self.full_path == other.full_path
         except:
             return False
 
@@ -57,10 +53,7 @@ class RmdFile(object):
 
     @property
     def name(self):
-        if RmdFile.CASE_SENSITIVE_NAMING:
-            return path.splitext(self.filename)[0]
-        else:
-            return path.splitext(self.filename)[0].lower()
+        return path.splitext(self.filename)[0]
 
     @name.setter
     def name(self, value):

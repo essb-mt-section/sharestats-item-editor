@@ -41,7 +41,7 @@ class EntryBiLingFileList(object):
         else:
             t = self._translation.relative_path
 
-        return "({}, {})".format(i, t)
+        return "{}: ({}, {})".format(self.shared_name(), i, t)
 
     @property
     def rmd_item(self):
@@ -51,23 +51,24 @@ class EntryBiLingFileList(object):
     def rmd_translation(self):
         return self._translation
 
-    def shared_name(self, add_bilingual_tag=True):
+    def shared_name(self, add_bilingual_tag=True, lower_case=True):
 
         if self._item is not None and self._translation is None:
-            return  self._item.name
+            return self._item.name.lower()
         elif self._item is None and self._translation is not None:
-            return  self._translation.name
+            return self._translation.name.lower()
         elif self._item is None and self._translation is None:
             return None
         else:
             # is bilingual
-            name = self._item.name
+            name = self._item.name.lower()
             if name.endswith(TAG_NL) or \
                     name.endswith(TAG_ENG):
                 name = name[:-3]
             if add_bilingual_tag:
                 name = name + TAG_BILINGUAL
             return name
+
 
     def is_bilingual(self):
         return self._translation is not None and self._item is not None
