@@ -235,7 +235,25 @@ class ItemDatabase(ItemFileList):
 
         return self._found_ids
 
-    #def find_entry_id(self, entry):
-    #    assert (entry, ItemDatabaseEntry)
+    def find_version(self, item_version_id,
+                            translation_version_id=None,
+                            item_relative_path = None,
+                            translation_relative_path=None,
+                            shared_name = None):
 
-        #for self.entries
+        rtn = []
+        for cnt, e in enumerate(self.entries):
+            a = shared_name is None or e.shared_name == shared_name
+            b = item_relative_path is None or (e.item is not None and
+                                e.item.relative_path == item_relative_path)
+            c = translation_relative_path is None or \
+                (e.translation is not None and \
+                 e.translation.relative_path ==translation_relative_path)
+
+            if  a and b and c:
+                if  e.version_item == item_version_id and \
+                    (translation_version_id is None or
+                         e.version_translation== translation_version_id):
+                    rtn.append(cnt)
+
+        return rtn

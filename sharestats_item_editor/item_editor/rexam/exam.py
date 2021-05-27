@@ -7,7 +7,7 @@ from .item_bilingual import EntryItemDatabase, EntryBiLingFileList
 
 class Exam(object):
 
-    def __init__(self, item_database):
+    def __init__(self, item_database=None):
         """param:
             item_database: ItemDatabase or base folder
         """
@@ -17,6 +17,14 @@ class Exam(object):
         self._item_hash = []
         self._trans_hash = []
         self._time_last_change = None
+        self.item_db = None
+        self.set_item_database(item_database)
+
+    @staticmethod
+    def time_stamp():
+        return time.strftime("%d-%m-%Y %H:%M", time.gmtime())
+
+    def set_item_database(self, item_database):
 
         if isinstance(item_database, ItemDatabase):
             self.item_db = item_database
@@ -24,10 +32,6 @@ class Exam(object):
             self.item_db = ItemDatabase(item_database)
         else:
             self.item_db = None
-
-    @staticmethod
-    def time_stamp():
-        return time.strftime("%d-%m-%Y %H:%M", time.gmtime())
 
     def clear(self):
         self._shared_names = []
@@ -88,6 +92,23 @@ class Exam(object):
         self._trans_hash = d["translation_version_ids"]
         self._shared_names = d["names"]
 
-    def find_in_database(self):
-        """returns ids from  item database"""
+    def get_database_ids(self):
+        """returns ids from item database"""
+        if not isinstance(self.item_db, ItemDatabase):
+            return None
 
+        rtn = []
+        for x in range(len(self._items)):
+            idx = self.item_db.find_version(
+                item_version_id=self._item_hash[x],
+                translation_version_id=self._trans_hash[x],
+                shared_name=self._shared_names[x],
+                item_relative_path=self._items[x],
+                translation_relative_path=self._translations[x])
+
+            if len(idx):
+                rtn.append(idx[0])
+            else:
+                rtn.append(None)
+
+        return rtn
