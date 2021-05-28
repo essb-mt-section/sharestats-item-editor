@@ -82,28 +82,15 @@ class EntryItemDatabase(object):
         self.shared_name = shared_name
         self.item = item
         self.translation = translation
-        self._version_item = None
-        self._version_translation = None
+        try:
+            self.version_item = self.item.version_id()
+        except:
+            self.version_item = ""
+        try:
+            self.version_translation = self.translation.version_id()
+        except:
+            self.version_translation = ""
 
-    @property
-    def version_item(self):
-        if self._version_item is None:
-            try:
-                self._version_item = self.item.version_id()
-            except:
-                self._version_item = ""
-
-        return self._version_item
-
-    @property
-    def version_translation(self):
-        if self._version_translation is None:
-            try:
-                self._version_translation = self.translation.version_id()
-            except:
-                self._version_translation = ""
-
-        return self._version_translation
 
     @property
     def version_item_short(self):
@@ -133,7 +120,7 @@ class EntryItemDatabase(object):
         return rtn
 
     @staticmethod
-    def load(biling_filelist_entry, add_bilingual_tag=False):
+    def load(biling_filelist_entry, shared_name_with_bilingual_tag=False):
         assert isinstance(biling_filelist_entry, EntryBiLingFileList)
 
         if biling_filelist_entry.rmd_item is not None:
@@ -149,6 +136,6 @@ class EntryItemDatabase(object):
 
         return EntryItemDatabase(
                 shared_name=biling_filelist_entry.shared_name(
-                                    add_bilingual_tag=add_bilingual_tag),
+                                    add_bilingual_tag=shared_name_with_bilingual_tag),
                 item=item,
                 translation=translation)

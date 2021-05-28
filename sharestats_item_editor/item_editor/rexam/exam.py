@@ -44,7 +44,7 @@ class Exam(object):
     def add_item(self, item):
         assert isinstance(item, (EntryItemDatabase, EntryBiLingFileList))
         if isinstance(item, EntryBiLingFileList):
-            item = EntryItemDatabase.load(item, add_bilingual_tag=False)
+            item = EntryItemDatabase.load(item, shared_name_with_bilingual_tag=False)
 
         self._shared_names.append(item.shared_name)
         self._time_last_change = Exam.time_stamp()

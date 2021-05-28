@@ -1,6 +1,7 @@
 import os
 from os import path
 from .. import misc
+from multiprocessing import Pool
 
 from .rmd_file import RmdFile
 from .item_bilingual import EntryItemDatabase, EntryBiLingFileList
@@ -147,6 +148,7 @@ class ItemFileList(object):
         return None
 
 
+
 class ItemDatabase(ItemFileList):
 
     def __init__(self, folder):
@@ -156,11 +158,16 @@ class ItemDatabase(ItemFileList):
         self._found_ids = []
 
         ## LOAD DATA
-        self.entries = []
-        for c, fls in enumerate(self.files):
-            tmp = EntryItemDatabase.load(fls, add_bilingual_tag=False)
-            tmp.cnt = c
-            self.entries.append(tmp)
+        if len(self.files) > 1000:
+            # speed up with multiprocessing
+            entries = Pool().map(EntryItemDatabase.load, self.files)
+        else:
+            entries = map(EntryItemDatabase.load, self.files)
+        self.entries = list(entries)
+
+        # add counter
+        for x in range(len(self.entries)):
+            self.entries[x].cnt = x
 
         self.select() # select all
 
@@ -205,7 +212,6 @@ class ItemDatabase(ItemFileList):
                 idx.append(x)
 
         return idx
-
 
     def select(self, name=None, question=None, solution=None,
                      meta_information=None, raw_rmd=None,
