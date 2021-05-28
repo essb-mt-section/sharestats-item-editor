@@ -331,9 +331,21 @@ class RExamItem(RmdFile):
 
         self.header = []
         self.text_array = []
+        self._version_id = None
 
         if path.isfile(self.full_path):
             self.import_file(self.full_path)
+
+    @property
+    def version_id(self):
+        """question id is based on the filename and file folder"""
+
+        if self._version_id is None:
+            txt = str(self.question) + str(self.solution) + str(self.meta_info)
+            self._version_id = hashlib.md5(txt.encode()).hexdigest()
+
+        return self._version_id
+
 
     def import_file(self, text_file):
         """import a text file as content"""
@@ -416,11 +428,6 @@ class RExamItem(RmdFile):
         self.meta_info.sort_parameter()
         if self.question.has_answer_list_section():
             self.question.answer_list.solution_str = solution_str
-
-    def version_id(self):
-        """question id is based on the filename and file folder"""
-        txt = str(self.question) + str(self.solution) + str(self.meta_info)
-        return hashlib.md5(txt.encode()).hexdigest()
 
     @staticmethod
     def load(file_path):

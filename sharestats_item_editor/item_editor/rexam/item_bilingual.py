@@ -82,15 +82,32 @@ class EntryItemDatabase(object):
         self.shared_name = shared_name
         self.item = item
         self.translation = translation
-        try:
-            self.version_item = self.item.version_id()
-        except:
-            self.version_item = ""
-        try:
-            self.version_translation = self.translation.version_id()
-        except:
-            self.version_translation = ""
+        self.id = None
 
+    def is_same_as(self, item):
+        """compares shared names and version id
+        and ignores the id"""
+
+        if isinstance(item, EntryItemDatabase):
+            return self.shared_name == item.shared_name and\
+                self.version_item == item.version_item and \
+                self.version_translation == item.version_translation
+        else:
+            return False
+
+    @property
+    def version_item(self):
+        try:
+            return self.item.version_id
+        except:
+            return ""
+
+    @property
+    def version_translation(self):
+        try:
+            return self.translation.version_id
+        except:
+            return ""
 
     @property
     def version_item_short(self):

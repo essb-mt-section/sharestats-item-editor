@@ -3,6 +3,16 @@ import tempfile
 import re
 import shutil
 
+
+def replace_list_element(lst, source_idx, target_idx):
+    """replaces an element in a list"""
+    if source_idx < len(lst) and target_idx<len(
+    lst):
+        tmp = lst.pop(source_idx)
+        return lst[:target_idx] + [tmp] + lst[target_idx:]
+    else:
+        return []
+
 def subdict(d, nested_keys=None):
     """:return the dict nested hierarchically indicated by nested_keys
     or None if key list is incorrect

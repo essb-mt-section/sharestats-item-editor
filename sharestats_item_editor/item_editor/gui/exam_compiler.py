@@ -31,11 +31,10 @@ class ExamCompiler(object):
                                [[self.txt_base_directory]])
 
         self.db = ItemDatabase(self.base_directory)
-        self.exam = Exam(self.db)
+        self.exam = Exam()
         self.tab_db = None
         self.tab_exam = None
-        self.marked_entries = [5, 2, 7]
-        self.short_hashes = True # TODO in GUI
+        self.short_hashes = True # TODO option in GUI
         self.tab_db = self._make_tab(n_row=10,key='tab_database',
                                      tooltip='Item Database' )
         self.tab_exam = self._make_tab(n_row=3, key='tab_exam',
@@ -47,6 +46,10 @@ class ExamCompiler(object):
              sg.Button(">> add to exam >>", size=(30, 2), key="add_to_exam"),
              ],
             [self.tab_exam]]
+
+        # EXAMPLE
+        for x in [5,2,9]:
+            self.exam.add_database_item(self.db.entries[x])
 
     def _make_tab(self, n_row, key, tooltip):
         headings = ["cnt", "Name", "Dutch", "English"]
@@ -96,14 +99,17 @@ class ExamCompiler(object):
         self.settings.recent_dirs = self.settings.recent_dirs[
                                     -1 * consts.MAX_RECENT_DIRS:] #limit n elements         self.update_item_list()
 
+
     def update_table(self, max_lines=2):
         """table with item_id, name, short question item,
            short question translation"""
 
+        exam_question_ids = self.exam.get_database_ids(self.db)
+
         data = []
-        for x in self.db.found_entries:
-            if x.cnt not in self.marked_entries:
-                d = [x.cnt]
+        for x in self.db.selected_entries:
+            if x.id not in exam_question_ids:
+                d = [x.id]
                 d.extend(x.short_repr(max_lines,
                              add_versions=ExamCompiler.SHOW_HASHES,
                              short_version=self.short_hashes))
@@ -111,10 +117,8 @@ class ExamCompiler(object):
         self.tab_db.update(values=data)
 
         data = []
-        self.exam.clear()
-        for x in self.db.get_entries(self.marked_entries):
-            d = [x.cnt]
-            self.exam.add_item(x)
+        for x in self.db.get_entries(exam_question_ids):
+            d = [x.id]
             d.extend(x.short_repr(max_lines,
                             add_versions=ExamCompiler.SHOW_HASHES,
                             short_version=self.short_hashes))
@@ -122,10 +126,8 @@ class ExamCompiler(object):
 
         self.tab_exam.update(values=data)
 
-        self.exam.save("demo.json")
-
     def save_exam(self, ask=True):
-        pass
+        self.exam.save("demo.json")
 
     def reset_gui(self):
         pass
@@ -152,34 +154,41 @@ class ExamCompiler(object):
                 break
 
             elif event=="tab_database":
-                sel_entry = self.tab_db.get()[values[event][0]]
-                print(sel_entry)
+                selected_entry = self.tab_db.get()[values[event][0]]
+                print(selected_entry)
 
             elif event=="tab_exam":
-                sel_entry = self.tab_exam.get()[values[event][0]]
-                print(sel_entry)
+                selected_entry = self.tab_exam.get()[values[event][0]]
+                print(selected_entry)
 
             elif event=="add_to_exam":
                 try:
-                    sel_entry = self.tab_db.get()[values["tab_database"][0]]
+                    selected_entry = self.tab_db.get()[values["tab_database"][0]]
                 except:
                     continue # nothing selected
-                self.marked_entries.append(sel_entry[0])
-                self.update_table()
+                self.add_to_exam(selected_entry[0])
+
 
             elif event=="remove_from_exam":
                 try:
-                    sel_entry = self.tab_exam.get()[values["tab_exam"][0]]
+                    selected_entry = self.tab_exam.get()[values["tab_exam"][0]]
                 except:
                     continue # nothing selected
-                self.marked_entries.remove(sel_entry[0])
-                self.update_table()
+                self.remove_from_exam(selected_entry[0])
 
-            print(event)
+            #print(event)
 
         win.close()
         self.save_exam(ask=True)
         self.settings.save()
 
+    def add_to_exam(self, selected_entry):
+        item = self.db.entries[selected_entry]
+        self.exam.add_database_item(item)
+        self.update_table()
 
+    def remove_from_exam(self, selected_entry):
+        item = self.db.entries[selected_entry]
+        self.exam.remove_item(item)
+        self.update_table()
 

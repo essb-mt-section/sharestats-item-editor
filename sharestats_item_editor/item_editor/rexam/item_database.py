@@ -155,7 +155,7 @@ class ItemDatabase(ItemFileList):
         """file_list_bilingual: path or file_list_biligual
         """
         super().__init__(folder=folder)
-        self._found_ids = []
+        self._selected_ids = []
 
         ## LOAD DATA
         if len(self.files) > 1000:
@@ -165,9 +165,9 @@ class ItemDatabase(ItemFileList):
             entries = map(EntryItemDatabase.load, self.files)
         self.entries = list(entries)
 
-        # add counter
+        # add unique ids
         for x in range(len(self.entries)):
-            self.entries[x].cnt = x
+            self.entries[x].id = x
 
         self.select() # select all
 
@@ -183,12 +183,12 @@ class ItemDatabase(ItemFileList):
         return rtn
 
     @property
-    def found_entries(self):
+    def selected_entries(self):
         """selected name, item, translation, item_version,
                     translation_version"""
-        return self.get_entries(self._found_ids)
+        return self.get_entries(self._selected_ids)
 
-    def _search(self, search_function, item_ids_subset):
+    def _search_select(self, search_function, item_ids_subset):
         """searches rexam file using search_function and returns idx,
         if found for at least one of the language.
         Use item_ids_subset (array if ids) to define the the  subset of
@@ -216,9 +216,10 @@ class ItemDatabase(ItemFileList):
     def select(self, name=None, question=None, solution=None,
                      meta_information=None, raw_rmd=None,
                      search_logic_or=False):
+        """select items based on text search"""
 
         # select all
-        self._found_ids = range(len(self.entries))
+        self._selected_ids = range(len(self.entries))
         search = _SearchSchemata()
         search.add("name", iter_list(name))
         search.add("question", iter_list(question))
@@ -230,22 +231,37 @@ class ItemDatabase(ItemFileList):
             # OR
             idx = []
             for fnc in search.functions:
-                for x in self._search(fnc, item_ids_subset=self._found_ids):
+                for x in self._search_select(fnc, item_ids_subset=self._selected_ids):
                     if x not in idx:
                         idx.append(x)
-            self._found_ids = sorted(idx)
+            self._selected_ids = sorted(idx)
         else:
             # AND
             for fnc in search.functions:
-                self._found_ids = self._search(fnc, item_ids_subset=self._found_ids)
+                self._selected_ids = self._search_select(fnc, item_ids_subset=self._selected_ids)
 
-        return self._found_ids
+        return self._selected_ids
 
-    def find_version(self, item_version_id,
-                            translation_version_id=None,
-                            item_relative_path = None,
-                            translation_relative_path=None,
-                            shared_name = None):
+
+    def find_entry(self, entry_item_database):
+        """returns all id of identical entries """
+
+        same = filter(lambda x:x.is_same_as(entry_item_database), self.entries)
+        rtn = map(lambda x: x.id, same)
+        return list(rtn)
+
+
+    def find(self, item_version_id,
+             translation_version_id=None,
+             item_relative_path = None,
+             translation_relative_path=None,
+             shared_name = None,
+             find_all=False):
+
+        """advanced search function
+        returns on first id  or array with all is (find_all=True)
+         the found entries
+         """
 
         rtn = []
         for cnt, e in enumerate(self.entries):
@@ -260,6 +276,12 @@ class ItemDatabase(ItemFileList):
                 if  e.version_item == item_version_id and \
                     (translation_version_id is None or
                          e.version_translation== translation_version_id):
-                    rtn.append(cnt)
+                    if find_all:
+                        rtn.append(cnt)
+                    else:
+                        return cnt
 
-        return rtn
+        if not find_all:
+            return None
+        else:
+            return rtn
