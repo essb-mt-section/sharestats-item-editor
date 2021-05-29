@@ -1,4 +1,4 @@
-from os import path, getcwd
+from os import getcwd
 import PySimpleGUI as sg
 
 from .. import __version__, APPNAME
@@ -35,21 +35,25 @@ class ExamCompiler(object):
         self.tab_db = None
         self.tab_exam = None
         self.short_hashes = True # TODO option in GUI
-        self.tab_db = self._make_tab(n_row=10,key='tab_database',
+        self.tab_db = self._make_tab(n_row=3,key='tab_database',
                                      tooltip='Item Database' )
-        self.tab_exam = self._make_tab(n_row=3, key='tab_exam',
+        self.tab_exam = self._make_tab(n_row=10, key='tab_exam',
                                        tooltip='Exam Items')
         self.layout = [
             [fr_base_dir],
             [self.tab_db],
-            [sg.Button("<< remove <<", size=(30, 2), key="remove_from_exam"),
-             sg.Button(">> add to exam >>", size=(30, 2), key="add_to_exam"),
-             ],
+            [
+             sg.Button("add", size=(30, 2),
+                       button_color= consts.COLOR_GREEN_BTN,
+                       key="add_to_exam"),
+            sg.Button("remove", size=(30, 2),
+                      button_color=consts.COLOR_RED_BTN,
+                      key="remove_from_exam"),
+            sg.Button("up", size=(10, 2), key="move_up"),
+            sg.Button("down", size=(10, 2), key="move_down")
+            ],
             [self.tab_exam]]
 
-        # EXAMPLE
-        for x in [5,2,9]:
-            self.exam.add_database_item(self.db.entries[x])
 
     def _make_tab(self, n_row, key, tooltip):
         headings = ["cnt", "Name", "Dutch", "English"]
@@ -100,7 +104,7 @@ class ExamCompiler(object):
                                     -1 * consts.MAX_RECENT_DIRS:] #limit n elements         self.update_item_list()
 
 
-    def update_table(self, max_lines=2):
+    def update_table(self, max_lines=2, exam_tab_select_row=None):
         """table with item_id, name, short question item,
            short question translation"""
 
@@ -125,9 +129,15 @@ class ExamCompiler(object):
             data.append(d)
 
         self.tab_exam.update(values=data)
+        if exam_tab_select_row is not None:
+            self.tab_exam.update(select_rows=[exam_tab_select_row])
+
+    def load_exam(self, json_filename):
+        self.exam.load(json_filename)
+        self.update_table()
 
     def save_exam(self, ask=True):
-        self.exam.save("demo.json")
+        self.exam.save("demo.json") # FIXME DEBUG
 
     def reset_gui(self):
         pass
@@ -145,6 +155,8 @@ class ExamCompiler(object):
         self.update_table()
         self.reset_gui()
 
+        self.load_exam("demo.json")
+
         while True:
             win.refresh()
             event, values = win.read(timeout=None)
@@ -155,11 +167,11 @@ class ExamCompiler(object):
 
             elif event=="tab_database":
                 selected_entry = self.tab_db.get()[values[event][0]]
-                print(selected_entry)
+                #TODO
 
             elif event=="tab_exam":
                 selected_entry = self.tab_exam.get()[values[event][0]]
-                print(selected_entry)
+                #TODO
 
             elif event=="add_to_exam":
                 try:
@@ -168,7 +180,6 @@ class ExamCompiler(object):
                     continue # nothing selected
                 self.add_to_exam(selected_entry[0])
 
-
             elif event=="remove_from_exam":
                 try:
                     selected_entry = self.tab_exam.get()[values["tab_exam"][0]]
@@ -176,7 +187,25 @@ class ExamCompiler(object):
                     continue # nothing selected
                 self.remove_from_exam(selected_entry[0])
 
-            #print(event)
+            elif event=="move_up":
+                try:
+                    selected_entry = values["tab_exam"][0]
+                except:
+                    continue # nothing selected
+                self.exam.replace(selected_entry, selected_entry-1)
+                self.update_table(exam_tab_select_row=selected_entry-1)
+
+
+            elif event=="move_down":
+                try:
+                    selected_entry = values["tab_exam"][0]
+                except:
+                    continue # nothing selected
+                self.exam.replace(selected_entry, selected_entry+1)
+                self.update_table(exam_tab_select_row=selected_entry+1)
+
+            else:
+                print(event)
 
         win.close()
         self.save_exam(ask=True)
