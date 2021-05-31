@@ -32,46 +32,41 @@ Oliver Lindemann, Erasmus University Rotterdam, NL
 
 ## Installation
 
-### Windows
+Please, ensure that [Python 3](https://www.python.org/downloads/) is installed on your
+computer. If you install Python 3 on Windows, don't for get to [add Python the path](https://pychill.info/wp-content/uploads/2020/06/installation_python-1.jpg) environment variable.
 
-Windows user may run *StatsShare-Item-Editor* without installing Python (see below). 
-Download the latest executable file, `sharestats_item_editor.exe`, via the
-[release website](https://github.com/essb-mt-section/sharestats-item-editor/releases/latest)
-and execute it. Using the executable file instead of installing the appliaction 
-via `pip` results in a slowly launching application.
-
-Note, depending on your security setting, you may receive a security alert 
-from Windows defender, because the executable is not registered Windows 
-application. 
-
-### MacOS / Linux
-
-Ensure that [Python 3](https://python.land/installing-python) is installed on your 
-computer. 
-
-You can then install *ShareStats-Item-Editor* via `pip`. To do so, open a command line terminal and enter:
-```
-sudo python3 -m pip install -U sharestats-item-editor
-```
-
-To run *ShareStats-Item-Editor* call
-```
-sharestats-item-editor
-```
-
-### Python / Pip
-
-Users familiar with Python are always suggested to install *ShareStats-Item-Editor* via `pip`.  
-(Ensure that [Python 3](https://python.land/installing-python) is installed on your
-computer.) 
+*ShareStats-Item-Editor* can be istalled via the Pythons package manager `pip`. Open a shell and call:
 
 ```
 python -m pip install -U sharestats-item-editor
 ```
 
-To run ShareStatsItemEditor call either `sharestats-item-editor` or 
-`python3 -m sharestats_item_editor`
+(This command is also used the update an existsing installing of *ShareStats-Item-Editor*.)
 
+To run *ShareStats-Item-Editor* called this via your shell:
+```
+sharestats-item-editor
+```
+
+
+### Windows Executables
+
+Windows user may run *StatsShare-Item-Editor* without installing `Python`. 
+Download the latest executable file, `sharestats_item_editor.exe`, via the
+[release website](https://github.com/essb-mt-section/sharestats-item-editor/releases/latest)
+and execute it. 
+
+Note, depending on your security settings, you may receive a security alert 
+from Windows defender, because the executable is not a registered Windows 
+application.
+
+Using this installation method is convenient has however two disadvantages. 
+(a)   Windows may classify the executable erroneously as a virus and prevents 
+you from installing.
+(b) Using the executable instead of installing the application via `pip` results 
+in a slow launching application.
+
+ 
 ## Dependencies
 
 Python 3.5+ and the following libraries (see [requirements.txt](requirements.txt)):
@@ -81,7 +76,8 @@ Python 3.5+ and the following libraries (see [requirements.txt](requirements.txt
 Optional requirement:
 * rpy2 >=3.4
 
-## Rendering Rmd File
+
+## Rendering Rmd File (work in progress)
 
 To render Rmd files directly via the *StatsShare-Item-Editor*, you need 
 a functioning 
@@ -94,8 +90,7 @@ and one without *R* rendering support. *StatsShare-Item-Editor* with
 rendering does not work on computers  without a *R* installation.
 
 
-
-
 ---
 **Bugs**: Please [submit](https://github.com/essb-mt-section/sharestats-item-editor/issues/new)
 any bug you encounter to the Github issue tracker.
+
