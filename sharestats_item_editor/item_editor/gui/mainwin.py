@@ -284,7 +284,6 @@ class MainWin(object):
             ig.update_gui()
 
         elif event.endswith("btn_fix_meta_issues"):
-            needs_gui_reset = False
             ig.update_ss_item()
             for i in ig.rexam_item.validate():
                 i.fix()

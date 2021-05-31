@@ -23,13 +23,14 @@ class ItemSection(object):
         self.line_range = [None, None]
         self.answer_list = None
 
-    def parse(self):
+    def parse(self, parent=None):
         # find the section and copy content to object
+        if parent is not None:
+            self._parent = parent
         prev = ""
         is_section = False
         self.text_array = []
         self.line_range = [None, None]
-
         cnt = None
         for cnt, line in enumerate(self._parent.text_array):
             if not is_section:
@@ -112,8 +113,8 @@ class AnswerList(ItemSection):
         self.answers = []
         self._correct = []
 
-    def parse(self):
-        super().parse()
+    def parse(self, parent=None):
+        super().parse(parent=parent)
         self.answers = []
         self._correct = []
         unparsed_content = []
@@ -196,12 +197,12 @@ class ItemMetaInfo(ItemSection):
     REQUIRED_PARAMETER = _get_required_parameter_from_templates()
 
     def __init__(self, parent):
+        assert(isinstance(parent, RExamItem))
         super().__init__(parent, "Meta-information", "=")
-        assert(isinstance(self._parent, RExamItem))
         self.parameter = OrderedDict()
 
-    def parse(self, reset_parameter=False):
-        super().parse()
+    def parse(self, parent=None, reset_parameter=False):
+        super().parse(parent=parent)
         additional_content = []
         if reset_parameter:
             self.parameter = OrderedDict()
@@ -209,10 +210,11 @@ class ItemMetaInfo(ItemSection):
             l = self.text_array.pop(0)
             para = extract_parameter(l)
             if para is None:
-                additional_content.extend(l)
+                additional_content.append(l)
             else:
                 self.parameter.update(para)
         self.text_array = additional_content
+        # FIXME why adding more and more empty lines beind meta-infomation
 
     @property
     def str_parameter(self):
@@ -362,9 +364,11 @@ class RExamItem(RmdFile):
                 # array of text lines ending with \n (like readlines)
         else:
             self.text_array = source_text
-        self.question.parse()
-        self.solution.parse()
-        self.meta_info.parse(reset_parameter=reset_meta_information)
+
+        self.question.parse(parent=self)
+        self.solution.parse(parent=self)
+        self.meta_info.parse(parent=self,
+                             reset_parameter=reset_meta_information)
 
         self.header = deepcopy(self.text_array[:self.question.line_range[0]])
         # override answer_list correctness with meta info solution
@@ -379,7 +383,6 @@ class RExamItem(RmdFile):
     def save(self):
         if len(self.full_path):
             self.make_dirs()
-            #print("Save {}".format(self.filename.full_path))
             with open(self.full_path, "w") as fl:
                 fl.write(str(self))
 

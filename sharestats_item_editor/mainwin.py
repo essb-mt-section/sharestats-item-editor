@@ -35,8 +35,5 @@ class SSItemEditorMainWin(MainWin):
                     if len(lang_mismatch):
                         pass
 
-
-
-
         else:
             super().process_item_gui_event(event, values)
