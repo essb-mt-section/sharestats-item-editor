@@ -66,7 +66,7 @@ Users familiar with Python are always suggested to install *ShareStats-Item-Edit
 computer.) 
 
 ```
-python3 -m pip install -U sharestats-item-editor
+python -m pip install -U sharestats-item-editor
 ```
 
 To run ShareStatsItemEditor call either `sharestats-item-editor` or 
