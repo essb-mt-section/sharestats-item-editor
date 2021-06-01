@@ -368,7 +368,7 @@ class MainWin(object):
                 fl = flns.rmd_translation
             if fl is not None:
                 self.save_items(ask=True)
-                dialogs.render(flns[0])
+                dialogs.render(fl)
 
     def load_selected_item(self):
         if self.idx_selected_item is None:
