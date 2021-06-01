@@ -127,4 +127,4 @@ class SSItemMetaInfo(ItemMetaInfo):
 
         return issues
 
-#FIXME fix id lower-uppercase doublicate exist (try:..except:..)
+#TODO fix id lower-uppercase doublicate exist (try:..except:..)

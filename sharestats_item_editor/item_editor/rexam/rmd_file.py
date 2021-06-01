@@ -20,7 +20,7 @@ class RmdFile(object):
             file_path=""
         self.directory, self.filename = path.split(file_path)
         #TODO base directory is assumed to be at second level.
-        # define basedirectory explicitily
+        # define base directory explicitily
 
     def __eq__(self, other):
         try:

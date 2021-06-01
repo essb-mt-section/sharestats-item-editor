@@ -7,6 +7,12 @@ from ..rexam import r_render, templates, extypes
 from ..rexam.rmd_file import RmdFile, SEP, TAG_NL, TAG_ENG, TAG_BILINGUAL
 from ..rexam.item import RExamItem
 
+def top_label(elem, label="", border_width=0):
+    if not isinstance(elem, list):
+        elem = [elem]
+    return sg.Frame(label,[elem], border_width=border_width)
+
+
 def ask_save(item_name, txt=None):
     if txt is None:
         layout = []
@@ -150,7 +156,8 @@ class FrameMakeName(object):
                                   border_width=0)
 
         self.fln = [sg.InputText(default_text=defaults[0], size=(25,1),
-                                 enable_events=True)]
+                                 enable_events=True)] # could have potentiall
+                                                     # multiple parts
         self.fln_cnt = sg.InputText(default_text=str(defaults[-1]), size=(4, 1),
                                     enable_events=True)
 
@@ -159,12 +166,11 @@ class FrameMakeName(object):
                                     enable_events=True)
 
         self.frame = sg.Frame("Item Name(s)",[
-            [sg.Text("Topic"+" "*24 +
-                     "Counter"+" "*7 + "Language")],
-            [self.fln[0], sg.Text(SEP),
-             self.fln_cnt, sg.Text(SEP),
-             self.fln_lang], [self.fr_names]
-        ])
+            [top_label([self.fln[0], sg.Text(SEP)], label="Topic"),
+             top_label([self.fln_cnt, sg.Text(SEP)], label="Counter"),
+             top_label(self.fln_lang, label="Language")],
+             [self.fr_names]
+             ])
 
     def update_names(self):
         # call me once after window created

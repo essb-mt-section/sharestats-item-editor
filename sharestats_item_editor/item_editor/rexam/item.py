@@ -216,7 +216,6 @@ class ItemMetaInfo(ItemSection):
             else:
                 self.parameter.update(para)
         self.text_array = additional_content
-        # FIXME why adding more and more empty lines beind meta-infomation
 
     @property
     def str_parameter(self):
