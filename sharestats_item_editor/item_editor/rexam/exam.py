@@ -4,7 +4,7 @@ import time
 
 from .item_database import ItemDatabase
 from .item_bilingual import EntryItemDatabase, EntryBiLingFileList
-
+from .item import FILE_ENCODING
 
 def _get_relpath_hash(item):
     # helper function
@@ -92,11 +92,11 @@ class Exam(object):
         if self.info is not None:
             d["info"] = self.info
 
-        with open(json_filename, 'w') as fl:
+        with open(json_filename, 'w', encoding=FILE_ENCODING) as fl:
             fl.write(json.dumps(d, indent = 2))
 
     def load(self, json_filename):
-        with open(json_filename, 'r') as fl:
+        with open(json_filename, 'r', encoding=FILE_ENCODING) as fl:
             d = json.load(fl)
 
         try:

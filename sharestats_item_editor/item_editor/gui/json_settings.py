@@ -1,12 +1,16 @@
 __author__  = "Oliver Lindemann"
-__version__ = "0.4"
+__version__ = "0.5"
 
 import os
 import json
 from copy import copy
 from appdirs import user_config_dir
 
+
+
 class JSONSettings():
+
+    FILE_ENCODING = 'utf-8'
 
     def __init__(self, appname, settings_file_name, defaults, reset=False):
         """General settings class that saves the settings in a json file.
@@ -31,7 +35,9 @@ class JSONSettings():
                 pass
 
         try: #load
-            with open(self.settings_file, 'r') as fl:
+            with open(self.settings_file, 'r',
+                      encoding=JSONSettings.FILE_ENCODING) as\
+                    fl:
                 settings = json.load(fl)
             saving_required = False
         except:
@@ -68,5 +74,6 @@ class JSONSettings():
         except:
             pass
 
-        with open(self.settings_file, 'w') as fl:
+        with open(self.settings_file, 'w',
+                  encoding=JSONSettings.FILE_ENCODING) as fl:
             fl.write(json.dumps(d, indent = 2))

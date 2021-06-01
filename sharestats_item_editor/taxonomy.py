@@ -2,6 +2,7 @@ from os import path
 import json as json
 
 from .item_editor import misc
+from .item_editor.gui.consts import FILE_ENCODING
 
 class Taxonomy(object):
 
@@ -9,7 +10,8 @@ class Taxonomy(object):
     TAGS_KEY = 'Tags'
 
     def __init__(self):
-        with open(path.join(path.dirname(__file__), "taxonomy.json")) as fl:
+        with open(path.join(path.dirname(__file__), "taxonomy.json"),
+                  'r', encoding=FILE_ENCODING) as fl:
             self._dict = json.load(fl)
 
     def _get_level(self, type, categories):

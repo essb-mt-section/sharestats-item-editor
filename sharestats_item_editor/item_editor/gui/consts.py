@@ -17,6 +17,7 @@ SG_COLOR_THEME = {'BACKGROUND': '#E0E0E2',
                   'BORDER': 1, 'SLIDER_DEPTH': 0,
                   'PROGRESS_DEPTH': 0, }
 
+FILE_ENCODING = 'utf-8'
 
 WIDTH_ML = 80 # multi line field for text input
 LEN_ML_SMALL = 6

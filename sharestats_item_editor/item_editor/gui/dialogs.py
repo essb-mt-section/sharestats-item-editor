@@ -1,6 +1,7 @@
 from os import path
 import PySimpleGUI as sg
 
+from . import consts
 from .. import sysinfo, __version__, __author__, APPNAME
 from ..rexam import r_render, templates, extypes
 from ..rexam.rmd_file import RmdFile, SEP, TAG_NL, TAG_ENG, TAG_BILINGUAL
@@ -35,7 +36,7 @@ def show_text_file(file, file2=None):
             win_titel = "View Files: {}".format(fl.name)
             fl = fl.full_path
         try:
-            with open(fl, "r") as fl_hdl:
+            with open(fl, "r", encoding=consts.FILE_ENCODING) as fl_hdl:
                 content[i] = fl_hdl.readlines()
             files.append(fl)
         except:

@@ -8,6 +8,8 @@ from .rmd_file import RmdFile
 from .issue import Issue
 from ..misc import extract_parameter
 
+FILE_ENCODING = 'utf-8'
+
 class ItemSection(object):
 
     def __init__(self, parent, label, underline_chr, min_underline_length=4):
@@ -181,7 +183,7 @@ def _get_required_parameter_from_templates():
     for k, filename in templates.FILES.items():
         meta_info = False
         rtn[k] = OrderedDict()
-        with open(filename, "r") as fl:
+        with open(filename, "r", encoding=FILE_ENCODING) as fl:
             for l in fl:
                 if l.startswith("Meta-information"):
                     meta_info = True
@@ -353,7 +355,7 @@ class RExamItem(RmdFile):
         """import a text file as content"""
         self.header = []
         self.text_array = []
-        with open(text_file, "r") as fl:
+        with open(text_file, "r", encoding=FILE_ENCODING) as fl:
             self.parse(fl.readlines())
 
     def parse(self, source_text, reset_meta_information=False):
@@ -383,7 +385,7 @@ class RExamItem(RmdFile):
     def save(self):
         if len(self.full_path):
             self.make_dirs()
-            with open(self.full_path, "w") as fl:
+            with open(self.full_path, "w", encoding=FILE_ENCODING) as fl:
                 fl.write(str(self))
 
     def fix_add_answer_list(self):
