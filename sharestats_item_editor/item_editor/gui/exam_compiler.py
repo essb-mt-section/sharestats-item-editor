@@ -6,7 +6,7 @@ from ..rexam.item_database import ItemDatabase
 from ..rexam.exam import Exam
 from . import consts
 from .json_settings import JSONSettings
-
+from .dialogs import top_label
 
 sg.theme_add_new("mytheme", consts.SG_COLOR_THEME)
 sg.theme("mytheme")
@@ -27,8 +27,10 @@ class ExamCompiler(object):
 
         self.txt_base_directory = sg.Text(self.base_directory, size=(60, 1),
                                           background_color=consts.COLOR_BKG_ACTIVE_INFO)
-        fr_base_dir = sg.Frame("Base Directory",
-                               [[self.txt_base_directory]])
+        self.it_exam = sg.InputText("", size=(20, 1),
+                                    enable_events=True,
+                                    background_color=consts.COLOR_BKG_ACTIVE_INFO,
+                                    key="change_name")
 
         self.db = ItemDatabase(self.base_directory)
         self.exam = Exam()
@@ -40,7 +42,21 @@ class ExamCompiler(object):
         self.tab_exam = self._make_tab(n_row=10, key='tab_exam',
                                        tooltip='Exam Items')
         self.layout = [
-            [fr_base_dir],
+            [top_label([self.txt_base_directory,
+                        sg.Button("change", size=(6, 1),
+                                  key="change_directory")],
+                       label="Database Directory",border_width=2),
+             top_label([self.it_exam,
+                        sg.Button("save", size=(12, 1),
+                                  key="save_exam"),
+                        sg.Button("load", size=(4, 1),
+                                  key="load_exam"),
+                        sg.Button("new", size=(4, 1),
+                                  key="load_exam")
+                        ],
+                        label="Exam", border_width=2),
+             ],
+
             [self.tab_db],
             [
              sg.Button("add", size=(30, 2),
@@ -53,6 +69,8 @@ class ExamCompiler(object):
             sg.Button("down", size=(10, 2), key="move_down")
             ],
             [self.tab_exam]]
+
+        self._unsaved_change = False
 
 
     def _make_tab(self, n_row, key, tooltip):
@@ -103,6 +121,15 @@ class ExamCompiler(object):
         self.settings.recent_dirs = self.settings.recent_dirs[
                                     -1 * consts.MAX_RECENT_DIRS:] #limit n elements         self.update_item_list()
 
+    @property
+    def exam_file(self):
+        return self.it_exam.get()
+
+    @exam_file.setter
+    def exam_file(self, v):
+        self.it_exam.update(value=v)
+        self._unsaved_change = True
+
 
     def update_table(self, max_lines=2, exam_tab_select_row=None):
         """table with item_id, name, short question item,
@@ -133,18 +160,28 @@ class ExamCompiler(object):
             self.tab_exam.update(select_rows=[exam_tab_select_row])
 
     def load_exam(self, json_filename):
-        self.exam.load(json_filename)
+        self.save_exam(ask=True)
+        try:
+            self.exam.load(json_filename)
+        except Exception as e:
+            return e
+
+        self.exam_file = json_filename
         self.update_table()
+        self._unsaved_change = False
+        return True
 
     def save_exam(self, ask=True):
-        self.exam.save("demo.json") # FIXME DEBUG
+        if self._unsaved_change:
+            self.exam.save(self.exam_file) # FIXME ASK
+            self._unsaved_change = False
 
     def reset_gui(self):
         pass
 
     def run(self):
 
-        win = sg.Window("{} ({})".format(APPNAME, __version__),
+        win = sg.Window("{} ({})".format("Exam Compiler", __version__),
                         self.layout, finalize=True,
                         return_keyboard_events=True,
                         enable_close_attempted_event=True)
@@ -165,6 +202,15 @@ class ExamCompiler(object):
                 self.save_exam(ask=True)
                 break
 
+            elif event=="save_exam":
+                self.save_exam(ask=False)
+
+            elif event=="load_exam":
+                pass # TODO
+
+            elif event=="new_exam":
+                pass # TODO
+
             elif event=="tab_database":
                 selected_entry = self.tab_db.get()[values[event][0]]
                 #TODO
@@ -179,6 +225,8 @@ class ExamCompiler(object):
                 except:
                     continue # nothing selected
                 self.add_to_exam(selected_entry[0])
+                self._unsaved_change = True
+
 
             elif event=="remove_from_exam":
                 try:
@@ -186,6 +234,8 @@ class ExamCompiler(object):
                 except:
                     continue # nothing selected
                 self.remove_from_exam(selected_entry[0])
+                self._unsaved_change = True
+
 
             elif event=="move_up":
                 try:
@@ -194,7 +244,7 @@ class ExamCompiler(object):
                     continue # nothing selected
                 self.exam.replace(selected_entry, selected_entry-1)
                 self.update_table(exam_tab_select_row=selected_entry-1)
-
+                self._unsaved_change = True
 
             elif event=="move_down":
                 try:
@@ -203,9 +253,13 @@ class ExamCompiler(object):
                     continue # nothing selected
                 self.exam.replace(selected_entry, selected_entry+1)
                 self.update_table(exam_tab_select_row=selected_entry+1)
+                self._unsaved_change = True
+
+            elif event=="change_name":
+                self._unsaved_change = True
 
             else:
-                print(event)
+                pass #print(event)
 
         win.close()
         self.save_exam(ask=True)

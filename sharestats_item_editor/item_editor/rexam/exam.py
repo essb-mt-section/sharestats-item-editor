@@ -85,6 +85,7 @@ class Exam(object):
               }
 
     def save(self, json_filename, info=None):
+        print("Save {}".format(json_filename))
         if info is not None:
             self.info = info
 

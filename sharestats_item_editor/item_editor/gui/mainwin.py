@@ -45,7 +45,7 @@ class MainWin(object):
 
         self.txt_base_directory = sg.Text(self.base_directory, size=(60, 1),
                                           background_color=consts.COLOR_BKG_ACTIVE_INFO)
-        fr_base_dir = sg.Frame("Base Directory",
+        fr_base_dir = sg.Frame("Database Directory",
                              [[self.txt_base_directory]])
 
         self.txt_name = sg.Text("", size=(30, 1),
