@@ -17,6 +17,8 @@ setup_venv:
 	pip install -r requirements.txt
 
 clean:
-	@rm -rf build \
-        dist\
-        *.egg-info \
+	py3clean .
+	rm -rf build dist  *.egg-info
+
+
+

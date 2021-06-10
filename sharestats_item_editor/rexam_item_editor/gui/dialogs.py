@@ -2,8 +2,8 @@ from os import path
 import PySimpleGUI as sg
 
 from . import consts
-from .. import sysinfo, __version__, __author__, APPNAME
-from ..rexam import r_render, templates, extypes
+from .. import sysinfo, __version__, __author__, APPNAME, templates
+from ..rexam import r_render, extypes
 from ..rexam.rmd_file import RmdFile, SEP, TAG_NL, TAG_ENG, TAG_BILINGUAL
 from ..rexam.item import RExamItem
 

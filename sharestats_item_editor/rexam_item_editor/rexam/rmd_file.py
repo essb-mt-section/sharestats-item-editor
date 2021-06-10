@@ -36,7 +36,7 @@ class RmdFile(object):
 
     @property
     def language_code(self):
-        if self.name[-3] == SEP:
+        if len(self.name)>=4 and self.name[-3] == SEP:
             lang = self.name[-2:].lower()
             if lang in (NL, ENG):
                 return lang

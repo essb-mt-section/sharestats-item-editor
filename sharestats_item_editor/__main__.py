@@ -1,19 +1,26 @@
 import sys
-
 from . import  __version__
-from .meta_info import SSItemMetaInfo
-from .mainwin import SSItemEditorMainWin
-
 from .rexam_item_editor import APPNAME, sysinfo
+
+if sys.version_info[0] != 3 or sys.version_info[1] < 5:
+    raise RuntimeError("{} {} ".format(APPNAME, __version__) +
+                       "is not compatible with Python {0}".format(
+                           sysinfo.PYTHON_VERSION) +
+                       "\n\nPlease use Python 3.5 or higher.")
+#
+# changes in rexam_item_editor for sharestats
+#
+from .meta_info import SSItemMetaInfo
 from .rexam_item_editor.rexam.item import RExamItem
 RExamItem.META_INFO_CLASS = SSItemMetaInfo
 
+from . import templates as states_share_templates
+from .rexam_item_editor import templates
+templates.FILES = states_share_templates.FILES
+
+from .mainwin import SSItemEditorMainWin
+
 def run():
-    if sys.version_info[0] != 3 or sys.version_info[1] < 5:
-        raise RuntimeError("{} {} ".format(APPNAME, __version__) +
-                           "is not compatible with Python {0}".format(
-                               sysinfo.PYTHON_VERSION) +
-                           "\n\nPlease use Python 3.5 or higher.")
 
     if len(sys.argv) > 1:
         reset = sys.argv[1] == "-r"  # reset

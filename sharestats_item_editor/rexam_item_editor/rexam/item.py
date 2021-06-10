@@ -3,7 +3,8 @@ from collections import OrderedDict
 import hashlib
 from copy import deepcopy
 
-from . import templates, extypes
+from . import extypes
+from .. import templates
 from .rmd_file import RmdFile
 from .issue import Issue
 from ..misc import extract_parameter
@@ -178,30 +179,35 @@ class AnswerList(ItemSection):
         return rtn.strip()
 
 
-def _get_required_parameter_from_templates():
-    rtn ={}
-    for k, filename in templates.FILES.items():
-        meta_info = False
-        rtn[k] = OrderedDict()
-        with open(filename, "r", encoding=FILE_ENCODING) as fl:
-            for l in fl:
-                if l.startswith("Meta-information"):
-                    meta_info = True
-                elif meta_info:
-                    para = extract_parameter(l)
-                    if para is not None:
-                        rtn[k].update(para)
-    return rtn
-
-
 class ItemMetaInfo(ItemSection):
 
-    REQUIRED_PARAMETER = _get_required_parameter_from_templates()
+    _REQUIRED_PARAMETER = None
 
     def __init__(self, parent):
         assert(isinstance(parent, RExamItem))
         super().__init__(parent, "Meta-information", "=")
         self.parameter = OrderedDict()
+
+    @classmethod
+    def required_parameter(cls):
+        if cls._REQUIRED_PARAMETER is None:
+            # try to load it once from templates
+            rtn = {}
+            for k, filename in templates.FILES.items():
+                meta_info = False
+                rtn[k] = OrderedDict()
+                with open(filename, "r", encoding='utf-8') as fl:
+                    for l in fl:
+                        if l.startswith("Meta-information"):
+                            meta_info = True
+                        elif meta_info:
+                            para = extract_parameter(l)
+                            if para is not None:
+                                rtn[k].update(para)
+
+            cls._REQUIRED_PARAMETER = rtn
+
+        return cls._REQUIRED_PARAMETER
 
     def parse(self, parent=None, reset_parameter=False):
         super().parse(parent=parent)
@@ -237,8 +243,9 @@ class ItemMetaInfo(ItemSection):
 
     def sort_parameter(self):
         # sorting parameter based on Templates (in place)
+        required = ItemMetaInfo.required_parameter()
         try:
-            req_para = ItemMetaInfo.REQUIRED_PARAMETER[self.type].keys()
+            req_para = required[self.type].keys()
         except:
             return False
 
@@ -292,8 +299,9 @@ class ItemMetaInfo(ItemSection):
         return self.type in extypes.HAVE_ANSWER_LIST
 
     def get_missing_parameter(self):
+        required = ItemMetaInfo.required_parameter()
         try:
-            parameter = ItemMetaInfo.REQUIRED_PARAMETER[self.type]
+            parameter = required[self.type]
         except:
             return {}
 
