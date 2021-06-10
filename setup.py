@@ -9,6 +9,7 @@ import os
 from sys import version_info as _vi
 
 from sharestats_item_editor import __version__ as version
+from sharestats_item_editor.rexam_item_editor import WEBSITE
 
 package_name = "sharestats_item_editor"
 application_name = "sharestats-item-editor"
@@ -56,8 +57,8 @@ if __name__ == '__main__':
                     'project',
         author='Oliver Lindemann',
         author_email='lindemann@cognitive-psychology.eu',
-        license='GNU GPLv3',
-        url='https://github.com/essb-mt-section/sharestats-item-editor/',
+        license='MIT licence',
+        url=WEBSITE,
         packages=find_packages(),
         include_package_data=True,
         package_data=package_data,

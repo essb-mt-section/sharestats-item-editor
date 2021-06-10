@@ -21,7 +21,10 @@ Feature overview
 * R markdown rendering check (experimental, requires *R*)
 
 
-*Released under the MIT License*
+This program is based on (and includes copy of) the Python 
+package [RExam Item Editor](https://github.com/lindemann09/rexam-item-editor). 
+
+*The software is released under the MIT License*
 
 Oliver Lindemann, Erasmus University Rotterdam, NL
 
@@ -35,7 +38,8 @@ Oliver Lindemann, Erasmus University Rotterdam, NL
 Please, ensure that [Python 3](https://www.python.org/downloads/) is installed on your
 computer. If you install Python 3 on Windows, don't for get to [add Python the path](https://pychill.info/wp-content/uploads/2020/06/installation_python-1.jpg) environment variable.
 
-*ShareStats-Item-Editor* can be istalled via the Pythons package manager `pip`. Open a shell and call:
+*ShareStats-Item-Editor* can be installed via the Pythons package manager 
+`pip`. Open a shell and call:
 
 ```
 python -m pip install -U sharestats-item-editor
