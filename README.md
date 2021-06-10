@@ -73,7 +73,8 @@ in a slow launching application.
  
 ## Dependencies
 
-Python 3.5+ and the following libraries (see [requirements.txt](requirements.txt)):
+Python 3.5+ and the following libraries:
+* rexam-item-editor
 * PySimpleGUI
 * appdirs
 

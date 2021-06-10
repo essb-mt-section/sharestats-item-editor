@@ -1,21 +1,27 @@
 import sys
-from . import  __version__
-from .rexam_item_editor import APPNAME, sysinfo
+from rexam_item_editor import sysinfo
+
+from . import  __version__, APPNAME, WEBSITE
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 5:
     raise RuntimeError("{} {} ".format(APPNAME, __version__) +
                        "is not compatible with Python {0}".format(
                            sysinfo.PYTHON_VERSION) +
                        "\n\nPlease use Python 3.5 or higher.")
+
 #
 # changes in rexam_item_editor for sharestats
 #
+import rexam_item_editor
+rexam_item_editor.APPNAME = APPNAME
+rexam_item_editor.WEBSITE = WEBSITE
+
 from .meta_info import SSItemMetaInfo
-from .rexam_item_editor.rexam.item import RExamItem
+from rexam_item_editor.rexam.item import RExamItem
 RExamItem.META_INFO_CLASS = SSItemMetaInfo
 
 from . import templates as states_share_templates
-from .rexam_item_editor import templates
+from rexam_item_editor import templates
 templates.FILES = states_share_templates.FILES
 
 from .mainwin import SSItemEditorMainWin

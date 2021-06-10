@@ -8,10 +8,11 @@ projects.
 __author__ = "Oliver Lindemann"
 
 # set appname and version
-from . import rexam_item_editor
+import rexam_item_editor
 #rexam_item_editor.__version__ += "-2"
 __version__ = rexam_item_editor.__version__
-rexam_item_editor.APPNAME = "ShareStats Item Editor"
-rexam_item_editor.WEBSITE = "https://github.com/essb-mt-section/sharestats-item-editor"
+
+APPNAME = "ShareStats Item Editor"
+WEBSITE = "https://github.com/essb-mt-section/sharestats-item-editor"
 
 

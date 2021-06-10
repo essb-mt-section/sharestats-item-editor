@@ -9,14 +9,12 @@ import os
 from sys import version_info as _vi
 
 from sharestats_item_editor import __version__ as version
-from sharestats_item_editor.rexam_item_editor import WEBSITE
+from sharestats_item_editor import WEBSITE
 
 package_name = "sharestats_item_editor"
 application_name = "sharestats-item-editor"
 
-install_requires = ["appdirs>=1.4",
-                    "pysimplegui>=4.33"]
-
+install_requires = ["rexam-item-editor == 0.2.0.3"]
 extras_require = {"rendering": ["rpy2>=3.4.3"]}
 
 entry_points = {'console_scripts':

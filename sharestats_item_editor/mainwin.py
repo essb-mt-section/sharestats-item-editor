@@ -1,5 +1,5 @@
-from .rexam_item_editor.gui.mainwin import MainWin
-from .rexam_item_editor.gui import dialogs as base_dialogs
+from rexam_item_editor.gui.mainwin import MainWin
+from rexam_item_editor.gui import dialogs as base_dialogs
 from .dialogs import edit_taxonomy, FrameMakeName
 
 base_dialogs.FrameMakeName = FrameMakeName
