@@ -475,7 +475,8 @@ class MainWin(object):
                                      (flns.rmd_item,
                                       flns.rmd_translation)):
                 if new_name is not None and old is not None:
-                    log(old.rename(new_name, rename_dir=fix_dir,
+                    log(old.rename(new_name,
+                                   new_sub_dir=new_name,
                                    rename_on_disk=True))
 
             self.reset_gui()

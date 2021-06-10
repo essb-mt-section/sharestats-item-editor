@@ -97,21 +97,23 @@ class FilePath(object):
         except:
             pass
 
-    def rename(self, new_name, rename_dir = True, rename_on_disk=False):
+    def rename(self, new_name, new_sub_dir = None, rename_on_disk=False):
         """Returns io error, if it occurs"""
         new = deepcopy(self)
         new.name = new_name
-        if rename_dir:
-            new.sub_directory = new_name
+        if new_sub_dir is not None:
+            new.sub_directory = new_sub_dir
 
         if rename_on_disk:
-            io_error = os_rename(self.full_path, new.full_path)
-            if io_error:
-                return "Can't rename File: {}".format(io_error)
-            elif rename_dir:
+            if new_sub_dir is not None:
                 io_error = os_rename(self.directory, new.directory)
                 if io_error:
                     return "Can't rename directory: {}".format(io_error)
+
+            io_error = os_rename(path.join(new.directory, self.filename),
+                                 new.full_path)
+            if io_error:
+                return "Can't rename file: {}".format(io_error)
 
         self.filename = new.filename
         self.sub_directory = new.sub_directory

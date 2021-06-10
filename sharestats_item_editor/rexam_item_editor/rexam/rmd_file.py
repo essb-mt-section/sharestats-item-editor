@@ -19,7 +19,6 @@ def copytree(source_folder, destination_folder):
         return io_error
 
 
-
 class RmdFile(FilePath):
 
     SUFFIX = ".Rmd"
