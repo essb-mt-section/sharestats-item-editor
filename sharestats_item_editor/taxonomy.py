@@ -1,8 +1,8 @@
 from os import path
 import json as json
 
-from .item_editor import misc
-from .item_editor.gui.consts import FILE_ENCODING
+from .rexam_item_editor import misc
+from .rexam_item_editor.gui.consts import FILE_ENCODING
 
 class Taxonomy(object):
 

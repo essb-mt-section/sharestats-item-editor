@@ -7,9 +7,9 @@ projects.
 
 __author__ = "Oliver Lindemann"
 
-from . import item_editor
-#item_editor.__version__ += "-2"
-item_editor.APPNAME = "ShareStats Item Editor"
-item_editor.WEBSITE = "https://github.com/essb-mt-section/sharestats-item-editor"
+from . import rexam_item_editor
+#rexam_item_editor.__version__ += "-2"
+rexam_item_editor.APPNAME = "ShareStats Item Editor"
+rexam_item_editor.WEBSITE = "https://github.com/essb-mt-section/sharestats-item-editor"
 
-__version__ = item_editor.__version__
+__version__ = rexam_item_editor.__version__

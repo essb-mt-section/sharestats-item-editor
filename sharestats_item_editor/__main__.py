@@ -4,8 +4,8 @@ from . import  __version__
 from .meta_info import SSItemMetaInfo
 from .mainwin import SSItemEditorMainWin
 
-from .item_editor import APPNAME, sysinfo
-from .item_editor.rexam.item import RExamItem
+from .rexam_item_editor import APPNAME, sysinfo
+from .rexam_item_editor.rexam.item import RExamItem
 RExamItem.META_INFO_CLASS = SSItemMetaInfo
 
 def run():
