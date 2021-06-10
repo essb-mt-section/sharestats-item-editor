@@ -7,35 +7,6 @@ from .rmd_file import RmdFile
 from .item_bilingual import EntryItemDatabase, EntryBiLingFileList
 from ..misc import iter_list
 
-def _get_rmd_files_second_level(folder,
-                                suffix=RmdFile.SUFFIX):
-    """returns list with Rmd files at the second levels that has the same
-    name as the folder. Otherwise first rexam found is return."""
-
-    if folder is None:
-        return []
-    lst = []
-    for name in os.listdir(folder):
-        fld = path.join(folder, name)
-        if path.isdir(fld):
-            good_fl_name = path.join(fld, name+suffix)
-            if path.isfile(good_fl_name):
-                lst.append(good_fl_name)
-            else:
-                # search for rexam file
-                try:
-                    subdir_lst = os.listdir(fld)
-                except:
-                    subdir_lst=[] # no permission to access dir
-                for fl_name in map(lambda x: path.join(fld, x), subdir_lst):
-                    # no permission
-                    if fl_name.lower().endswith(suffix.lower()):
-                        # best guess
-                        lst.append(fl_name)
-                        break
-
-    return lst
-
 class _SearchSchemata(object):
 
     def __init__(self):
@@ -77,22 +48,30 @@ class _SearchSchemata(object):
 
 class ItemFileList(object):
 
-    def __init__(self, folder=None):
+    def __init__(self, folder=None, files_first_level=True,
+                                    files_second_level=True):
         self.files = []
         self.base_directory = folder
+        self.files_first_level = files_first_level
+        self.files_second_level = files_second_level
+
         # check for matching languages
-        lst = misc.CaseInsensitiveStringList(
-                            _get_rmd_files_second_level(folder))
+        lst = misc.CaseInsensitiveStringList(self.get_rmd_files())
+
         self._file_list_hash = hash(tuple(lst.get())) # simple hashes for online
         # change detection, this are not the version IDs!
 
         while len(lst) > 0:
-            first = RmdFile(lst.pop(0))
-            second = first.get_other_language_path()
-            if second in lst:
-                second = lst.remove(second) # get in correct cases
-                lst.remove_all(second) # remove all others versions (should not be the case)
-                second = RmdFile(second)
+            first = RmdFile(file_path=lst.pop(0),
+                            base_directory=self.base_directory)
+
+            second = first.get_other_language_rmdfile()
+            if second is not None and second.full_path in lst:
+                # get in correct cases
+                second_full_cases = lst.remove(second.full_path)
+                lst.remove_all(second_full_cases) # remove all others versions (should not be the case)
+                second = RmdFile(file_path=second_full_cases,
+                                 base_directory=self.base_directory)
             else:
                 second = None
 
@@ -123,7 +102,7 @@ class ItemFileList(object):
         return rtn
 
     def is_file_list_changed(self):
-        lst = _get_rmd_files_second_level(self.base_directory)
+        lst = self.get_rmd_files()
         return hash(tuple(lst)) != self._file_list_hash
 
     def get_shared_names(self, bilingual_tag=True):
@@ -147,14 +126,53 @@ class ItemFileList(object):
 
         return None
 
+    def get_rmd_files(self, suffix=RmdFile.SUFFIX):
+        """returns list with Rmd files at the second levels and/or first
+        level (depending on files_first_level and files_second_level).
+
+         Second level files: The file with the same name as the folder;
+         otherwise first rexam found is this subfolder return.
+
+         returns absolute pathes """
+
+        if self.base_directory is None:
+            return []
+        lst = []
+        for name in os.listdir(self.base_directory):
+            fld = path.join(self.base_directory, name)
+            if path.isdir(fld) and self.files_second_level:
+                good_fl_name = path.join(fld, name + suffix)
+                if path.isfile(good_fl_name):
+                    lst.append(good_fl_name)
+                else:
+                    # search for a rexam file in the subdirectory
+                    try:
+                        subdir_lst = os.listdir(fld)
+                    except:
+                        subdir_lst = []  # no permission to access dir
+                    for fl_name in map(lambda x: path.join(fld, x), subdir_lst):
+                        # no permission
+                        if fl_name.lower().endswith(suffix.lower()):
+                            # best guess
+                            lst.append(fl_name)
+                            break
+
+            elif path.isfile(fld) and self.files_first_level:
+                if fld.lower().endswith(suffix.lower()):
+                    lst.append(fld)
+
+        return [path.abspath(x) for x in lst]
 
 
 class ItemDatabase(ItemFileList):
 
-    def __init__(self, folder):
+    def __init__(self, folder, files_first_level,
+                            files_second_level):
         """file_list_bilingual: path or file_list_biligual
         """
-        super().__init__(folder=folder)
+        super().__init__(folder=folder,
+                         files_first_level=files_first_level,
+                         files_second_level=files_second_level)
         self._selected_ids = []
 
         ## LOAD DATA

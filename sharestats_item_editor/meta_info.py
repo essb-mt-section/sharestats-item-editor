@@ -111,7 +111,7 @@ class SSItemMetaInfo(ItemMetaInfo):
 
         # folder name equals filename
         # (should be always the last one, because of item saving)
-        if not self._parent.folder_mirrors_filename():
+        if not self._parent.subdir_mirrors_filename():
             issues.append(Issue("folder",
                     "Directory name does not match item name",
                     self._parent.fix_directory_name,

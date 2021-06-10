@@ -14,6 +14,10 @@ from . import rexam_item_editor
 rexam_item_editor.APPNAME = APPNAME
 rexam_item_editor.WEBSITE = WEBSITE
 
+from .rexam_item_editor.gui import consts
+consts.FILELIST_FIRST_LEVEL_FILES = False
+consts.FILELIST_SECOND_LEVEL_FILES = True
+
 from .meta_info import SSItemMetaInfo
 from .rexam_item_editor.rexam.item import RExamItem
 RExamItem.META_INFO_CLASS = SSItemMetaInfo

@@ -20,7 +20,7 @@ class ItemGUI(object):
             len_ml = consts.LEN_ML_SMALL
             len_answer = consts.LEN_ANSWER_SMALL
 
-        self.label =label
+        self.label = label
         self.key_prefix = key_prefix
         self._item = None
 
@@ -135,6 +135,7 @@ class ItemGUI(object):
 
     @rexam_item.setter
     def rexam_item(self, v):
+        assert isinstance(v, (RExamItem)) or v is None
         self._item = v
         self._enable_gui(v is not None)
 
@@ -239,8 +240,7 @@ class ItemGUI(object):
         else:
             item = self.rexam_item
 
-        fl_info = path.join(path.split(item.directory)[1],
-                            item.filename)
+        fl_info = path.join(item.sub_directory, item.filename)
         if len(fl_info):
             fl_info = ":  ..." + path.sep + fl_info
         self.main_frame.update(value=self.label + fl_info)

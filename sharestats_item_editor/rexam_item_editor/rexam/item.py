@@ -6,6 +6,7 @@ from copy import deepcopy
 from . import extypes
 from .. import templates
 from .rmd_file import RmdFile
+from .filepath import FilePath
 from .issue import Issue
 from ..misc import extract_parameter
 
@@ -334,8 +335,12 @@ class RExamItem(RmdFile):
     META_INFO_CLASS = ItemMetaInfo
 
     def __init__(self, file_path=None):
-        assert isinstance(file_path, str) or file_path is None
-        super().__init__(file_path)
+        assert isinstance(file_path, FilePath) or file_path is None
+        if file_path is not None:
+            super().__init__(file_path=file_path.relative_path,
+                             base_directory=file_path.base_directory)
+        else:
+            super().__init__(file_path)
         self.question = ItemSection(self, "Question", "=")
         self.solution = ItemSection(self, "Solution", "=")
         self.meta_info = RExamItem.META_INFO_CLASS(self)
@@ -400,7 +405,7 @@ class RExamItem(RmdFile):
 
     def fix_directory_name(self):
         self.save()
-        rename(self.directory, self.get_mirroring_dir_name())
+        rename(self.directory, path.join(self.base_directory, self.name))
 
     def fix_uppercases_in_relative_path(self):
         self.save()
@@ -442,8 +447,9 @@ class RExamItem(RmdFile):
             self.question.answer_list.solution_str = solution_str
 
     @staticmethod
-    def load(file_path):
+    def load(file_path, base_directory):
         if file_path is None:
             return None
         else:
-            return RExamItem(file_path)
+            return  RExamItem(RmdFile(file_path,
+                                     base_directory=base_directory))

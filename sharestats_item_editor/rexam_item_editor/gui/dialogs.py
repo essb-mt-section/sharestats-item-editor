@@ -241,15 +241,17 @@ def new_item(base_directory):
             template_key = None
 
         if len(fr_make_name.name1):
-            item1 = RExamItem(path.join(base_directory, fr_make_name.name1,
-                                        "{}{}".format(fr_make_name.name1,
-                                                        RmdFile.SUFFIX)))
+            rel_path = path.join(fr_make_name.name1,
+                            "{}{}".format(fr_make_name.name1,RmdFile.SUFFIX))
+            item1 = RExamItem(RmdFile(file_path=rel_path,
+                                    base_directory = base_directory))
             if template_key is not None:
                 item1.import_file(templates.FILES[template_key])
         if len(fr_make_name.name2):
-            item2 = RExamItem(path.join(base_directory, fr_make_name.name2,
-                                        "{}{}".format(fr_make_name.name2,
-                                                        RmdFile.SUFFIX)))
+            rel_path = path.join(fr_make_name.name2,
+                        "{}{}".format(fr_make_name.name2, RmdFile.SUFFIX))
+            item2 = RExamItem(RmdFile(file_path=rel_path,
+                                    base_directory = base_directory))
             if template_key is not None:
                 item2.import_file(templates.FILES[template_key])
 

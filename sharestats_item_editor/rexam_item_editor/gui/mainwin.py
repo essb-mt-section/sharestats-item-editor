@@ -73,7 +73,8 @@ class MainWin(object):
                    self.ig_nl.main_frame,
                    self.ig_en.main_frame]]
 
-        self.fl_list = ItemFileList()
+        self.fl_list = ItemFileList(files_first_level=consts.FILELIST_FIRST_LEVEL_FILES,
+                                    files_second_level=consts.FILELIST_SECOND_LEVEL_FILES)
         self._unsaved_item = None
 
     def menu_definition(self):
@@ -182,7 +183,9 @@ class MainWin(object):
                 sg.PopupError("No valid item directory selected.")
                 exit()
 
-        self.fl_list = ItemFileList(self.base_directory)
+        self.fl_list = ItemFileList(folder=self.base_directory,
+                        files_first_level=consts.FILELIST_FIRST_LEVEL_FILES,
+                        files_second_level=consts.FILELIST_SECOND_LEVEL_FILES)
 
         cnt = self.fl_list.get_count()
         self.fr_items.update(value="{} items".format(cnt["total"]))
@@ -381,12 +384,17 @@ class MainWin(object):
 
         if fls is not None:
             if not fls.is_bilingual() and fls.rmd_item.language_code == ENG:
-                self.ig_en.rexam_item = RExamItem.load(fls.rmd_item.full_path)
+                self.ig_en.rexam_item = RExamItem.load(fls.rmd_item.full_path,
+                                        base_directory = self.base_directory)
                 self.ig_nl.rexam_item = None
             else:
-                self.ig_nl.rexam_item = RExamItem.load(fls.rmd_item.full_path)
+                self.ig_nl.rexam_item = RExamItem.load(fls.rmd_item.full_path,
+                                        base_directory = self.base_directory)
+
                 if fls.rmd_translation is not None:
-                    self.ig_en.rexam_item = RExamItem.load(fls.rmd_translation.full_path)
+                    self.ig_en.rexam_item = RExamItem.load(
+                                    fls.rmd_translation.full_path,
+                                    base_directory=self.base_directory)
                 else:
                     self.ig_en.rexam_item = None
 
@@ -411,7 +419,8 @@ class MainWin(object):
             new_items = dialogs.new_item(self.base_directory)
         else:
             assert (isinstance(new_rmd_file_name, str))
-            new_items = [RExamItem(new_rmd_file_name), None]
+            new_items = [RExamItem(RmdFile(new_rmd_file_name,
+                                base_directory=self.base_directory)), None]
             if self.ig_en.rexam_item is not None:
                 new_items[1] = self.ig_en.rexam_item
             elif self.ig_nl.rexam_item is not None:
@@ -439,12 +448,12 @@ class MainWin(object):
 
     def add_second_language(self):
             ifln = self.fl_list.files[self.idx_selected_item].rmd_item
-            fl_path = ifln.get_other_language_path()
+            fl_path = ifln.get_other_language_rmdfile()
             copy_content = sg.popup_yes_no("Copy content of {}?".format(
                         ifln.name))
             if copy_content == "Yes":
                 new_name = RmdFile(fl_path).name
-                new = ifln.copy_files(new_name)
+                new = ifln.copy_subdir_files(new_name)
                 if not isinstance(new, RmdFile):
                     # io error
                     log(new)

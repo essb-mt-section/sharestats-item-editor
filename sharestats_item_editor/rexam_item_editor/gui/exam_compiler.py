@@ -32,7 +32,10 @@ class ExamCompiler(object):
                                     background_color=consts.COLOR_BKG_ACTIVE_INFO,
                                     key="change_name")
 
-        self.db = ItemDatabase(self.base_directory)
+        self.db = ItemDatabase(self.base_directory,
+                       files_first_level=consts.FILELIST_FIRST_LEVEL_FILES,
+                       files_second_level=consts.FILELIST_SECOND_LEVEL_FILES)
+
         self.exam = Exam()
         self.tab_db = None
         self.tab_exam = None

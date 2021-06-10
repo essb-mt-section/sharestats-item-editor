@@ -141,13 +141,12 @@ class EntryItemDatabase(object):
         assert isinstance(biling_filelist_entry, EntryBiLingFileList)
 
         if biling_filelist_entry.rmd_item is not None:
-            item = RExamItem(biling_filelist_entry.rmd_item.full_path)
+            item = RExamItem(biling_filelist_entry.rmd_item)
         else:
             item = None
 
         if biling_filelist_entry.rmd_translation is not None:
-            translation = RExamItem(
-                biling_filelist_entry.rmd_translation.full_path)
+            translation = RExamItem(biling_filelist_entry.rmd_translation)
         else:
             translation = None
 

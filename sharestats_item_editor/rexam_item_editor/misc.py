@@ -1,7 +1,6 @@
 import os
 import tempfile
 import re
-import shutil
 
 
 def replace_list_element(lst, source_idx, target_idx):
@@ -53,8 +52,8 @@ def get_temp_dir(appname, make_dir=True):
 class CaseInsensitiveStringList(object):
     """String list that handles string search case insensitive"""
 
-    def __init__(self, str_list=[]):
-        self._str_list = str_list
+    def __init__(self, str_list=()):
+        self._str_list = list(str_list)
         self._str_lower = [x.lower() for x in self._str_list]
 
     def __len__(self):
@@ -101,21 +100,6 @@ def remove_all(str_list, element, ignore_cases=False):
                     if str(e).lower() != str(element).lower()]
     else:
         return [e for e in str_list if e != element]
-
-def os_rename(source, destination):
-    """rename file or folder and return error if it occurs"""
-    try:
-        return os.rename(source, destination)
-    except IOError as io_error:
-        return io_error
-
-def copytree(source_folder, destination_folder):
-    """copies a folder and return error if it occurs"""
-    try:
-        shutil.copytree(source_folder, destination_folder)
-    except IOError as io_error:
-        return io_error
-
 
 def extract_parameter(txt):
     # extract parameter for text line
