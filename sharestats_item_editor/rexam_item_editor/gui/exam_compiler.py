@@ -34,7 +34,8 @@ class ExamCompiler(object):
 
         self.db = ItemDatabase(self.base_directory,
                        files_first_level=consts.FILELIST_FIRST_LEVEL_FILES,
-                       files_second_level=consts.FILELIST_SECOND_LEVEL_FILES)
+                       files_second_level=consts.FILELIST_SECOND_LEVEL_FILES,
+                       check_for_bilingual_files=True) # FIXME set check_for_bilingual_files
 
         self.exam = Exam()
         self.tab_db = None

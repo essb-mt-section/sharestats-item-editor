@@ -10,7 +10,8 @@ _EMPTY_ITEM = RExamItem(None)
 
 class ItemGUI(object):
 
-    def __init__(self, label, key_prefix, change_meta_info_button=False):
+    def __init__(self, label, key_prefix, change_meta_info_button=False,
+                 disabled = False):
         # all events start with key_prefix
 
         if consts.TAB_LAYOUT:
@@ -20,6 +21,7 @@ class ItemGUI(object):
             len_ml = consts.LEN_ML_SMALL
             len_answer = consts.LEN_ANSWER_SMALL
 
+        self.disabled = disabled
         self.label = label
         self.key_prefix = key_prefix
         self._item = None
@@ -136,13 +138,18 @@ class ItemGUI(object):
     @rexam_item.setter
     def rexam_item(self, v):
         assert isinstance(v, (RExamItem)) or v is None
-        self._item = v
-        self._enable_gui(v is not None)
+        if self.disabled:
+            self._item = None
+        else:
+            self._item = v
+            self._activate_gui(v is not None)
 
-    def is_enabled(self):
+    def is_activated(self):
         return self._item is not None
 
-    def _enable_gui(self, value):
+    def _activate_gui(self, value):
+        if self.disabled:
+            return
         if value:
             col =  consts.COLOR_BKG_ACTIVE
         else:
@@ -162,26 +169,33 @@ class ItemGUI(object):
             self.btn_fix_meta_issues.update(visible=False)
 
     def set_enable_answer_list(self, enable):
+        if self.disabled:
+            return
+
         if enable:
             col =  consts.COLOR_BKG_ACTIVE
         else:
             col = consts.COLOR_BKG_INACTIVE
         self.ml_answer.update(disabled=not enable, background_color=col)
 
-        if self.is_enabled():
+        if self.is_activated():
             self.btn_add_answer_list.update(visible=not enable)
 
     def set_enable_feedback_list(self, enable):
+        if self.disabled:
+            return
         if enable:
             col =  consts.COLOR_BKG_ACTIVE
         else:
             col = consts.COLOR_BKG_INACTIVE
         self.ml_solution_answ_lst.update(disabled=not enable,
                                          background_color=col)
-        if self.is_enabled():
+        if self.is_activated():
             self.btn_add_feedback_list.update(visible=not enable)
 
     def set_issues(self, issues):
+        if self.disabled:
+            return
         txt = ""
         auto_fix = False
         for i in issues:
@@ -199,6 +213,9 @@ class ItemGUI(object):
                                     text_color="black")
 
     def as_markdown_file(self):
+        if self.disabled:
+            return ""
+
         rtn = "".join(self.rexam_item.header)
         rtn += _EMPTY_ITEM.question.str_markdown_heading
         rtn += self.ml_quest.get().strip() + "\n\n"
@@ -219,6 +236,8 @@ class ItemGUI(object):
 
     def update_answer_list_button(self):
         # extract solution and switch visibility
+        if self.disabled:
+            return
 
         if self.rexam_item is None or not self.rexam_item.question.has_answer_list_section():
             self.btn_update_exsolution.update(visible=False)
@@ -228,13 +247,17 @@ class ItemGUI(object):
         self.btn_update_exsolution.update(visible=
                                           self.rexam_item.meta_info.solution != solution)
 
-    def update_ss_item(self):
+    def update_item(self):
         # new content from gui to ss_item
         self.rexam_item.parse(self.as_markdown_file(),
                               reset_meta_information=True)
 
     def update_gui(self):
-        # copy ss_items --> GUI elements and set active
+        # copy items --> GUI elements and set active
+
+        if self.disabled:
+            return
+
         if self.rexam_item is None:
             item = _EMPTY_ITEM
         else:
@@ -276,7 +299,7 @@ class ItemGUI(object):
         self.update_answer_list_button()
 
         # validation and file info
-        if self.is_enabled():
+        if self.is_activated():
             col = consts.COLOR_BKG_ACTIVE_INFO
             self.set_issues(item.validate())
         else:
@@ -284,19 +307,26 @@ class ItemGUI(object):
             self.ml_info_validation(value="", background_color=col)
 
         #files
-        self.ml_files.update(background_color=col)
-        if self.is_enabled() and len(item.directory):
+        try:
+            is_in_subfolder = len(self.rexam_item.sub_directory)>0
+        except:
+            is_in_subfolder = False
+
+        if self.is_activated() and is_in_subfolder:
+            self.ml_files.update(background_color=consts.COLOR_BKG_ACTIVE_INFO)
             x = misc.CaseInsensitiveStringList(listdir(item.directory))
             x.remove_all(item.filename)
             if len(x):
                 self.ml_files(value="\n".join(x.get()))
             else:
                 self.ml_files(value="")
+
         else:
+            self.ml_files.update(background_color=consts.COLOR_BKG_INACTIVE)
             self.ml_files(value="")
 
     def save_item(self):
         if self.rexam_item is not None:
-            self.update_ss_item()
+            self.update_item()
             self.rexam_item.save()
             self.update_gui()

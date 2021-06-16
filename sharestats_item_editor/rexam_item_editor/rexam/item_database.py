@@ -3,8 +3,8 @@ from os import path
 from .. import misc
 from multiprocessing import Pool
 
-from .rmd_file import RmdFile
-from .item_bilingual import EntryItemDatabase, EntryBiLingFileList
+from .rmd_file import RmdFile, BiLingualRmdFilePair, CODE_L1, CODE_L2
+from .item import RExamItem
 from ..misc import iter_list
 
 class _SearchSchemata(object):
@@ -48,8 +48,11 @@ class _SearchSchemata(object):
 
 class ItemFileList(object):
 
+    Entry = BiLingualRmdFilePair
+
     def __init__(self, folder=None, files_first_level=True,
-                                    files_second_level=True):
+                                    files_second_level=True,
+                                    check_for_bilingual_files=True):
         self.files = []
         self.base_directory = folder
         self.files_first_level = files_first_level
@@ -61,11 +64,18 @@ class ItemFileList(object):
         self._file_list_hash = hash(tuple(lst.get())) # simple hashes for online
         # change detection, this are not the version IDs!
 
+        if check_for_bilingual_files:
+            reference_language = CODE_L1
+        else:
+            reference_language = None
+        second = None
         while len(lst) > 0:
             first = RmdFile(file_path=lst.pop(0),
                             base_directory=self.base_directory)
 
-            second = first.get_other_language_rmdfile()
+            if check_for_bilingual_files:
+                second = first.get_other_language_rmdfile()
+
             if second is not None and second.full_path in lst:
                 # get in correct cases
                 second_full_cases = lst.remove(second.full_path)
@@ -75,15 +85,17 @@ class ItemFileList(object):
             else:
                 second = None
 
-            self.files.append(EntryBiLingFileList(rmd_file_item=first,
-                                                  rmd_file_translation=second))
+            self.files.append(ItemFileList.Entry(rmd_file_item=first,
+                                 rmd_file_translation=second,
+                                 reference_language_code=reference_language))
 
         self.files = sorted(self.files, key=lambda x:x.shared_name())
 
     def get_count(self):
 
         rtn = {"total": len(self.files),
-                "nl": 0, "en": 0,
+                CODE_L1: 0,
+                CODE_L2: 0,
                 "bilingual": 0,
                 "undef": 0}
         for f in self.files:
@@ -164,23 +176,110 @@ class ItemFileList(object):
         return [path.abspath(x) for x in lst]
 
 
+class EntryItemDatabase(object):
+
+    def __init__(self, shared_name, item, translation):
+        assert isinstance(item, RExamItem) or item is None
+        assert isinstance(translation, RExamItem) or translation is None
+        self.shared_name = shared_name
+        self.item = item
+        self.translation = translation
+        self.id = None
+
+    def is_same_as(self, item):
+        """compares shared names and version id
+        and ignores the id"""
+
+        if isinstance(item, ItemDatabase.Entry):
+            return self.shared_name == item.shared_name and\
+                self.version_item == item.version_item and \
+                self.version_translation == item.version_translation
+        else:
+            return False
+
+    @property
+    def version_item(self):
+        try:
+            return self.item.version_id
+        except:
+            return ""
+
+    @property
+    def version_translation(self):
+        try:
+            return self.translation.version_id
+        except:
+            return ""
+
+    @property
+    def version_item_short(self):
+        return self.version_translation[:7]
+
+    @property
+    def version_translation_short(self):
+        return self.version_item[:7]
+
+    def short_repr(self, max_lines, add_versions=False, short_version=True):
+        try:
+            a_txt = self.item.question.str_text_short(max_lines)
+        except:
+            a_txt = ""
+        try:
+            b_txt = self.translation.question.str_text_short(max_lines)
+        except:
+            b_txt = ""
+
+        rtn = [self.shared_name, a_txt, b_txt]
+        if add_versions:
+            if short_version:
+                rtn.extend([self.version_item_short,
+                            self.version_translation_short])
+            else:
+                rtn.extend([self.version_item, self.version_translation])
+        return rtn
+
+    @staticmethod
+    def load(biling_filelist_entry, shared_name_with_bilingual_tag=False):
+        assert isinstance(biling_filelist_entry, BiLingualRmdFilePair)
+
+        if biling_filelist_entry.rmd_item is not None:
+            item = RExamItem(biling_filelist_entry.rmd_item)
+        else:
+            item = None
+
+        if biling_filelist_entry.rmd_translation is not None:
+            translation = RExamItem(biling_filelist_entry.rmd_translation)
+        else:
+            translation = None
+
+        return ItemDatabase.Entry(
+                shared_name=biling_filelist_entry.shared_name(
+                                    add_bilingual_tag=shared_name_with_bilingual_tag),
+                item=item,
+                translation=translation)
+
+
 class ItemDatabase(ItemFileList):
 
+    Entry = EntryItemDatabase
+
     def __init__(self, folder, files_first_level,
-                            files_second_level):
+                            files_second_level,
+                            check_for_bilingual_files):
         """file_list_bilingual: path or file_list_biligual
         """
         super().__init__(folder=folder,
                          files_first_level=files_first_level,
-                         files_second_level=files_second_level)
+                         files_second_level=files_second_level,
+                         check_for_bilingual_files=check_for_bilingual_files)
         self._selected_ids = []
 
         ## LOAD DATA
         if len(self.files) > 1000:
             # speed up with multiprocessing
-            entries = Pool().map(EntryItemDatabase.load, self.files)
+            entries = Pool().map(ItemDatabase.Entry.load, self.files)
         else:
-            entries = map(EntryItemDatabase.load, self.files)
+            entries = map(ItemDatabase.Entry.load, self.files)
         self.entries = list(entries)
 
         # add unique ids

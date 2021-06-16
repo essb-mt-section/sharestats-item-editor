@@ -42,7 +42,8 @@ def run():
         print("\n".join(sysinfo.info()))
         exit()
 
-    SSItemEditorMainWin(reset_settings=reset).run()
+    SSItemEditorMainWin(reset_settings=reset,
+                        two_languages=None).run()
 
 if __name__ == "__main__":
     run()

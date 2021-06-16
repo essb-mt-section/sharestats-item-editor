@@ -2,8 +2,7 @@ from os import path
 import json
 import time
 
-from .item_database import ItemDatabase
-from .item_bilingual import EntryItemDatabase, EntryBiLingFileList
+from .item_database import ItemDatabase, ItemFileList
 from .item import FILE_ENCODING
 
 def _get_relpath_hash(item):
@@ -13,7 +12,6 @@ def _get_relpath_hash(item):
                item.version_id
     except:
         return None, None
-
 
 class ExamQuestion(object):
 
@@ -35,7 +33,7 @@ class ExamQuestion(object):
 
     @staticmethod
     def from_database_item(db_item):
-        assert isinstance(db_item, EntryItemDatabase)
+        assert isinstance(db_item, ItemDatabase.Entry)
         ip, ih = _get_relpath_hash(db_item.item)
         tp, th = _get_relpath_hash(db_item.translation)
         return ExamQuestion(shared_name=db_item.shared_name,
@@ -61,9 +59,9 @@ class Exam(object):
         self._time_last_change = Exam.time_stamp()
 
     def add_database_item(self, item):
-        assert isinstance(item, (EntryItemDatabase, EntryBiLingFileList))
-        if isinstance(item, EntryBiLingFileList):
-            item = EntryItemDatabase.load(item, shared_name_with_bilingual_tag=False)
+        assert isinstance(item, (ItemDatabase.Entry, ItemFileList.Entry))
+        if isinstance(item, ItemFileList.Entry):
+            item = ItemDatabase.Entry.load(item, shared_name_with_bilingual_tag=False)
 
         self._time_last_change = Exam.time_stamp()
         path_item, hash_item = _get_relpath_hash(item.item)
@@ -139,7 +137,7 @@ class Exam(object):
     def find_item(self, item):
         """returns question id first occurance if item"""
 
-        if not isinstance(item, EntryItemDatabase):
+        if not isinstance(item, ItemDatabase.Entry):
             return None
         else:
             needle = ExamQuestion.from_database_item(item)

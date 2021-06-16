@@ -7,7 +7,7 @@ from .rexam_item_editor.gui import consts
 from .rexam_item_editor.gui.dialogs import top_label
 from .rexam_item_editor.misc import splitstrip
 from .rexam_item_editor.rexam.item import ItemMetaInfo
-from .rexam_item_editor.rexam.rmd_file import SEP, TAG_NL, TAG_ENG, TAG_BILINGUAL
+from .rexam_item_editor.rexam.rmd_file import SEP, TAG_L1, TAG_L2, TAG_BILINGUAL
 
 class FrameMakeName(object):
 
@@ -18,12 +18,12 @@ class FrameMakeName(object):
         if default_name.endswith(TAG_BILINGUAL):
             defaults[3] = "Bilingual"
             default_name = default_name[:-1*len(TAG_BILINGUAL)]
-        elif default_name.endswith(TAG_NL):
+        elif default_name.endswith(TAG_L1):
             defaults[3] = "Dutch"
-            default_name = default_name[:-1*len(TAG_NL)]
-        elif default_name.endswith(TAG_ENG):
+            default_name = default_name[:-1*len(TAG_L1)]
+        elif default_name.endswith(TAG_L2):
             defaults[3] = "English"
-            default_name = default_name[:-1*len(TAG_ENG)]
+            default_name = default_name[:-1*len(TAG_L2)]
         else:
             defaults[3] = ""
 
@@ -82,12 +82,12 @@ class FrameMakeName(object):
         if len(name1) > 0:
             lang = self.fln3.get()
             if lang == "Dutch":
-                name1 = name1 + TAG_NL
+                name1 = name1 + TAG_L1
             elif lang == "English":
-                name1 = name1 + TAG_ENG
+                name1 = name1 + TAG_L2
             elif lang == "Bilingual":
-                name2 = name1 + TAG_ENG
-                name1 = name1 + TAG_NL
+                name2 = name1 + TAG_L2
+                name1 = name1 + TAG_L1
 
         self.txt_name1.update(value=name1)
         self.txt_name2.update(value=name2)

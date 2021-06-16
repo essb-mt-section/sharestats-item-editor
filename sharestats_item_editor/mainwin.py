@@ -1,4 +1,4 @@
-from .rexam_item_editor.gui.mainwin import MainWin
+from .rexam_item_editor.gui.mainwin import MainWin,LANG1_EVENT_PREFIX
 from .rexam_item_editor.gui import dialogs as base_dialogs
 from .dialogs import edit_taxonomy, FrameMakeName
 
@@ -6,20 +6,21 @@ base_dialogs.FrameMakeName = FrameMakeName
 
 class SSItemEditorMainWin(MainWin):
 
-    def __init__(self, reset_settings):
+    def __init__(self, reset_settings, two_languages=None):
         super().__init__(reset_settings=reset_settings,
-                         change_meta_info_button=True)
+                         change_meta_info_button=True,
+                         two_languages=two_languages)
 
     def process_item_gui_event(self, event, values):
 
         if event.endswith("btn_change_meta"):
 
-            if event.startswith("nl_"):
-                ig = self.ig_nl
+            if event.startswith(LANG1_EVENT_PREFIX):
+                ig = self.ig_l1
             else:
-                ig = self.ig_en
+                ig = self.ig_l2
 
-            ig.update_ss_item()
+            ig.update_item()
             new_meta = edit_taxonomy(ig.rexam_item.meta_info)
             if new_meta is not None:
                 old_lang = ig.rexam_item.meta_info.language

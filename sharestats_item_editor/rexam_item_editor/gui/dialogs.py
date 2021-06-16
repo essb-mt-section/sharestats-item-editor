@@ -4,7 +4,7 @@ import PySimpleGUI as sg
 from . import consts
 from .. import sysinfo, __version__, __author__, APPNAME, templates
 from ..rexam import r_render, extypes
-from ..rexam.rmd_file import RmdFile, SEP, TAG_NL, TAG_ENG, TAG_BILINGUAL
+from ..rexam.rmd_file import RmdFile, SEP, TAG_L1, TAG_L2, TAG_BILINGUAL
 from ..rexam.item import RExamItem
 
 def top_label(elem, label="", border_width=0):
@@ -129,12 +129,12 @@ class FrameMakeName(object):
         if default_name.endswith(TAG_BILINGUAL):
             defaults[-1] = "Bilingual"
             default_name = default_name[:-1*len(TAG_BILINGUAL)]
-        elif default_name.endswith(TAG_NL):
+        elif default_name.endswith(TAG_L1):
             defaults[-1] = "Dutch"
-            default_name = default_name[:-1*len(TAG_NL)]
-        elif default_name.endswith(TAG_ENG):
+            default_name = default_name[:-1*len(TAG_L1)]
+        elif default_name.endswith(TAG_L2):
             defaults[-1] = "English"
-            default_name = default_name[:-1*len(TAG_ENG)]
+            default_name = default_name[:-1*len(TAG_L2)]
         else:
             defaults[-1] = ""
 
@@ -189,12 +189,12 @@ class FrameMakeName(object):
         if len(name1) > 0:
             lang = self.fln_lang.get()
             if lang == "Dutch":
-                name1 = name1 + TAG_NL
+                name1 = name1 + TAG_L1
             elif lang == "English":
-                name1 = name1 + TAG_ENG
+                name1 = name1 + TAG_L2
             elif lang == "Bilingual":
-                name2 = name1 + TAG_ENG
-                name1 = name1 + TAG_NL
+                name2 = name1 + TAG_L2
+                name1 = name1 + TAG_L1
 
         self.txt_name1.update(value=name1)
         self.txt_name2.update(value=name2)

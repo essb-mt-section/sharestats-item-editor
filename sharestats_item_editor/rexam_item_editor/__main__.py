@@ -22,7 +22,7 @@ def run():
         print("\n".join(sysinfo.info()))
         exit()
 
-    MainWin(reset_settings=reset).run()
+    MainWin(reset_settings=reset, two_languages=("Dutch", "English")).run()
 
 if __name__ == "__main__":
     run()

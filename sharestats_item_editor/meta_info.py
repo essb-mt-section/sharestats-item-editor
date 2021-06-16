@@ -1,5 +1,5 @@
 from .rexam_item_editor.rexam.item import ItemMetaInfo, Issue
-from .rexam_item_editor.rexam.rmd_file import RmdFile, TAG_NL, TAG_ENG
+from .rexam_item_editor.rexam.rmd_file import RmdFile, TAG_L1, TAG_L2
 
 from . import taxonomy
 
@@ -42,17 +42,17 @@ class SSItemMetaInfo(ItemMetaInfo):
     @property
     def language_code(self):
         if self.language == "Dutch":
-            return TAG_NL[1:]
+            return TAG_L1[1:]
         elif self.language == "English":
-            return TAG_ENG[1:]
+            return TAG_L2[1:]
         else:
             return None
 
     @language_code.setter
     def language_code(self, v):
-        if v == TAG_ENG[1:]:
+        if v == TAG_L2[1:]:
             self.language = "English"
-        elif v == TAG_NL[1:]:
+        elif v == TAG_L1[1:]:
             self.language = "Dutch"
         else:
             self.language = ""

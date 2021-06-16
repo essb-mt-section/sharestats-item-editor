@@ -2,7 +2,7 @@ from os import path, getcwd
 import PySimpleGUI as sg
 
 from .. import __version__, APPNAME
-from ..rexam.rmd_file import RmdFile, ENG
+from ..rexam.rmd_file import RmdFile, CODE_L1, CODE_L2
 from ..rexam.item_database import ItemFileList
 from ..rexam.r_render import RPY2INSTALLED
 from ..rexam.item import RExamItem, AnswerList
@@ -14,9 +14,16 @@ from .log import log
 sg.theme_add_new("mytheme", consts.SG_COLOR_THEME)
 sg.theme("mytheme")
 
+LANG1_EVENT_PREFIX = "Lang1"
+LANG2_EVENT_PREFIX = "Lang2"
+
 class MainWin(object):
 
-    def __init__(self, reset_settings=False, change_meta_info_button=False):
+    def __init__(self, reset_settings=False, change_meta_info_button=False,
+                 two_languages=None): # FIXME languiages to settings and GUI
+
+        """languages is none or a list of two strings indicating the
+        respective languages languages"""
 
         self.settings = JSONSettings(
                          appname=APPNAME.replace(" ", "_").lower(),
@@ -24,10 +31,26 @@ class MainWin(object):
                          defaults= {"recent_dirs": []},
                          reset=reset_settings)
 
+        if isinstance(two_languages, (tuple, list)) and len(two_languages) == 2:
+            self.is_bilingual = True
+        elif two_languages is None:
+            self.is_bilingual = False
+            two_languages = ("File", "")
+        else:
+            raise RuntimeError("The parameter languages ha to be a tuple of "
+                               "two string or None.")
+
+        # remove not existing recent dirs
+        existing_dirs =  list(filter(path.isdir, self.settings.recent_dirs))
+        if len(existing_dirs) != len(self.settings.recent_dirs):
+            self.settings.recent_dirs = existing_dirs
+            self.settings.save()
 
         # LAYOUT
-        self.ig_nl = ItemGUI("Dutch", "nl", change_meta_info_button)
-        self.ig_en = ItemGUI("English", "en", change_meta_info_button)
+
+        self.ig_l1 = ItemGUI(two_languages[0], LANG1_EVENT_PREFIX, change_meta_info_button)
+        self.ig_l2 = ItemGUI(two_languages[1], LANG2_EVENT_PREFIX, change_meta_info_button,
+                             disabled=not self.is_bilingual)
 
         self.lb_items = sg.Listbox(values=[], enable_events=True,
                                    key="lb_files", size=(30, 39))
@@ -66,15 +89,20 @@ class MainWin(object):
 
         self.menu = sg.Menu(menu_definition=self.menu_definition(),
                             tearoff=False)
+
+        if self.is_bilingual:
+            right_frames = [self.ig_l1.main_frame, self.ig_l2.main_frame]
+        else:
+            right_frames = [self.ig_l1.main_frame]
+
         self.layout = [
                   [self.menu],
                   [fr_base_dir, fr_item_name],
-                  [left_frame,
-                   self.ig_nl.main_frame,
-                   self.ig_en.main_frame]]
+                  [left_frame]+ right_frames]
 
         self.fl_list = ItemFileList(files_first_level=consts.FILELIST_FIRST_LEVEL_FILES,
-                                    files_second_level=consts.FILELIST_SECOND_LEVEL_FILES)
+                                    files_second_level=consts.FILELIST_SECOND_LEVEL_FILES,
+                                    check_for_bilingual_files=self.is_bilingual)
         self._unsaved_item = None
 
     def menu_definition(self):
@@ -88,9 +116,9 @@ class MainWin(object):
 
         if  RPY2INSTALLED:
             d_inactive, e_inactive = "", ""
-            if not self.ig_nl.is_enabled():
+            if not self.ig_l1.is_activated():
                 d_inactive="!"
-            if not self.ig_en.is_enabled():
+            if not self.ig_l2.is_activated():
                 e_inactive = "!"
             rmenu = ["&Render", ["{}&Dutch Version::render".format(d_inactive),
                             "{}&English Version::render".format(e_inactive)]]
@@ -185,13 +213,19 @@ class MainWin(object):
 
         self.fl_list = ItemFileList(folder=self.base_directory,
                         files_first_level=consts.FILELIST_FIRST_LEVEL_FILES,
-                        files_second_level=consts.FILELIST_SECOND_LEVEL_FILES)
+                        files_second_level=consts.FILELIST_SECOND_LEVEL_FILES,
+                        check_for_bilingual_files=self.is_bilingual)
 
         cnt = self.fl_list.get_count()
         self.fr_items.update(value="{} items".format(cnt["total"]))
 
-        cnt_txt = "{} nl, {} en, {} nl/en".format(
-             cnt["nl"], cnt["en"], cnt["bilingual"])
+        >>>   HIER WEITER, counter in biligual is incorrect and en file are
+        not displaed <<<<
+
+        cnt_txt = "{} {}, {} {}, {} {}/{}".format(
+             cnt[CODE_L1], CODE_L1,
+             cnt[CODE_L2], CODE_L2,
+             cnt["bilingual"], CODE_L1, CODE_L2)
         if cnt["undef"] > 0:
             cnt_txt += ", {} undef".format(cnt["undef"])
         self.txt_item_cnt.update(value=cnt_txt)
@@ -211,10 +245,10 @@ class MainWin(object):
                 selected_file = None
 
         self.update_item_list()
-        self.ig_nl.rexam_item = None
-        self.ig_en.rexam_item = None
-        self.ig_en.update_gui()
-        self.ig_nl.update_gui()
+        self.ig_l1.rexam_item = None
+        self.ig_l2.rexam_item = None
+        self.ig_l2.update_gui()
+        self.ig_l1.update_gui()
         self.menu.update(menu_definition=self.menu_definition())
         self.update_name()
         self.unsaved_item = None
@@ -242,7 +276,7 @@ class MainWin(object):
                 self.save_items(ask=True)
                 break
 
-            elif event.startswith("nl_") or event.startswith("en_"):
+            elif event.startswith(LANG1_EVENT_PREFIX) or event.startswith(LANG2_EVENT_PREFIX):
                 #ItemGUI event
                 self.process_item_gui_event(event, values)
 
@@ -255,15 +289,15 @@ class MainWin(object):
         self.settings.save()
 
     def process_item_gui_event(self, event, values):
-        # ItemGUI events have to start with "nl_" or "en_"
-        is_nl_event = event.startswith("nl_")
-        if is_nl_event:
-            ig = self.ig_nl
+        # ItemGUI events have to start with LANG1_PREFIX or LANG2_PREFIX
+        is_l1_event = event.startswith(LANG1_EVENT_PREFIX)
+        if not self.is_bilingual or is_l1_event:
+            ig = self.ig_l1
         else:
-            ig = self.ig_en
+            ig = self.ig_l2
 
         if event.endswith("dd_types"):
-            ig.update_ss_item()
+            ig.update_item()
             ig.rexam_item.meta_info.type = values[event]
             ig.rexam_item.meta_info.sort_parameter()
             ig.update_gui()
@@ -280,14 +314,14 @@ class MainWin(object):
             ig.update_answer_list_button()
 
         elif event.endswith("btn_update_exsolution"):
-            ig.update_ss_item()
+            ig.update_item()
             ig.rexam_item.update_solution(solution_str= \
                 AnswerList.extract_solution(
                     ig.ml_answer.get()))
             ig.update_gui()
 
         elif event.endswith("btn_fix_meta_issues"):
-            ig.update_ss_item()
+            ig.update_item()
             for i in ig.rexam_item.validate():
                 i.fix()
                 if i.fix_requires_gui_reset:
@@ -383,23 +417,23 @@ class MainWin(object):
             fls = None
 
         if fls is not None:
-            if not fls.is_bilingual() and fls.rmd_item.language_code == ENG:
-                self.ig_en.rexam_item = RExamItem.load(fls.rmd_item.full_path,
-                                        base_directory = self.base_directory)
-                self.ig_nl.rexam_item = None
+            if not fls.is_bilingual() and fls.rmd_item.language_code == CODE_L2:
+                self.ig_l2.rexam_item = RExamItem.load(fls.rmd_item.full_path,
+                                                       base_directory = self.base_directory)
+                self.ig_l1.rexam_item = None
             else:
-                self.ig_nl.rexam_item = RExamItem.load(fls.rmd_item.full_path,
-                                        base_directory = self.base_directory)
+                self.ig_l1.rexam_item = RExamItem.load(fls.rmd_item.full_path,
+                                                       base_directory = self.base_directory)
 
                 if fls.rmd_translation is not None:
-                    self.ig_en.rexam_item = RExamItem.load(
+                    self.ig_l2.rexam_item = RExamItem.load(
                                     fls.rmd_translation.full_path,
                                     base_directory=self.base_directory)
                 else:
-                    self.ig_en.rexam_item = None
+                    self.ig_l2.rexam_item = None
 
-        self.ig_en.update_gui()
-        self.ig_nl.update_gui()
+        self.ig_l2.update_gui()
+        self.ig_l1.update_gui()
         self.update_name()
         self.menu.update(menu_definition=self.menu_definition())
 
@@ -410,8 +444,8 @@ class MainWin(object):
                 if not dialogs.ask_save(item_name, txt = info_text):
                     self.unsaved_item = None
                     return
-            self.ig_nl.save_item()
-            self.ig_en.save_item()
+            self.ig_l1.save_item()
+            self.ig_l2.save_item()
             self.unsaved_item = None
 
     def new_item(self, new_rmd_file_name = None):
@@ -421,10 +455,10 @@ class MainWin(object):
             assert (isinstance(new_rmd_file_name, str))
             new_items = [RExamItem(RmdFile(new_rmd_file_name,
                                 base_directory=self.base_directory)), None]
-            if self.ig_en.rexam_item is not None:
-                new_items[1] = self.ig_en.rexam_item
-            elif self.ig_nl.rexam_item is not None:
-                new_items[1] = self.ig_nl.rexam_item
+            if self.ig_l2.rexam_item is not None:
+                new_items[1] = self.ig_l2.rexam_item
+            elif self.ig_l1.rexam_item is not None:
+                new_items[1] = self.ig_l1.rexam_item
 
         if new_items[0] is not None:
             self.save_items()
@@ -433,16 +467,16 @@ class MainWin(object):
                 if n is not None:
                     n.save()
 
-            self.ig_nl.rexam_item = new_items[0]
-            self.ig_en.rexam_item = new_items[1]
-            if self.ig_nl.rexam_item.language_code == "en":
-                self.ig_nl.rexam_item, self.ig_en.rexam_item = \
-                    self.ig_en.rexam_item, self.ig_nl.rexam_item # swap
+            self.ig_l1.rexam_item = new_items[0]
+            self.ig_l2.rexam_item = new_items[1] # FIXME no biligual new items
+            if self.ig_l1.rexam_item.language_code == CODE_L2:
+                self.ig_l1.rexam_item, self.ig_l2.rexam_item = \
+                    self.ig_l2.rexam_item, self.ig_l1.rexam_item # swap
             self.update_item_list()
 
             self.select_item_by_filename(fl_name)
-            self.ig_en.update_gui()
-            self.ig_nl.update_gui()
+            self.ig_l2.update_gui()
+            self.ig_l1.update_gui()
             self.update_name()
             self.menu.update(menu_definition=self.menu_definition())
 
@@ -478,6 +512,7 @@ class MainWin(object):
                     log(old.rename(new_name,
                                    new_sub_dir=new_name,
                                    rename_on_disk=True))
+                    # TODO optional sub_dir renaming
 
             self.reset_gui()
             self.select_item_by_filename(n1 + RmdFile.SUFFIX)
