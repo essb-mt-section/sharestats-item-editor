@@ -284,3 +284,6 @@ def rename_item(item_name):
         return fr_make_name.name1, fr_make_name.name2, bool(fix_dir.get())
     else:
         return None, None, None
+
+#TODO rendering picture
+#TODO rename no language

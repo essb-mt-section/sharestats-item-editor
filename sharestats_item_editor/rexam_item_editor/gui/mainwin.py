@@ -47,7 +47,6 @@ class MainWin(object):
             self.settings.save()
 
         # LAYOUT
-
         self.ig_l1 = ItemGUI(two_languages[0], LANG1_EVENT_PREFIX, change_meta_info_button)
         self.ig_l2 = ItemGUI(two_languages[1], LANG2_EVENT_PREFIX, change_meta_info_button,
                              disabled=not self.is_bilingual)
@@ -219,9 +218,6 @@ class MainWin(object):
         cnt = self.fl_list.get_count()
         self.fr_items.update(value="{} items".format(cnt["total"]))
 
-        >>>   HIER WEITER, counter in biligual is incorrect and en file are
-        not displaed <<<<
-
         cnt_txt = "{} {}, {} {}, {} {}/{}".format(
              cnt[CODE_L1], CODE_L1,
              cnt[CODE_L2], CODE_L2,
@@ -244,7 +240,7 @@ class MainWin(object):
             except:
                 selected_file = None
 
-        self.update_item_list()
+                self.update_item_list()
         self.ig_l1.rexam_item = None
         self.ig_l2.rexam_item = None
         self.ig_l2.update_gui()
@@ -417,7 +413,8 @@ class MainWin(object):
             fls = None
 
         if fls is not None:
-            if not fls.is_bilingual() and fls.rmd_item.language_code == CODE_L2:
+            if self.is_bilingual and  fls.rmd_item.language_code == CODE_L2 \
+                    and not fls.is_bilingual():
                 self.ig_l2.rexam_item = RExamItem.load(fls.rmd_item.full_path,
                                                        base_directory = self.base_directory)
                 self.ig_l1.rexam_item = None
@@ -432,8 +429,8 @@ class MainWin(object):
                 else:
                     self.ig_l2.rexam_item = None
 
-        self.ig_l2.update_gui()
         self.ig_l1.update_gui()
+        self.ig_l2.update_gui()
         self.update_name()
         self.menu.update(menu_definition=self.menu_definition())
 

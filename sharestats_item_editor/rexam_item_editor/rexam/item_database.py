@@ -98,6 +98,7 @@ class ItemFileList(object):
                 CODE_L2: 0,
                 "bilingual": 0,
                 "undef": 0}
+
         for f in self.files:
             if f.is_bilingual():
                 rtn["bilingual"] += 1

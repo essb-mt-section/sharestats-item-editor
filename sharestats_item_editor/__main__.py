@@ -43,7 +43,7 @@ def run():
         exit()
 
     SSItemEditorMainWin(reset_settings=reset,
-                        two_languages=None).run()
+                        two_languages=("Dutch", "English")).run()
 
 if __name__ == "__main__":
     run()
