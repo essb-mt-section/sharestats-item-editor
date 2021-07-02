@@ -1,12 +1,6 @@
-import sys
 from . import  __version__, APPNAME, WEBSITE
-from .rexam_item_editor import sysinfo
+from .rexam_item_editor.cli import cli
 
-if sys.version_info[0] != 3 or sys.version_info[1] < 5:
-    raise RuntimeError("{} {} ".format(APPNAME, __version__) +
-                       "is not compatible with Python {0}".format(
-                           sysinfo.PYTHON_VERSION) +
-                       "\n\nPlease use Python 3.5 or higher.")
 #
 # changes in rexam_item_editor for sharestats
 #
@@ -28,22 +22,17 @@ templates.FILES = states_share_templates.FILES
 
 from .mainwin import SSItemEditorMainWin
 
+
 def run():
 
-    if len(sys.argv) > 1:
-        reset = sys.argv[1] == "-r"  # reset
-        info = sys.argv[1] == "-i"
+    opt = cli("{} {}".format(APPNAME, __version__))
+    if opt["monolingual"]:
+        languages = None
     else:
-        reset = False
-        info = False
+        languages = ("Dutch", "English")
 
-    if info:
-        print("{} {}".format(APPNAME, __version__))
-        print("\n".join(sysinfo.info()))
-        exit()
-
-    SSItemEditorMainWin(reset_settings=reset,
-                        two_languages=("Dutch", "English")).run()
+    SSItemEditorMainWin(reset_settings=opt["reset"],
+                        two_languages=languages).run()
 
 if __name__ == "__main__":
     run()
