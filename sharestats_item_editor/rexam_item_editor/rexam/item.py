@@ -447,7 +447,10 @@ class RExamItem(RmdFile):
 
     def validate(self):
         """Validates the item and returns a list of issues"""
-        issues = self.question.answer_list.validate() + self.meta_info.validate()
+
+        issues = self.meta_info.validate()
+        if self.question.has_answer_list_section():
+            issues.extend(self.question.answer_list.validate())
 
         # check answer & feedback list
         if self.meta_info.requires_answer_list():
