@@ -8,7 +8,7 @@ from . import consts
 
 _EMPTY_ITEM = RExamItem(None)
 
-class ItemGUI(object):
+class GUIItem(object):
 
     def __init__(self, label, key_prefix, change_meta_info_button=False,
                  disabled = False):
@@ -115,14 +115,14 @@ class ItemGUI(object):
                                              key="{}_tab_sol".format(
                                                  self.key_prefix))
                                       ]])
-            self.main_frame = sg.Frame(self.label, [
+            self.gui_element = sg.Frame(self.label, [
                    [tab_group],
                    [sg.Frame("Meta-Information", layout_meta_info)],
                    [sg.Frame("Validation", [[self.ml_info_validation]]),
                     sg.Frame("Files", [[self.ml_files]])]
             ])
         else:
-            self.main_frame = sg.Frame(self.label, [
+            self.gui_element = sg.Frame(self.label, [
                    [sg.Frame("Question", layout_question,
                              background_color=consts.COLOR_QUEST)],
                    [sg.Frame("Solution (feedback)", layout_solution,
@@ -200,7 +200,7 @@ class ItemGUI(object):
         auto_fix = False
         for i in issues:
             txt += "* {}\n".format(i.description)
-            if i.fix_fnc is not None:
+            if i.has_fix_function:
                 auto_fix = True
 
         self.ml_info_validation(value=txt)
@@ -217,20 +217,20 @@ class ItemGUI(object):
             return ""
 
         rtn = "".join(self.rexam_item.header)
-        rtn += _EMPTY_ITEM.question.str_markdown_heading
+        rtn += _EMPTY_ITEM.question.str_markdown_heading()
         rtn += self.ml_quest.get().strip() + "\n\n"
 
         if len(self.ml_answer.get().strip())>0:
-            rtn += AnswerList(_EMPTY_ITEM).str_markdown_heading
+            rtn += AnswerList(_EMPTY_ITEM).str_markdown_heading()
             rtn += self.ml_answer.get().strip() + "\n\n"
 
-        rtn += _EMPTY_ITEM.solution.str_markdown_heading
+        rtn += _EMPTY_ITEM.solution.str_markdown_heading()
         rtn += self.ml_solution.get().strip() + "\n\n"
         if len(self.ml_solution_answ_lst.get().strip())>0:
-            rtn += AnswerList(_EMPTY_ITEM).str_markdown_heading
+            rtn += AnswerList(_EMPTY_ITEM).str_markdown_heading()
             rtn += self.ml_solution_answ_lst.get().strip() + "\n\n"
 
-        rtn += _EMPTY_ITEM.meta_info.str_markdown_heading
+        rtn += _EMPTY_ITEM.meta_info.str_markdown_heading()
         rtn += self.ml_metainfo.get().strip() + "\n"
         return rtn
 
@@ -266,13 +266,13 @@ class ItemGUI(object):
         fl_info = path.join(item.sub_directory, item.filename)
         if len(fl_info):
             fl_info = ":  ..." + path.sep + fl_info
-        self.main_frame.update(value=self.label + fl_info)
+        self.gui_element.update(value=self.label + fl_info)
 
-        self.ml_quest.update(value=item.question.str_text)
-        self.ml_solution.update(value=item.solution.str_text)
+        self.ml_quest.update(value=item.question.str_text())
+        self.ml_solution.update(value=item.solution.str_text())
 
-        self.ml_metainfo.update(value=item.meta_info.str_parameter +
-                                item.meta_info.str_text)
+        self.ml_metainfo.update(value=item.meta_info.str_parameter() +
+                                item.meta_info.str_text())
 
         if not item.meta_info.check_type():
             t = extypes.UNKNOWN_TYPE
@@ -284,16 +284,16 @@ class ItemGUI(object):
             self.ml_answer.update(value="")
         else:
             self.ml_answer.update(value=
-                        item.question.answer_list.get_str_answers_marked() +
-                        item.question.answer_list.str_text)
+                                  item.question.answer_list.str_answers(mark_correct_solutions=True) +
+                                  item.question.answer_list.str_text())
 
 
         if not item.solution.has_answer_list_section():
             self.ml_solution_answ_lst.update(value="")
         else:
             self.ml_solution_answ_lst.update(value=
-                        item.solution.answer_list.str_answers +
-                        item.solution.answer_list.str_text)
+                        item.solution.answer_list.str_answers() +
+                        item.solution.answer_list.str_text())
         self.set_enable_answer_list(item.question.has_answer_list_section())
         self.set_enable_feedback_list(item.solution.has_answer_list_section())
         self.update_answer_list_button()

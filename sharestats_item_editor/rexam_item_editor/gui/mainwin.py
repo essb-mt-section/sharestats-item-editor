@@ -3,12 +3,12 @@ import PySimpleGUI as sg
 
 from .. import __version__, APPNAME
 from ..rexam.rmd_file import RmdFile, CODE_L1, CODE_L2
-from ..rexam.item_database import ItemFileList
+from ..rexam.item_database import BiLingRmdFileList
 from ..rexam.r_render import RPY2INSTALLED
 from ..rexam.item import RExamItem, AnswerList
 from . import dialogs, consts
 from .json_settings import JSONSettings
-from .item_gui import ItemGUI
+from .gui_item import GUIItem
 from .log import log
 
 sg.theme_add_new("mytheme", consts.SG_COLOR_THEME)
@@ -20,7 +20,7 @@ LANG2_EVENT_PREFIX = "Lang2"
 class MainWin(object):
 
     def __init__(self, reset_settings=False, change_meta_info_button=False,
-                 two_languages=None): # FIXME languiages to settings and GUI
+                 two_languages=("Dutch", "English")):
 
         """languages is none or a list of two strings indicating the
         respective languages languages"""
@@ -28,17 +28,18 @@ class MainWin(object):
         self.settings = JSONSettings(
                          appname=APPNAME.replace(" ", "_").lower(),
                          settings_file_name="settings.json",
-                         defaults= {"recent_dirs": []},
+                         defaults= {"recent_dirs": [], "bilingual": True},
                          reset=reset_settings)
 
         if isinstance(two_languages, (tuple, list)) and len(two_languages) == 2:
-            self.is_bilingual = True
+            if not self.settings.bilingual:
+                two_languages = (two_languages[0], "")
         elif two_languages is None:
-            self.is_bilingual = False
             two_languages = ("File", "")
         else:
             raise RuntimeError("The parameter languages ha to be a tuple of "
-                               "two string or None.")
+                               "two strings or None.")
+        self.is_bilingual = len(two_languages[1])>0
 
         # remove not existing recent dirs
         existing_dirs =  list(filter(path.isdir, self.settings.recent_dirs))
@@ -47,8 +48,8 @@ class MainWin(object):
             self.settings.save()
 
         # LAYOUT
-        self.ig_l1 = ItemGUI(two_languages[0], LANG1_EVENT_PREFIX, change_meta_info_button)
-        self.ig_l2 = ItemGUI(two_languages[1], LANG2_EVENT_PREFIX, change_meta_info_button,
+        self.ig_l1 = GUIItem(two_languages[0], LANG1_EVENT_PREFIX, change_meta_info_button)
+        self.ig_l2 = GUIItem(two_languages[1], LANG2_EVENT_PREFIX, change_meta_info_button,
                              disabled=not self.is_bilingual)
 
         self.lb_items = sg.Listbox(values=[], enable_events=True,
@@ -90,26 +91,35 @@ class MainWin(object):
                             tearoff=False)
 
         if self.is_bilingual:
-            right_frames = [self.ig_l1.main_frame, self.ig_l2.main_frame]
+            right_frames = [self.ig_l1.gui_element, self.ig_l2.gui_element]
         else:
-            right_frames = [self.ig_l1.main_frame]
+            right_frames = [self.ig_l1.gui_element]
 
         self.layout = [
                   [self.menu],
                   [fr_base_dir, fr_item_name],
                   [left_frame]+ right_frames]
 
-        self.fl_list = ItemFileList(files_first_level=consts.FILELIST_FIRST_LEVEL_FILES,
-                                    files_second_level=consts.FILELIST_SECOND_LEVEL_FILES,
-                                    check_for_bilingual_files=self.is_bilingual)
+        self.fl_list = BiLingRmdFileList(files_first_level=consts.FILELIST_FIRST_LEVEL_FILES,
+                                         files_second_level=consts.FILELIST_SECOND_LEVEL_FILES,
+                                         check_for_bilingual_files=self.is_bilingual)
+
         self._unsaved_item = None
 
     def menu_definition(self):
         file = ['&New Item', '&Save Item', '---',
                 'Open &Directory',
                 'Recent', list(reversed(self.settings.recent_dirs[:-1])),
-                '---', '&Reload Item List',
+                '---']
+
+        if self.is_bilingual:
+            file += ["Single &Language Mode"]
+        else:
+            file += ["Bi&lingual Mode"]
+
+        file += ['---', '&Reload Item List',
                 '---', 'C&lose']
+
         view = ["&Raw files", "---", '&About']
         menu = [['&File', file], ["&View", view]]
 
@@ -210,10 +220,10 @@ class MainWin(object):
                 sg.PopupError("No valid item directory selected.")
                 exit()
 
-        self.fl_list = ItemFileList(folder=self.base_directory,
-                        files_first_level=consts.FILELIST_FIRST_LEVEL_FILES,
-                        files_second_level=consts.FILELIST_SECOND_LEVEL_FILES,
-                        check_for_bilingual_files=self.is_bilingual)
+        self.fl_list = BiLingRmdFileList(base_directory=self.base_directory,
+                                         files_first_level=consts.FILELIST_FIRST_LEVEL_FILES,
+                                         files_second_level=consts.FILELIST_SECOND_LEVEL_FILES,
+                                         check_for_bilingual_files=self.is_bilingual)
 
         cnt = self.fl_list.get_count()
         self.fr_items.update(value="{} items".format(cnt["total"]))
@@ -240,7 +250,7 @@ class MainWin(object):
             except:
                 selected_file = None
 
-                self.update_item_list()
+            self.update_item_list()
         self.ig_l1.rexam_item = None
         self.ig_l2.rexam_item = None
         self.ig_l2.update_gui()
@@ -329,7 +339,7 @@ class MainWin(object):
             ig.update_gui()
 
 
-    def process_event(self, event, values):
+    def process_event(self, event, _values):
 
         if event == "__TIMEOUT__":
             if self.fl_list.is_file_list_changed():
@@ -390,6 +400,13 @@ class MainWin(object):
             self.save_items(ask=True)
             dialogs.show_text_file(flns.rmd_item, flns.rmd_translation)
 
+        elif event == "Single Language Mode" or event == "Bilingual Mode":
+            sg.PopupOK("Restart App", "Please restart '{}' to switch to the new presentation mode.".format(APPNAME), keep_on_top=True)
+            self.settings.bilingual = event == "Bilingual Mode"
+            self.settings.save()
+            self.save_items(ask=True)
+            exit()
+
         elif event.endswith("render"):
             try:
                 flns = self.fl_list.files[self.idx_selected_item]
@@ -449,7 +466,9 @@ class MainWin(object):
         if new_rmd_file_name is None:
             new_items = dialogs.new_item(self.base_directory)
         else:
-            assert (isinstance(new_rmd_file_name, str))
+            if isinstance(new_rmd_file_name, RmdFile):
+                new_rmd_file_name = new_rmd_file_name.full_path
+
             new_items = [RExamItem(RmdFile(new_rmd_file_name,
                                 base_directory=self.base_directory)), None]
             if self.ig_l2.rexam_item is not None:
@@ -483,8 +502,7 @@ class MainWin(object):
             copy_content = sg.popup_yes_no("Copy content of {}?".format(
                         ifln.name))
             if copy_content == "Yes":
-                new_name = RmdFile(fl_path).name
-                new = ifln.copy_subdir_files(new_name)
+                new = ifln.copy_subdir_files(fl_path.name)
                 if not isinstance(new, RmdFile):
                     # io error
                     log(new)
@@ -492,6 +510,7 @@ class MainWin(object):
                     return
                 self.reset_gui()
             else:
+
                 self.new_item(fl_path)
 
     def rename(self):

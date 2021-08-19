@@ -37,7 +37,6 @@ class FilePath(object):
                                     self.base_directory, self.sub_directory
 
         else:
-
             self.base_directory = path.abspath(base_directory)
             abs_file_path = path.abspath(file_path)
             if abs_file_path.startswith(self.base_directory):
@@ -53,8 +52,6 @@ class FilePath(object):
                     # it's abs_solute path (but not part of base_directory)
                     # base_direct does not make sense
                     self.base_directory = ""
-
-
 
             self.sub_directory, self.filename = path.split(rel_file_path)
 

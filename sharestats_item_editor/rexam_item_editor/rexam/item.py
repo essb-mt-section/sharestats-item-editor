@@ -1,7 +1,9 @@
+import textwrap
 from os import path, rename
 from collections import OrderedDict
 import hashlib
 from copy import deepcopy
+import textwrap
 
 from . import extypes
 from .. import templates
@@ -72,14 +74,25 @@ class ItemSection(object):
     def has_answer_list_section(self):
         return self.answer_list is not None
 
-    @property
     def str_markdown_heading(self):
         return "{}\n{}\n".format(self.label,
                                  str(self._underline_chr * len(self.label)))
 
-    @property
-    def str_text(self):
-        return "".join(self.text_array).rstrip()
+    def str_text(self, ignore_empty_lines=False, wrap_text_width=0):
+        if ignore_empty_lines:
+            rtn = ""
+            for x in self.text_array:
+                x = x.strip()
+                if len(x):
+                    rtn += x + "\n"
+            rtn = rtn.strip()
+        else:
+            rtn = "".join(self.text_array).rstrip()
+
+        if wrap_text_width>1:
+            return textwrap.fill(rtn, wrap_text_width)
+        else:
+            return rtn
 
     def str_text_short(self, max_lines=2, ignore_empty_lines=True):
         """return x lines for the section and ignores empty lines"""
@@ -100,7 +113,7 @@ class ItemSection(object):
 
     def __str__(self):
         # section as string
-        rtn = self.str_markdown_heading + self.str_text
+        rtn = self.str_markdown_heading() + self.str_text()
         if self.answer_list is not None:
             return rtn + "\n\n" + str(self.answer_list)
         else:
@@ -160,11 +173,7 @@ class AnswerList(ItemSection):
             except:
                 self._correct.append(False)
 
-    @property
-    def str_answers(self):
-        return self.get_str_answers_marked(mark_correct_solutions=False)
-
-    def get_str_answers_marked(self, mark_correct_solutions=True):
+    def str_answers(self, mark_correct_solutions=False):
         rtn = ""
         for ans, correct in zip(self.answers, self._correct):
             if mark_correct_solutions and correct:
@@ -176,7 +185,7 @@ class AnswerList(ItemSection):
         return rtn
 
     def __str__(self):
-        rtn =  self.str_markdown_heading + self.str_answers + self.str_text
+        rtn = self.str_markdown_heading() + self.str_answers() + self.str_text()
         return rtn.strip()
 
 
@@ -224,7 +233,6 @@ class ItemMetaInfo(ItemSection):
                 self.parameter.update(para)
         self.text_array = additional_content
 
-    @property
     def str_parameter(self):
         rtn = ""
         for k, v in self.parameter.items():
@@ -232,8 +240,8 @@ class ItemMetaInfo(ItemSection):
         return rtn
 
     def __str__(self):
-        rtn = self.str_markdown_heading + self.str_parameter + "\n" \
-             + self.str_text
+        rtn = self.str_markdown_heading() + self.str_parameter() + "\n" \
+              + self.str_text()
         return rtn.strip()
 
     def _try_parameter(self, label):
@@ -352,16 +360,14 @@ class RExamItem(RmdFile):
         if path.isfile(self.full_path):
             self.import_file(self.full_path)
 
-    @property
     def version_id(self):
         """question id is based on the filename and file folder"""
 
         if self._version_id is None:
             txt = str(self.question) + str(self.solution) + str(self.meta_info)
-            self._version_id = hashlib.md5(txt.encode()).hexdigest()
+            self._version_id = hashlib.md5(txt.encode()).hexdigest() # calc only once
 
         return self._version_id
-
 
     def import_file(self, text_file):
         """import a text file as content"""
@@ -453,3 +459,22 @@ class RExamItem(RmdFile):
         else:
             return  RExamItem(RmdFile(file_path,
                                      base_directory=base_directory))
+
+    def markdown(self, enumerator=None, wrap_text_width=0):
+        '''optional counter to enumerate questions'''
+        question_str = self.question.str_text(ignore_empty_lines=True,
+                                              wrap_text_width=wrap_text_width)
+        if self.question.answer_list is not None:
+            question_str += "\n\n" + \
+                            self.question.answer_list.str_answers(
+                                    mark_correct_solutions=True)
+
+        if len(question_str.strip()):
+            rtn = "# Question "
+            if enumerator is not None:
+                rtn += "{} ".format(enumerator)
+            rtn += "({})\n\n{}".format(self.name, question_str)
+            return rtn
+        else:
+            return ""
+

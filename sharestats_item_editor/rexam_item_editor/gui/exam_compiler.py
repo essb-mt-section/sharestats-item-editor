@@ -38,30 +38,35 @@ class ExamCompiler(object):
                        check_for_bilingual_files=True) # FIXME set check_for_bilingual_files
 
         self.exam = Exam()
-        self.tab_db = None
-        self.tab_exam = None
-        self.short_hashes = True # TODO option in GUI
-        self.tab_db = self._make_tab(n_row=3,key='tab_database',
-                                     tooltip='Item Database' )
-        self.tab_exam = self._make_tab(n_row=10, key='tab_exam',
-                                       tooltip='Exam Items')
+        self.tab_db = GUIItemTable(show_translation=True, # TODO option in GUI
+                                   n_row=3,
+                                   show_hash=ExamCompiler.SHOW_HASHES,
+                                   short_hashes=True, # TODO option in GUI
+                                   key='tab_database',
+                                   tooltip='Item Database')
+        self.tab_exam = GUIItemTable(show_translation=self.tab_db.show_translation,
+                                     n_row=10,
+                                     show_hash=ExamCompiler.SHOW_HASHES,
+                                     short_hashes=self.tab_db.short_hashes,
+                                     key='tab_exam',
+                                     tooltip='Exam Items')
+
+        self.txt_exam = sg.Multiline(size=(80, 30))
+
         self.layout = [
             [top_label([self.txt_base_directory,
                         sg.Button("change", size=(6, 1),
                                   key="change_directory")],
                        label="Database Directory",border_width=2),
              top_label([self.it_exam,
-                        sg.Button("save", size=(12, 1),
-                                  key="save_exam"),
-                        sg.Button("load", size=(4, 1),
-                                  key="load_exam"),
-                        sg.Button("new", size=(4, 1),
-                                  key="load_exam")
+                        sg.Button("save", size=(12, 1), key="save_exam"),
+                        sg.Button("load", size=(4, 1), key="load_exam"),
+                        sg.Button("new", size=(4, 1), key="load_exam")
                         ],
                         label="Exam", border_width=2),
              ],
 
-            [self.tab_db],
+            [self.tab_db.gui_element],
             [
              sg.Button("add", size=(30, 2),
                        button_color= consts.COLOR_GREEN_BTN,
@@ -72,35 +77,9 @@ class ExamCompiler(object):
             sg.Button("up", size=(10, 2), key="move_up"),
             sg.Button("down", size=(10, 2), key="move_down")
             ],
-            [self.tab_exam]]
+            [self.tab_exam.gui_element, self.txt_exam]]
 
         self._unsaved_change = False
-
-
-    def _make_tab(self, n_row, key, tooltip):
-        headings = ["cnt", "Name", "Dutch", "English"]
-        width = [2, 10, 50, 50]
-        if ExamCompiler.SHOW_HASHES:
-            headings.extend(["Hash Dutch", "Hash English"])
-            width.extend([10]*2)
-
-        return sg.Table(values=[[""] * len(headings)],
-                               col_widths=width,
-                               headings=headings,
-                               max_col_width=500,
-                               background_color='white',
-                               auto_size_columns=False,
-                               display_row_numbers=False,
-                               select_mode=sg.TABLE_SELECT_MODE_BROWSE,
-                               justification='left',
-                               num_rows=n_row,
-                               #enable_events=True,
-                               bind_return_key=True,
-                               #alternating_row_color='lightyellow',
-                               key=key,
-                               row_height=40,
-                               vertical_scroll_only = False,
-                               tooltip=tooltip)
 
 
     @property
@@ -123,7 +102,8 @@ class ExamCompiler(object):
                 break
         self.settings.recent_dirs.append(v)
         self.settings.recent_dirs = self.settings.recent_dirs[
-                                    -1 * consts.MAX_RECENT_DIRS:] #limit n elements         self.update_item_list()
+                                    -1 * consts.MAX_RECENT_DIRS:] #limit n elements
+        # self.update_item_list()
 
     @property
     def exam_file(self):
@@ -135,33 +115,23 @@ class ExamCompiler(object):
         self._unsaved_change = True
 
 
-    def update_table(self, max_lines=2, exam_tab_select_row=None):
+    def update_table(self, exam_tab_select_row=None):
         """table with item_id, name, short question item,
            short question translation"""
+        self.exam.item_database = self.db
+        exam_question_ids = self.exam.get_database_ids()
 
-        exam_question_ids = self.exam.get_database_ids(self.db)
-
-        data = []
-        for x in self.db.selected_entries:
-            if x.id not in exam_question_ids:
-                d = [x.id]
-                d.extend(x.short_repr(max_lines,
-                             add_versions=ExamCompiler.SHOW_HASHES,
-                             short_version=self.short_hashes))
-                data.append(d)
-        self.tab_db.update(values=data)
-
-        data = []
-        for x in self.db.get_entries(exam_question_ids):
-            d = [x.id]
-            d.extend(x.short_repr(max_lines,
-                            add_versions=ExamCompiler.SHOW_HASHES,
-                            short_version=self.short_hashes))
-            data.append(d)
-
-        self.tab_exam.update(values=data)
+        # CAN BE EASIER, you exam.xx-functuion
+        tmp = [x for x in self.db.selected_entries if x.id not in exam_question_ids]
+        self.tab_db.set_items(items=tmp)
+        self.tab_exam.set_items(items=self.db.get_entries(
+                                            exam_question_ids, rm_nones=True))
         if exam_tab_select_row is not None:
-            self.tab_exam.update(select_rows=[exam_tab_select_row])
+            self.tab_exam.set_selected(exam_tab_select_row)
+
+        md = self.exam.markdown()
+        self.txt_exam.update(value=md)
+
 
     def load_exam(self, json_filename):
         self.save_exam(ask=True)
@@ -216,25 +186,24 @@ class ExamCompiler(object):
                 pass # TODO
 
             elif event=="tab_database":
-                selected_entry = self.tab_db.get()[values[event][0]]
+                selected_entry = self.tab_db.get_row(values[event][0])
                 #TODO
 
             elif event=="tab_exam":
-                selected_entry = self.tab_exam.get()[values[event][0]]
+                selected_entry = self.tab_exam.get_row(values[event][0])
                 #TODO
 
             elif event=="add_to_exam":
                 try:
-                    selected_entry = self.tab_db.get()[values["tab_database"][0]]
+                    selected_entry = self.tab_db.get_row(values["tab_database"][0])
                 except:
                     continue # nothing selected
                 self.add_to_exam(selected_entry[0])
                 self._unsaved_change = True
 
-
             elif event=="remove_from_exam":
                 try:
-                    selected_entry = self.tab_exam.get()[values["tab_exam"][0]]
+                    selected_entry = self.tab_exam.get_row(values["tab_exam"][0])
                 except:
                     continue # nothing selected
                 self.remove_from_exam(selected_entry[0])
@@ -279,3 +248,66 @@ class ExamCompiler(object):
         self.exam.remove_item(item)
         self.update_table()
 
+
+class GUIItemTable(object):
+    LANGUAGES = ("Dutch", "English")
+
+    def __init__(self, n_row, key, tooltip, max_lines = 3,
+                 show_translation = False, show_hash=True, short_hashes=True):
+        self.max_lines = max_lines
+        self.show_hash = show_hash
+        self.short_hashes = short_hashes
+        self.show_translation = show_translation
+        headings, width = self.get_headings()
+        self.gui_element = sg.Table(values=[[""] * len(headings)],
+                                    col_widths=width,
+                                    headings=[str(x) for x in range(len(headings))],
+                                    max_col_width=500,
+                                    background_color='white',
+                                    auto_size_columns=False,
+                                    display_row_numbers=False,
+                                    select_mode=sg.TABLE_SELECT_MODE_BROWSE,
+                                    justification='left',
+                                    num_rows=n_row,
+                                    # enable_events=True,
+                                    bind_return_key=True,
+                                    # alternating_row_color='lightyellow',
+                                    key=key,
+                                    row_height=40,
+                                    vertical_scroll_only=False,
+                                    tooltip=tooltip)
+
+    def update_headings(self):
+        w = self.gui_element.Widget
+        if w is not None:
+            for idx, txt in zip(self.gui_element.ColumnHeadings, self.get_headings()[0]):
+                w.heading(idx, text=txt)
+
+    def get_headings(self):
+        headings = ["Cnt", "Name",
+                    GUIItemTable.LANGUAGES[int(self.show_translation)]]
+        width = [2, 10, 50]
+        if self.show_hash:
+            headings.append("Hash")
+            width.append(10)
+        return headings, width
+
+    def get_row(self, row_num):
+        return self.gui_element.get()[row_num]
+
+    def set_items(self, items):
+        values = []
+        for x in items:
+            d = [x.id]
+            d.extend(x.short_repr(self.max_lines,
+                                  translation=self.show_translation,
+                                  add_versions=self.show_hash,
+                                  short_version=self.short_hashes)) # TODO short hashes
+            values.append(d)
+        self.gui_element.update(values=values)
+        self.update_headings()
+
+    def set_selected(self, selected):
+        if not isinstance(selected, (list, tuple)):
+            selected = [selected]
+        self.gui_element.update(select_rows=selected)

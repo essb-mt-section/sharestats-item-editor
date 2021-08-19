@@ -13,5 +13,6 @@ def run():
     MainWin(reset_settings=opt["reset"],
             two_languages=languages).run()
 
+
 if __name__ == "__main__":
     run()

@@ -20,5 +20,6 @@ clean:
 	py3clean .
 	rm -rf build dist  *.egg-info
 
-
+meld:
+	meld ../rexam-item-editor/rexam_item_editor sharestats_item_editor/rexam_item_editor/
 

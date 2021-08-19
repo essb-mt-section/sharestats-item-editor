@@ -13,6 +13,8 @@ class Issue(object):
         else:
             self.fix_fnc = None
 
+    def has_fix_function(self):
+        return FIXME
 
     def fix(self):
         if self.fix_fnc is not None:
