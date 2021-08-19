@@ -206,7 +206,7 @@ class Exam(object):
 
     def markdown(self, get_translations=False):
         old_tag = AnswerList.TAG_CORRECT
-        AnswerList.TAG_CORRECT = "* X "
+        AnswerList.TAG_CORRECT = "* X"
         rtn = ""
         for cnt, x in enumerate(self.get_rexam_items(get_translations)):
             if x is not None:

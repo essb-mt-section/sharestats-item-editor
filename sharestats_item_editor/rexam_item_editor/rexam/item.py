@@ -122,26 +122,34 @@ class ItemSection(object):
 
 class AnswerList(ItemSection):
 
-    TAG_CORRECT = "# "
-    TAG_ITEM = "* "
+    TAG_CORRECT = "#"
+    TAG_ITEM = "*"
 
     def __init__(self, parent):
         super().__init__(parent, "Answerlist", "-")
         self.answers = []
         self._correct = []
+        self._tab_sep = [] # used tab separator for this item?
 
     def parse(self, parent=None):
         super().parse(parent=parent)
         self.answers = []
         self._correct = []
+        self._tab_sep = []
         unparsed_content = []
+
+        l_tag_item = len(AnswerList.TAG_ITEM) + 1
+        l_tag_corr = len(AnswerList.TAG_CORRECT) + 1
         while len(self.text_array)>0:
             answer = self.text_array.pop(0)
-            if answer.strip().startswith(AnswerList.TAG_ITEM):
-                self.answers.append(answer[2:].strip())
+            tag, tab_sep = check_tag(answer, AnswerList.TAG_ITEM, AnswerList.TAG_CORRECT)
+            if tab_sep is not None:
+                self._tab_sep.append(tab_sep)
+            if tag==AnswerList.TAG_ITEM:
+                self.answers.append(answer[l_tag_item:].strip())
                 self._correct.append(False)
-            elif answer.strip().startswith(AnswerList.TAG_CORRECT):
-                self.answers.append(answer[2:].strip())
+            elif tag==AnswerList.TAG_CORRECT:
+                self.answers.append(answer[l_tag_corr:].strip())
                 self._correct.append(True)
             else:
                 unparsed_content.append(answer)
@@ -154,9 +162,10 @@ class AnswerList(ItemSection):
 
         solution = ""
         for l in markdown.split("\n"):
-            if l.startswith(AnswerList.TAG_ITEM):
+            tag, _= check_tag(l, AnswerList.TAG_ITEM, AnswerList.TAG_CORRECT)
+            if tag == AnswerList.TAG_ITEM:
                 solution += "0"
-            elif l.startswith(AnswerList.TAG_CORRECT):
+            elif tag == AnswerList.TAG_CORRECT:
                 solution += "1"
         return solution
 
@@ -175,18 +184,34 @@ class AnswerList(ItemSection):
 
     def str_answers(self, mark_correct_solutions=False):
         rtn = ""
-        for ans, correct in zip(self.answers, self._correct):
+        for ans, correct, tab_sep in zip(self.answers, self._correct, self._tab_sep):
             if mark_correct_solutions and correct:
                 tag = AnswerList.TAG_CORRECT
             else:
                 tag = AnswerList.TAG_ITEM
-            rtn += "{}{}\n".format(tag, ans)
+
+            if tab_sep:
+                rtn += "{}\t{}\n".format(tag, ans)
+            else:
+                rtn += "{} {}\n".format(tag, ans)
 
         return rtn
 
     def __str__(self):
         rtn = self.str_markdown_heading() + self.str_answers() + self.str_text()
         return rtn.strip()
+
+    def fix_tabs(self):
+        if True in  self._tab_sep:
+            self._tab_sep = [False] * len(self._tab_sep)
+
+    def validate(self):
+        issues = []
+        if True in self._tab_sep:
+            issues.append(Issue("tabs_in_answerlist",
+                    "Tabs used as separator in Answerlist",
+                                self.fix_tabs))
+        return issues
 
 
 class ItemMetaInfo(ItemSection):
@@ -420,25 +445,18 @@ class RExamItem(RmdFile):
         rename(old, self.full_path)
         self.fix_directory_name()
 
-
     def validate(self):
         """Validates the item and returns a list of issues"""
-        issues = self.meta_info.validate()
+        issues = self.question.answer_list.validate() + self.meta_info.validate()
 
         # check answer & feedback list
         if self.meta_info.requires_answer_list():
             if not self.question.has_answer_list_section():
                 issues.append(Issue("answers", "No answer list defined",
                                     self.fix_add_answer_list))
-            if not self.solution.has_answer_list_section():
-                issues.append(Issue("feedback",
-                                    "No feedback answer list defined"))
         else:
             if self.question.has_answer_list_section():
                 issues.append(Issue("answers", "Answer list not required"))
-            if  self.solution.has_answer_list_section():
-                issues.append(Issue("feedback",
-                                    "Feedback answer list not required"))
 
         return issues
 
@@ -478,3 +496,19 @@ class RExamItem(RmdFile):
         else:
             return ""
 
+
+def check_tag(textline, tag1, tag2):
+    """ helper function
+    return (found tag[or None], is tab-separated)
+    """
+    l = textline.strip()
+    if l.startswith(tag1 + " "):
+        return tag1, False
+    elif l.startswith(tag2 + " "):
+        return tag2, False
+    if l.startswith(tag1 + "\t"):
+        return tag1, True # item, using tab
+    elif l.startswith(tag2 + "\t"):
+        return tag2, True # correct, using tab
+    else:
+        return None, None

@@ -34,7 +34,7 @@ class GUIItem(object):
                                       size=(consts.WIDTH_ML, len_answer),
                                       key="{}_answer".format(key_prefix))
 
-        self.txt_answer_list = sg.Text("Answer list", size=(10, 1),
+        self.txt_answer_list = sg.Text("Answer-list", size=(10, 1),
                                        background_color=consts.COLOR_QUEST)
 
         self.ml_solution = sg.Multiline(default_text="", enable_events=True,
@@ -44,7 +44,7 @@ class GUIItem(object):
                                                  size=(
                                                      consts.WIDTH_ML, len_answer),
                                                  key="{}_solution_feedback".format(key_prefix))
-        self.txt_solution_answ_lst = sg.Text("Answer list", size=(10, 1),
+        self.txt_solution_answ_lst = sg.Text("Answer-list", size=(10, 1),
                                              background_color=consts.COLOR_SOLUTION)
 
         self.ml_metainfo = sg.Multiline(default_text="",
