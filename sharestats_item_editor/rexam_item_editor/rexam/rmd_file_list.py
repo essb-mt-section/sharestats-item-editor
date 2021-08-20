@@ -5,16 +5,16 @@ from .rmd_file import RmdFile, CODE_L1, CODE_L2, TAG_L1, TAG_L2, TAG_BILINGUAL
 
 
 class BiLingualRmdFilePair(object):
-    """Two RMD Files, reference language and translation
+    """Two RMD Files: l1 and l2
     """
 
-    def __init__(self, rmd_file_item, rmd_file_translation=None,
-                        reference_language_code=None):
+    def __init__(self, rmd_file_a, rmd_file_b=None,
+                 reference_language_code=None):
         """if reference language_code is defined, items that does not have
-        this reference code will be stored as rmd_translation """
+        this reference code will be stored as rmd_l2 """
 
         x = []
-        for rmd in (rmd_file_item, rmd_file_translation):
+        for rmd in (rmd_file_a, rmd_file_b):
             if rmd is None:
                 x.append(None)
             else:
@@ -23,7 +23,7 @@ class BiLingualRmdFilePair(object):
                 else:
                     x.append(RmdFile(rmd))
 
-        if (x[0] is None and x[1] is not None):
+        if x[0] is None and x[1] is not None:
             x = x[1], x[0]
 
         elif x[1] is not None:
@@ -32,40 +32,40 @@ class BiLingualRmdFilePair(object):
                     x[1].language_code == reference_language_code:
                 x = x[1], x[0]
 
-        self._item = x[0]
-        self._translation = x[1]
+        self._l1 = x[0]
+        self._l2 = x[1]
 
     def __str__(self):
-        if self._item is None:
+        if self._l1 is None:
             i = "None"
         else:
-            i = self._item.relative_path
-        if self._translation is None:
+            i = self._l1.relative_path
+        if self._l2 is None:
             t = "None"
         else:
-            t = self._translation.relative_path
+            t = self._l2.relative_path
 
         return "{}: ({}, {})".format(self.shared_name(), i, t)
 
     @property
-    def rmd_item(self):
-        return self._item
+    def rmdfile_l1(self):
+        return self._l1
 
     @property
-    def rmd_translation(self):
-        return self._translation
+    def rmdfile_l2(self):
+        return self._l2
 
     def shared_name(self, add_bilingual_tag=True):
 
-        if self._item is not None and self._translation is None:
-            return self._item.name.lower()
-        elif self._item is None and self._translation is not None:
-            return self._translation.name.lower()
-        elif self._item is None and self._translation is None:
+        if self._l1 is not None and self._l2 is None:
+            return self._l1.name.lower()
+        elif self._l1 is None and self._l2 is not None:
+            return self._l2.name.lower()
+        elif self._l1 is None and self._l2 is None:
             return None
         else:
             # is bilingual
-            name = self._item.name.lower()
+            name = self._l1.name.lower()
             if name.endswith(TAG_L1) or \
                     name.endswith(TAG_L2):
                 name = name[:-3]
@@ -74,12 +74,10 @@ class BiLingualRmdFilePair(object):
             return name
 
     def is_bilingual(self):
-        return self._translation is not None and self._item is not None
+        return self._l2 is not None and self._l1 is not None
 
 
 class BiLingRmdFileList(object):
-
-    Entry = BiLingualRmdFilePair
 
     def __init__(self, base_directory=None, files_first_level=True,
                                     files_second_level=True,
@@ -88,6 +86,7 @@ class BiLingRmdFileList(object):
         self.base_directory = base_directory
         self.files_first_level = files_first_level
         self.files_second_level = files_second_level
+        self.check_for_bilingual_files = check_for_bilingual_files
 
         # check for matching languages
         lst = misc.CaseInsensitiveStringList(self.get_rmd_files())
@@ -116,9 +115,9 @@ class BiLingRmdFileList(object):
             else:
                 second = None
 
-            self.files.append(BiLingRmdFileList.Entry(rmd_file_item=first,
-                                                      rmd_file_translation=second,
-                                                      reference_language_code=reference_language))
+            self.files.append(BiLingualRmdFilePair(rmd_file_a=first,
+                                                   rmd_file_b=second,
+                                                   reference_language_code=reference_language))
 
         self.files = sorted(self.files, key=lambda x:x.shared_name())
 
@@ -135,7 +134,7 @@ class BiLingRmdFileList(object):
                 rtn["bilingual"] += 1
             else:
                 try:
-                    lang = f.rmd_item.language_code
+                    lang = f.rmdfile_l1.language_code
                 except:
                     lang = None
                 try:
@@ -163,9 +162,9 @@ class BiLingRmdFileList(object):
         """find idx by file name of first or second language"""
 
         for cnt, fl in enumerate(self.files):
-            if fl.rmd_item.filename == fl_name or \
-                    (fl.rmd_translation is not None and
-                     fl.rmd_translation.filename == fl_name):
+            if fl.rmdfile_l1.filename == fl_name or \
+                    (fl.rmdfile_l2 is not None and
+                     fl.rmdfile_l2.filename == fl_name):
                 return cnt
 
         return None
@@ -177,7 +176,7 @@ class BiLingRmdFileList(object):
          Second level files: The file with the same name as the folder;
          otherwise first rexam found is this subfolder return.
 
-         returns absolute pathes """
+         returns absolute paths """
 
         if self.base_directory is None:
             return []

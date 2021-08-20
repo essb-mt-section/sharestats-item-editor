@@ -1,15 +1,15 @@
 from os import getcwd
 import PySimpleGUI as sg
 
-from .. import __version__, APPNAME
+from .. import __version__, APPNAME, consts
 from ..rexam.item_database import ItemDatabase
-from ..rexam.exam import Exam
-from . import consts
 from .json_settings import JSONSettings
 from .dialogs import top_label
+from ..rexam import exam
 
 sg.theme_add_new("mytheme", consts.SG_COLOR_THEME)
 sg.theme("mytheme")
+
 
 class ExamCompiler(object):
     SHOW_HASHES = True
@@ -37,14 +37,14 @@ class ExamCompiler(object):
                        files_second_level=consts.FILELIST_SECOND_LEVEL_FILES,
                        check_for_bilingual_files=True) # FIXME set check_for_bilingual_files
 
-        self.exam = Exam()
-        self.tab_db = GUIItemTable(show_translation=True, # TODO option in GUI
+        self.exam = exam.Exam()
+        self.tab_db = GUIItemTable(show_l2=True,  # TODO option in GUI
                                    n_row=3,
                                    show_hash=ExamCompiler.SHOW_HASHES,
-                                   short_hashes=True, # TODO option in GUI
+                                   short_hashes=True,  # TODO option in GUI
                                    key='tab_database',
                                    tooltip='Item Database')
-        self.tab_exam = GUIItemTable(show_translation=self.tab_db.show_translation,
+        self.tab_exam = GUIItemTable(show_l2=self.tab_db.show_l2,
                                      n_row=10,
                                      show_hash=ExamCompiler.SHOW_HASHES,
                                      short_hashes=self.tab_db.short_hashes,
@@ -103,7 +103,11 @@ class ExamCompiler(object):
         self.settings.recent_dirs.append(v)
         self.settings.recent_dirs = self.settings.recent_dirs[
                                     -1 * consts.MAX_RECENT_DIRS:] #limit n elements
-        # self.update_item_list()
+        #update db
+        self.db = ItemDatabase(base_directory=v,
+                   files_first_level=self.db.files_first_level,
+                   files_second_level=self.db.files_second_level,
+                   check_for_bilingual_files=self.db.check_for_bilingual_files)
 
     @property
     def exam_file(self):
@@ -116,16 +120,26 @@ class ExamCompiler(object):
 
 
     def update_table(self, exam_tab_select_row=None):
-        """table with item_id, name, short question item,
-           short question translation"""
+        """table with item_id, name, short question l1 ,
+           short question l2"""
         self.exam.item_database = self.db
-        exam_question_ids = self.exam.get_database_ids()
 
-        # CAN BE EASIER, you exam.xx-functuion
-        tmp = [x for x in self.db.selected_entries if x.id not in exam_question_ids]
+        # exam
+        db_ids = self.exam.get_database_ids(rm_nones=False)
+        tmp = []
+        for quest, idx in zip(self.exam.questions, db_ids):
+
+            if idx is None:
+                tmp.append(exam.EntryNotFound(quest, use_l2=True)) #FIXME set l2 bool
+            else:
+                tmp.append(self.db.entries[idx])
+
+        self.tab_exam.set_items(items=tmp)
+        # not in exam --> show in database
+        tmp = [x for x in self.db.selected_entries \
+                                if x.id not in db_ids]
         self.tab_db.set_items(items=tmp)
-        self.tab_exam.set_items(items=self.db.get_entries(
-                                            exam_question_ids, rm_nones=True))
+
         if exam_tab_select_row is not None:
             self.tab_exam.set_selected(exam_tab_select_row)
 
@@ -151,7 +165,7 @@ class ExamCompiler(object):
             self._unsaved_change = False
 
     def reset_gui(self):
-        pass
+        self.update_table(exam_tab_select_row=None)
 
     def run(self):
 
@@ -163,18 +177,22 @@ class ExamCompiler(object):
         if len(self.settings.recent_dirs) == 0: # very first launch
             self.base_directory = getcwd()
 
-        self.update_table()
         self.reset_gui()
-
-        self.load_exam("demo.json")
+        self.load_exam("demo.json") #FIXME
 
         while True:
             win.refresh()
-            event, values = win.read(timeout=None)
+            event, values = win.read()
             if event == sg.WINDOW_CLOSE_ATTEMPTED_EVENT or \
                     event == "Close" or event is None:
                 self.save_exam(ask=True)
                 break
+
+            elif event == "change_directory":
+                fld = sg.PopupGetFolder(message="", no_window=True)
+                if len(fld):
+                    self.base_directory = fld
+                self.reset_gui()
 
             elif event=="save_exam":
                 self.save_exam(ask=False)
@@ -208,7 +226,6 @@ class ExamCompiler(object):
                     continue # nothing selected
                 self.remove_from_exam(selected_entry[0])
                 self._unsaved_change = True
-
 
             elif event=="move_up":
                 try:
@@ -253,11 +270,11 @@ class GUIItemTable(object):
     LANGUAGES = ("Dutch", "English")
 
     def __init__(self, n_row, key, tooltip, max_lines = 3,
-                 show_translation = False, show_hash=True, short_hashes=True):
+                 show_l2 = False, show_hash=True, short_hashes=True):
         self.max_lines = max_lines
         self.show_hash = show_hash
         self.short_hashes = short_hashes
-        self.show_translation = show_translation
+        self.show_l2 = show_l2
         headings, width = self.get_headings()
         self.gui_element = sg.Table(values=[[""] * len(headings)],
                                     col_widths=width,
@@ -285,8 +302,8 @@ class GUIItemTable(object):
 
     def get_headings(self):
         headings = ["Cnt", "Name",
-                    GUIItemTable.LANGUAGES[int(self.show_translation)]]
-        width = [2, 10, 50]
+                    GUIItemTable.LANGUAGES[int(self.show_l2)]]
+        width = [5, 10, 50]
         if self.show_hash:
             headings.append("Hash")
             width.append(10)
@@ -300,7 +317,7 @@ class GUIItemTable(object):
         for x in items:
             d = [x.id]
             d.extend(x.short_repr(self.max_lines,
-                                  translation=self.show_translation,
+                                  use_l2=self.show_l2,
                                   add_versions=self.show_hash,
                                   short_version=self.short_hashes)) # TODO short hashes
             values.append(d)

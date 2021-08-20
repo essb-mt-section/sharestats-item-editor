@@ -8,7 +8,7 @@ from . import rexam_item_editor
 rexam_item_editor.APPNAME = APPNAME
 rexam_item_editor.WEBSITE = WEBSITE
 
-from .rexam_item_editor.gui import consts
+from .rexam_item_editor import consts
 consts.FILELIST_FIRST_LEVEL_FILES = False
 consts.FILELIST_SECOND_LEVEL_FILES = True
 
@@ -26,13 +26,8 @@ from .mainwin import SSItemEditorMainWin
 def run():
 
     opt = cli("{} {}".format(APPNAME, __version__))
-    if opt["monolingual"]:
-        languages = None
-    else:
-        languages = ("Dutch", "English")
-
     SSItemEditorMainWin(reset_settings=opt["reset"],
-                        two_languages=languages).run()
+                        monolingual=opt["monolingual"]).run()
 
 if __name__ == "__main__":
     run()

@@ -9,6 +9,7 @@ except:
 
 RPY2INSTALLED = robjects is not None
 
+
 class RRender(object):
 
     HTML_FILE_NAME = "html-test"

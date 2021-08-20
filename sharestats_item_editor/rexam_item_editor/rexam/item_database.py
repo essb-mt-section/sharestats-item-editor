@@ -4,6 +4,7 @@ from .rmd_file_list import BiLingRmdFileList, BiLingualRmdFilePair
 from .item import RExamItem
 from ..misc import iter_list
 
+
 class _SearchSchemata(object):
 
     def __init__(self):
@@ -43,14 +44,16 @@ class _SearchSchemata(object):
         self.parameter.append(parameter)
         self.search_types.append(search_type)
 
-class EntryItemDatabase(object):
 
-    def __init__(self, shared_name, item, translation):
-        assert isinstance(item, RExamItem) or item is None
-        assert isinstance(translation, RExamItem) or translation is None
+class EntryItemDatabase(object):
+    # biligual RExamItem
+
+    def __init__(self, shared_name, item_l1, item_l2):
+        assert isinstance(item_l1, RExamItem) or item_l1 is None
+        assert isinstance(item_l2, RExamItem) or item_l2 is None
         self.shared_name = shared_name
-        self.item = item
-        self.translation = translation
+        self.item_l1 = item_l1
+        self.item_l2 = item_l2
         self.id = None
 
     def is_same_as(self, item):
@@ -58,75 +61,81 @@ class EntryItemDatabase(object):
         and ignores the id"""
 
         if isinstance(item, EntryItemDatabase):
-            return self.shared_name == item.shared_name and\
-                self.version_item() == item.version_item() and \
-                self.version_translation() == item.version_translation()
+            return self.shared_name == item.shared_name and \
+                   self.hash_l1() == item.hash_l1() and \
+                   self.hash_l2() == item.hash_l2()
         else:
             return False
 
-    def version_item(self):
+    def hash_l1(self):
         try:
-            return self.item.version_id()
+            return self.item_l1.hash()
         except:
             return ""
 
-    def version_translation(self):
+    def hash_l2(self):
         try:
-            return self.translation.version_id()
+            return self.item_l2.hash()
         except:
             return ""
 
-    def version_item_short(self):
-        return self.version_item()[:7]
+    def hash_l1_short(self):
+        try:
+            return self.item_l1.hash_short()
+        except:
+            return ""
 
-    def version_translation_short(self):
-        return self.version_translation()[:7]
+    def hash_l2_short(self):
+        try:
+            return self.item_l2.hash_short()
+        except:
+            return ""
 
-    def short_repr(self, max_lines, translation, add_versions=False, short_version=True):
-        if translation:
+    def short_repr(self, max_lines, use_l2, add_versions=False, short_version=True):
+        if use_l2:
             try:
-                txt = self.translation.question.str_text_short(max_lines)
+                txt = self.item_l2.question.str_text_short(max_lines, ignore_empty_lines=True)
             except:
                 txt = ""
         else:
             try:
-                txt = self.item.question.str_text_short(max_lines)
+                txt = self.item_l1.question.str_text_short(max_lines, ignore_empty_lines=True)
             except:
                 txt = ""
 
         rtn = [self.shared_name, txt]
         if add_versions:
             if short_version:
-                if translation:
-                    rtn.append(self.version_translation_short())
+                if use_l2:
+                    rtn.append(self.hash_l2_short())
                 else:
-                    rtn.append(self.version_item_short())
+                    rtn.append(self.hash_l1_short())
             else:
-                if translation:
-                    rtn.append( self.version_translation())
+                if use_l2:
+                    rtn.append(self.hash_l2())
                 else:
-                    rtn.append(self.version_item())
+                    rtn.append(self.hash_l1())
         return rtn
 
     @staticmethod
     def load(biling_filelist_entry, shared_name_with_bilingual_tag=False):
         assert isinstance(biling_filelist_entry, BiLingualRmdFilePair)
 
-        if biling_filelist_entry.rmd_item is not None:
-            item = RExamItem(biling_filelist_entry.rmd_item)
+        if biling_filelist_entry.rmdfile_l1 is not None:
+            l1 = RExamItem(biling_filelist_entry.rmdfile_l1)
         else:
-            item = None
+            l1 = None
 
-        if biling_filelist_entry.rmd_translation is not None:
-            translation = RExamItem(biling_filelist_entry.rmd_translation)
+        if biling_filelist_entry.rmdfile_l2 is not None:
+            l2 = RExamItem(biling_filelist_entry.rmdfile_l2)
         else:
-            translation = None
+            l2 = None
 
         return EntryItemDatabase(
                 shared_name=biling_filelist_entry.shared_name(
                                     add_bilingual_tag=shared_name_with_bilingual_tag),
-                item=item,
-                translation=translation)
+                item_l1=l1,
+                item_l2=l2)
 
 
 class ItemDatabase(BiLingRmdFileList):
@@ -169,8 +178,8 @@ class ItemDatabase(BiLingRmdFileList):
 
     @property
     def selected_entries(self):
-        """selected name, item, translation, item_version,
-                    translation_version"""
+        """selected name, l1, l2, l1_hash,
+                    l2_hash"""
         return self.get_entries(self._selected_ids, rm_nones=True)
 
     def _search_select(self, search_function, item_ids_subset):
@@ -183,13 +192,13 @@ class ItemDatabase(BiLingRmdFileList):
         for x in item_ids_subset:
 
             try:
-                found = search_function(self.entries[x].item)
+                found = search_function(self.entries[x].item_l1)
             except:
                 found = -1
 
             if found<0:
                 try:
-                    found = search_function(self.entries[x].translation)
+                    found = search_function(self.entries[x].item_l2)
                 except:
                     found = -1
 
@@ -227,7 +236,6 @@ class ItemDatabase(BiLingRmdFileList):
 
         return self._selected_ids
 
-
     def find_entry(self, entry_item_database):
         """returns all id of identical entries """
 
@@ -235,11 +243,10 @@ class ItemDatabase(BiLingRmdFileList):
         rtn = map(lambda x: x.id, same)
         return list(rtn)
 
-
-    def find(self, item_version_id,
-             translation_version_id=None,
-             item_relative_path = None,
-             translation_relative_path=None,
+    def find(self, hash_l1,
+             hash_l2=None,
+             relative_path_l1 = None,
+             relative_path_l2=None,
              shared_name = None,
              find_all=False):
 
@@ -251,16 +258,16 @@ class ItemDatabase(BiLingRmdFileList):
         rtn = []
         for cnt, e in enumerate(self.entries):
             a = shared_name is None or e.shared_name == shared_name
-            b = item_relative_path is None or (e.item is not None and
-                                e.item.relative_path == item_relative_path)
-            c = translation_relative_path is None or \
-                (e.translation is not None and \
-                 e.translation.relative_path ==translation_relative_path)
+            b = relative_path_l1 is None or (e.item_l1 is not None and
+                                             e.item_l1.relative_path == relative_path_l1)
+            c = relative_path_l2 is None or \
+                (e.item_l2 is not None and \
+                 e.item_l2.relative_path == relative_path_l2)
 
             if  a and b and c:
-                if  e.version_item() == item_version_id and \
-                    (translation_version_id is None or
-                         e.version_translation() == translation_version_id):
+                if  e.hash_l1() == hash_l1 and \
+                    (hash_l2 is None or
+                     e.hash_l2() == hash_l2):
                     if find_all:
                         rtn.append(cnt)
                     else:

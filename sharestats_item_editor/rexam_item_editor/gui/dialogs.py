@@ -1,11 +1,12 @@
 from os import path
 import PySimpleGUI as sg
 
-from . import consts
 from .. import sysinfo, __version__, __author__, APPNAME, templates
+from ..consts import FILE_ENCODING
 from ..rexam import r_render, extypes
 from ..rexam.rmd_file import RmdFile, SEP, TAG_L1, TAG_L2, TAG_BILINGUAL
 from ..rexam.item import RExamItem
+
 
 def top_label(elem, label="", border_width=0):
     if not isinstance(elem, list):
@@ -42,7 +43,7 @@ def show_text_file(file, file2=None):
             win_titel = "View Files: {}".format(fl.name)
             fl = fl.full_path
         try:
-            with open(fl, "r", encoding=consts.FILE_ENCODING) as fl_hdl:
+            with open(fl, "r", encoding=FILE_ENCODING) as fl_hdl:
                 content[i] = fl_hdl.readlines()
             files.append(fl)
         except:

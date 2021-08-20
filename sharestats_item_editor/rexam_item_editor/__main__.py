@@ -1,17 +1,18 @@
 from . import __version__, APPNAME
 from .cli import cli
-from .gui.mainwin import MainWin
+
 
 def run():
 
     opt = cli("{} {}".format(APPNAME, __version__))
-    if opt["monolingual"]:
-        languages = None
-    else:
-        languages = ("Dutch", "English")
 
-    MainWin(reset_settings=opt["reset"],
-            two_languages=languages).run()
+    if opt["exam_compiler"]:
+        from .gui.exam_compiler import ExamCompiler
+        ExamCompiler().run()
+    else:
+        from .gui.mainwin import MainWin
+        MainWin(reset_settings=opt["reset"],
+            monolingual=opt["monolingual"]).run()
 
 
 if __name__ == "__main__":

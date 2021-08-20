@@ -6,10 +6,10 @@ base_dialogs.FrameMakeName = FrameMakeName
 
 class SSItemEditorMainWin(MainWin):
 
-    def __init__(self, reset_settings, two_languages=None):
+    def __init__(self, reset_settings, monolingual=None):
         super().__init__(reset_settings=reset_settings,
                          change_meta_info_button=True,
-                         two_languages=two_languages)
+                         monolingual=monolingual)
 
     def process_item_gui_event(self, event, values):
 

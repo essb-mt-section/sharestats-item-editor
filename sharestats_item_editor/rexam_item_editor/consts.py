@@ -1,3 +1,12 @@
+LANGUAGE1 = "Dutch"
+LANGUAGE2 = "English"
+CODE_L1 = "nl"
+CODE_L2 = "en"
+
+FILE_ENCODING = 'utf-8'
+
+#GUI
+
 COLOR_BKG_INACTIVE = "#8A8A8A"
 COLOR_BKG_ACTIVE = "#FFFFFF"
 COLOR_BKG_ACTIVE_INFO = "#f6f6f6"
@@ -16,8 +25,6 @@ SG_COLOR_THEME = {'BACKGROUND': '#E0E0E2',
                   'PROGRESS': ('#D1826B', '#CC8019'),
                   'BORDER': 1, 'SLIDER_DEPTH': 0,
                   'PROGRESS_DEPTH': 0, }
-
-FILE_ENCODING = 'utf-8'
 
 WIDTH_ML = 80 # multi line field for text input
 LEN_ML_SMALL = 6

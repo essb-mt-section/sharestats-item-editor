@@ -1,16 +1,17 @@
 from os import listdir, path
 import PySimpleGUI as sg
 
-from .. import misc
+from .. import misc, consts
 from ..rexam import extypes
 from ..rexam.item import RExamItem, AnswerList
-from . import consts
 
 _EMPTY_ITEM = RExamItem(None)
 
 class GUIItem(object):
 
-    def __init__(self, label, key_prefix, change_meta_info_button=False,
+    def __init__(self, label, key_prefix,
+                 show_hash = True,
+                 change_meta_info_button=False,
                  disabled = False):
         # all events start with key_prefix
 
@@ -23,6 +24,7 @@ class GUIItem(object):
 
         self.disabled = disabled
         self.label = label
+        self.show_hash = show_hash
         self.key_prefix = key_prefix
         self._item = None
 
@@ -263,10 +265,14 @@ class GUIItem(object):
         else:
             item = self.rexam_item
 
-        fl_info = path.join(item.sub_directory, item.filename)
-        if len(fl_info):
-            fl_info = ":  ..." + path.sep + fl_info
-        self.gui_element.update(value=self.label + fl_info)
+
+        fl_info = self.label + ": "
+        tmp = path.join(item.sub_directory, item.filename)
+        if len(tmp):
+            if self.show_hash:
+                fl_info += "[{}] ".format(item.hash_short())
+            fl_info += "..." + path.sep + tmp
+        self.gui_element.update(value=fl_info)
 
         self.ml_quest.update(value=item.question.str_text())
         self.ml_solution.update(value=item.solution.str_text())

@@ -3,11 +3,13 @@ from copy import deepcopy
 import PySimpleGUI as sg
 
 from . import taxonomy
-from .rexam_item_editor.gui import consts
+from .rexam_item_editor import consts
 from .rexam_item_editor.gui.dialogs import top_label
 from .rexam_item_editor.misc import splitstrip
 from .rexam_item_editor.rexam.item import ItemMetaInfo
 from .rexam_item_editor.rexam.rmd_file import SEP, TAG_L1, TAG_L2, TAG_BILINGUAL
+
+BILINGUAL = "Bilingual"
 
 class FrameMakeName(object):
 
@@ -16,13 +18,13 @@ class FrameMakeName(object):
         default_name = path.splitext(default_name)[0] # remove possible extension
         defaults = [""] * 4
         if default_name.endswith(TAG_BILINGUAL):
-            defaults[3] = "Bilingual"
+            defaults[3] = BILINGUAL
             default_name = default_name[:-1*len(TAG_BILINGUAL)]
         elif default_name.endswith(TAG_L1):
-            defaults[3] = "Dutch"
+            defaults[3] = consts.LANGUAGE1
             default_name = default_name[:-1*len(TAG_L1)]
         elif default_name.endswith(TAG_L2):
-            defaults[3] = "English"
+            defaults[3] = consts.LANGUAGE2
             default_name = default_name[:-1*len(TAG_L2)]
         else:
             defaults[3] = ""
@@ -47,14 +49,14 @@ class FrameMakeName(object):
                                   self.txt_name2]],
                             border_width=0)
 
-        self.fln0 = sg.InputText(default_text=defaults[0],size=(5,1),
+        self.fln0 = sg.InputText(default_text=defaults[0], size=(5,1),
                                  key="fln0", enable_events=True)
         self.fln1 = sg.InputText(default_text=defaults[1], size=(25,1),
                                  key="fln1",enable_events=True)
         self.fln2 = sg.InputText(default_text=str(defaults[2]), size=(4,1),
                                  key="fln2",enable_events=True)
         self.fln3 = sg.DropDown(default_value=defaults[3],
-                                values=["Dutch", "English", "Bilingual"],
+                                values=[consts.LANGUAGE1, consts.LANGUAGE2, BILINGUAL],
                                 key="fln3", enable_events=True)
 
         self.frame = sg.Frame("Item Name(s)",[
@@ -81,11 +83,11 @@ class FrameMakeName(object):
 
         if len(name1) > 0:
             lang = self.fln3.get()
-            if lang == "Dutch":
+            if lang == consts.LANGUAGE1:
                 name1 = name1 + TAG_L1
-            elif lang == "English":
+            elif lang == consts.LANGUAGE2:
                 name1 = name1 + TAG_L2
-            elif lang == "Bilingual":
+            elif lang == BILINGUAL:
                 name2 = name1 + TAG_L2
                 name1 = name1 + TAG_L1
 

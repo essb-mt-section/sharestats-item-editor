@@ -14,7 +14,7 @@ class Issue(object):
             self.fix_fnc = None
 
     def has_fix_function(self):
-        return FIXME
+        return self.fix_fnc is not None
 
     def fix(self):
         if self.fix_fnc is not None:

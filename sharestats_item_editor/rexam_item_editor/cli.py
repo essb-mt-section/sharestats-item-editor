@@ -24,6 +24,11 @@ def cli(app_name):
                              "bilingual)",
                         default=False)
 
+    parser.add_argument("-e", "--exam_compiler", dest="exam_compiler",
+                        action="store_true",
+                        help="run exam compiler",
+                        default=False)
+
     opt = vars(parser.parse_args())
 
     if opt["info"]:
