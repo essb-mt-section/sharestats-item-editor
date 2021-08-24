@@ -290,7 +290,7 @@ class GUIItem(object):
             self.ml_answer.update(value="")
         else:
             self.ml_answer.update(value=
-                                  item.question.answer_list.str_answers(mark_correct_solutions=True) +
+                                  item.question.answer_list.str_answers(tag_mark_correct=True) +
                                   item.question.answer_list.str_text())
 
 

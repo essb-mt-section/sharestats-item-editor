@@ -17,14 +17,14 @@ class ItemSection(object):
 
     def __init__(self, parent, label, underline_chr, min_underline_length=4):
 
-        assert(isinstance(parent, (ItemSection, RExamItem)))
+        assert (isinstance(parent, (ItemSection, RExamItem)))
 
         self._parent = parent
         self._underline_chr = underline_chr
         self._underline_string = underline_chr * min_underline_length
 
         self.label = label
-        self.text_array = [] # array of text lines ending with \n (like readlines)
+        self.text_array = []  # array of text lines ending with \n (like readlines)
         self.line_range = [None, None]
         self.answer_list = None
 
@@ -42,7 +42,7 @@ class ItemSection(object):
                 if line.startswith(self._underline_string) and \
                         prev.strip() == self.label:
                     is_section = True
-                    self.line_range[0] = cnt-1
+                    self.line_range[0] = cnt - 1
             else:
                 if line.startswith(self._underline_string):
                     # end section
@@ -83,13 +83,13 @@ class ItemSection(object):
         else:
             tmp = self.text_array
 
-        if wrap_text_width>1:
+        if wrap_text_width > 1:
             rtn = ""
             for x in tmp:
                 rtn += textwrap.fill(x, width=wrap_text_width,
-                                 replace_whitespace=False) + "\n"
+                                     replace_whitespace=False) + "\n"
         else:
-             rtn = "".join(tmp).rstrip()
+            rtn = "".join(tmp).rstrip()
 
         return rtn.rstrip()
 
@@ -119,7 +119,6 @@ class ItemSection(object):
 
 
 class AnswerList(ItemSection):
-
     TAG_CORRECT = "#"
     TAG_ITEM = "*"
 
@@ -127,7 +126,7 @@ class AnswerList(ItemSection):
         super().__init__(parent, "Answerlist", "-")
         self.answers = []
         self._correct = []
-        self._tab_sep = [] # used tab separator for this item?
+        self._tab_sep = []  # used tab separator for this item?
 
     def parse(self, parent=None):
         super().parse(parent=parent)
@@ -138,15 +137,15 @@ class AnswerList(ItemSection):
 
         l_tag_item = len(AnswerList.TAG_ITEM) + 1
         l_tag_corr = len(AnswerList.TAG_CORRECT) + 1
-        while len(self.text_array)>0:
+        while len(self.text_array) > 0:
             answer = self.text_array.pop(0)
             tag, tab_sep = check_tag(answer, AnswerList.TAG_ITEM, AnswerList.TAG_CORRECT)
             if tab_sep is not None:
                 self._tab_sep.append(tab_sep)
-            if tag==AnswerList.TAG_ITEM:
+            if tag == AnswerList.TAG_ITEM:
                 self.answers.append(answer[l_tag_item:].strip())
                 self._correct.append(False)
-            elif tag==AnswerList.TAG_CORRECT:
+            elif tag == AnswerList.TAG_CORRECT:
                 self.answers.append(answer[l_tag_corr:].strip())
                 self._correct.append(True)
             else:
@@ -160,7 +159,7 @@ class AnswerList(ItemSection):
 
         solution = ""
         for l in markdown.split("\n"):
-            tag, _= check_tag(l, AnswerList.TAG_ITEM, AnswerList.TAG_CORRECT)
+            tag, _ = check_tag(l, AnswerList.TAG_ITEM, AnswerList.TAG_CORRECT)
             if tag == AnswerList.TAG_ITEM:
                 solution += "0"
             elif tag == AnswerList.TAG_CORRECT:
@@ -180,18 +179,24 @@ class AnswerList(ItemSection):
             except:
                 self._correct.append(False)
 
-    def str_answers(self, mark_correct_solutions=False):
+    def str_answers(self, tag_mark_correct=False, highlight_correct_before_after=""):
+        """mark_correct add chars before and after correct e.g. '**' for markdown bold"""
         rtn = ""
         for ans, correct, tab_sep in zip(self.answers, self._correct, self._tab_sep):
-            if mark_correct_solutions and correct:
+            if tag_mark_correct and correct:
                 tag = AnswerList.TAG_CORRECT
             else:
                 tag = AnswerList.TAG_ITEM
 
-            if tab_sep:
-                rtn += "{}\t{}\n".format(tag, ans)
+            if correct:
+                mark = highlight_correct_before_after
             else:
-                rtn += "{} {}\n".format(tag, ans)
+                mark = ""
+
+            if tab_sep:
+                rtn += "{}\t{}{}{}\n".format(tag, mark, ans, mark)
+            else:
+                rtn += "{} {}{}{}\n".format(tag, mark, ans, mark)
 
         return rtn
 
@@ -200,24 +205,23 @@ class AnswerList(ItemSection):
         return rtn.strip()
 
     def fix_tabs(self):
-        if True in  self._tab_sep:
+        if True in self._tab_sep:
             self._tab_sep = [False] * len(self._tab_sep)
 
     def validate(self):
         issues = []
         if True in self._tab_sep:
             issues.append(Issue("tabs_in_answerlist",
-                    "Tabs used as separator in Answerlist",
+                                "Tabs used as separator in Answerlist",
                                 self.fix_tabs))
         return issues
 
 
 class ItemMetaInfo(ItemSection):
-
     _REQUIRED_PARAMETER = None
 
     def __init__(self, parent):
-        assert(isinstance(parent, RExamItem))
+        assert (isinstance(parent, RExamItem))
         super().__init__(parent, "Meta-information", "=")
         self.parameter = OrderedDict()
 
@@ -247,7 +251,7 @@ class ItemMetaInfo(ItemSection):
         additional_content = []
         if reset_parameter:
             self.parameter = OrderedDict()
-        while len(self.text_array)>0:
+        while len(self.text_array) > 0:
             l = self.text_array.pop(0)
             para = extract_parameter(l)
             if para is None:
@@ -290,7 +294,7 @@ class ItemMetaInfo(ItemSection):
 
     @property
     def name(self):
-       return self._try_parameter("exname")
+        return self._try_parameter("exname")
 
     @name.setter
     def name(self, v):
@@ -311,7 +315,6 @@ class ItemMetaInfo(ItemSection):
     @type.setter
     def type(self, v):
         self.parameter["extype"] = v
-
 
     @property
     def solution(self):
@@ -349,20 +352,19 @@ class ItemMetaInfo(ItemSection):
         # is type defined type
         if not self.check_type():
             issues.append(Issue("extype",
-                    "Unknown/undefined item type(extype))", None))
+                                "Unknown/undefined item type(extype))", None))
 
         # missing parameter
         missing_parameter = self.get_missing_parameter()
         if len(missing_parameter):
             issues.append(Issue("missings", "Missing required meta-information: {}".format(
-                    list(missing_parameter.keys())),
-                    self.fix_missing_parameter))
+                list(missing_parameter.keys())),
+                                self.fix_missing_parameter))
 
         return issues
 
 
 class RExamItem(RmdFile):
-
     META_INFO_CLASS = ItemMetaInfo
 
     def __init__(self, file_path=None):
@@ -388,13 +390,12 @@ class RExamItem(RmdFile):
 
         if self._hash is None:
             txt = str(self.question) + str(self.solution) + str(self.meta_info)
-            self._hash = hashlib.md5(txt.encode()).hexdigest() # calc only once
+            self._hash = hashlib.md5(txt.encode()).hexdigest()  # calc only once
 
         return self._hash
 
     def hash_short(self):
         return self.hash()[:7]
-
 
     def import_file(self, text_file):
         """import a text file as content"""
@@ -406,9 +407,9 @@ class RExamItem(RmdFile):
     def parse(self, source_text, reset_meta_information=False):
         """parse file or source text is specified"""
         if isinstance(source_text, str):
-            self.text_array = list(map(lambda x: x+"\n",
+            self.text_array = list(map(lambda x: x + "\n",
                                        source_text.split("\n")))
-                # array of text lines ending with \n (like readlines)
+            # array of text lines ending with \n (like readlines)
         else:
             self.text_array = source_text
 
@@ -424,7 +425,7 @@ class RExamItem(RmdFile):
     def __str__(self):
         rtn = "".join(self.header)
         rtn += str(self.question) + "\n\n\n" + \
-                str(self.solution) + "\n\n\n" + str(self.meta_info)
+               str(self.solution) + "\n\n\n" + str(self.meta_info)
         return rtn
 
     def save(self):
@@ -466,8 +467,8 @@ class RExamItem(RmdFile):
         return issues
 
     def update_solution(self, solution_str):
-        if len(solution_str) == 0 and len(self.meta_info.solution)==0:
-            #don't write solution nothing changed (avoid creating of solution
+        if len(solution_str) == 0 and len(self.meta_info.solution) == 0:
+            # don't write solution nothing changed (avoid creating of solution
             # is solution_str is empty and parameter is not yet defined)
             return
         self.meta_info.solution = solution_str
@@ -480,10 +481,10 @@ class RExamItem(RmdFile):
         if file_path is None:
             return None
         else:
-            return  RExamItem(RmdFile(file_path,
+            return RExamItem(RmdFile(file_path,
                                      base_directory=base_directory))
 
-    def markdown(self, enumerator=None, wrap_text_width=0):
+    def markdown(self, enumerator=None, wrap_text_width=0, tag_mark_correct=True, highlight_correct_char=""):
         '''optional counter to enumerate questions'''
         question_str = self.question.str_text(ignore_empty_lines=False,
                                               wrap_text_width=wrap_text_width)
@@ -491,7 +492,8 @@ class RExamItem(RmdFile):
         if self.question.answer_list is not None:
             question_str += "\n\n" + \
                             self.question.answer_list.str_answers(
-                                    mark_correct_solutions=True)
+                                tag_mark_correct=tag_mark_correct,
+                                highlight_correct_before_after=highlight_correct_char)
 
         if len(question_str.strip()):
             rtn = "# Question "
@@ -513,8 +515,8 @@ def check_tag(textline, tag1, tag2):
     elif l.startswith(tag2 + " "):
         return tag2, False
     if l.startswith(tag1 + "\t"):
-        return tag1, True # item, using tab
+        return tag1, True  # item, using tab
     elif l.startswith(tag2 + "\t"):
-        return tag2, True # correct, using tab
+        return tag2, True  # correct, using tab
     else:
         return None, None

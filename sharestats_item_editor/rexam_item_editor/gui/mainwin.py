@@ -18,10 +18,11 @@ LANG1_EVENT_PREFIX = "Lang1"
 LANG2_EVENT_PREFIX = "Lang2"
 
 
+
 class MainWin(object):
 
-    def __init__(self, reset_settings=False, change_meta_info_button=False,
-                        monolingual=False):
+    def __init__(self, clear_settings=False, change_meta_info_button=False,
+                 monolingual=False):
 
         """languages is none or a list of two strings indicating the
         respective languages languages"""
@@ -30,7 +31,7 @@ class MainWin(object):
                          appname=APPNAME.replace(" ", "_").lower(),
                          settings_file_name="settings.json",
                          defaults= {"recent_dirs": [], "bilingual": True},
-                         reset=reset_settings)
+                         reset=clear_settings)
 
         self.is_bilingual = not monolingual and self.settings.bilingual
 
@@ -101,8 +102,8 @@ class MainWin(object):
                   [fr_base_dir, fr_item_name],
                   [left_frame]+ right_frames]
 
-        self.fl_list = BiLingRmdFileList(files_first_level=consts.FILELIST_FIRST_LEVEL_FILES,
-                                         files_second_level=consts.FILELIST_SECOND_LEVEL_FILES,
+        self.fl_list = BiLingRmdFileList(files_first_level=True, # TODO somewhere in seetings
+                                         files_second_level=True,
                                          check_for_bilingual_files=self.is_bilingual)
 
         self._unsaved_item = None
@@ -111,19 +112,21 @@ class MainWin(object):
         file = ['&New Item', '&Save Item', '---',
                 'Open &Directory',
                 'Recent', list(reversed(self.settings.recent_dirs[:-1])),
-                '---']
+                '---','&Reload Item List',
+                "---",  "Run &Exam Compiler",
+                'C&lose']
+
+        view = ["&Raw files", "---"]
+        if not self.ig_l1.show_hash:
+            view += ["Show &hashes"]
+        else:
+            view += ["Hide &hashes"]
 
         if self.is_bilingual:
-            file += ["Single &Language Mode"]
+            view += ["Single &Language Mode"]
         else:
-            file += ["Bi&lingual Mode"]
-
-        file += ['---', '&Reload Item List',
-                '---', 'C&lose']
-
-        view = ["&Raw files", "---", "Show &hashes", "---", '&About']
-        if self.ig_l1.show_hash:
-            view[2] = "Hide &hashes"
+            view += ["Bi&lingual Mode"]
+        view += ['---', '&About']
 
         menu = [['&File', file], ["&View", view]]
 
@@ -225,8 +228,8 @@ class MainWin(object):
                 exit()
 
         self.fl_list = BiLingRmdFileList(base_directory=self.base_directory,
-                                         files_first_level=consts.FILELIST_FIRST_LEVEL_FILES,
-                                         files_second_level=consts.FILELIST_SECOND_LEVEL_FILES,
+                                         files_first_level=self.fl_list.files_first_level,
+                                         files_second_level=self.fl_list.files_second_level,
                                          check_for_bilingual_files=self.is_bilingual)
 
         cnt = self.fl_list.get_count()
@@ -281,9 +284,11 @@ class MainWin(object):
         while True:
             win.refresh()
             event, values = win.read(timeout=5000)
+
             if event == sg.WINDOW_CLOSE_ATTEMPTED_EVENT or \
                     event == "Close" or event is None:
                 self.save_items(ask=True)
+                restart = False
                 break
 
             elif event.startswith(LANG1_EVENT_PREFIX) or event.startswith(LANG2_EVENT_PREFIX):
@@ -293,10 +298,19 @@ class MainWin(object):
                 if self.unsaved_item is None: # if change in any text boxes
                     self.unsaved_item = self.idx_selected_item
 
-            self.process_event(event, values)
+            restart = self.process_event(event, values)
+            if restart:
+                break
 
         win.close()
         self.settings.save()
+
+        if restart == "Run Exam Compiler":
+            from .exam_compiler import ExamCompiler
+            return ExamCompiler().run()
+        elif restart:
+            return MainWin().run()
+
 
     def process_item_gui_event(self, event, values):
         # ItemGUI events have to start with LANG1_PREFIX or LANG2_PREFIX
@@ -344,6 +358,7 @@ class MainWin(object):
 
 
     def process_event(self, event, _values):
+        """returns None or event if a restart is required"""
 
         if event == "__TIMEOUT__":
             if self.fl_list.is_file_list_changed():
@@ -401,6 +416,7 @@ class MainWin(object):
                 flns = self.fl_list.files[self.idx_selected_item]
             except:
                 return
+
             self.save_items(ask=True)
             dialogs.show_text_file(flns.rmdfile_l1, flns.rmdfile_l2)
 
@@ -409,13 +425,16 @@ class MainWin(object):
             self.ig_l2.show_hash = self.ig_l1.show_hash
             self.reset_gui()
 
-
         elif event == "Single Language Mode" or event == "Bilingual Mode":
-            sg.PopupOK("Restart App", "Please restart '{}' to switch to the new presentation mode.".format(APPNAME), keep_on_top=True)
+            #sg.PopupOK("Restart App", "Please restart '{}' to switch to the new presentation mode.".format(APPNAME), keep_on_top=True)
             self.settings.bilingual = event == "Bilingual Mode"
             self.settings.save()
             self.save_items(ask=True)
-            exit()
+            return event
+
+        elif event == "Run Exam Compiler":
+            self.save_items(ask=True)
+            return event
 
         elif event.endswith("render"):
             try:

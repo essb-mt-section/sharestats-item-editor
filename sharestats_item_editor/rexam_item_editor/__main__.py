@@ -6,12 +6,8 @@ def run():
 
     opt = cli("{} {}".format(APPNAME, __version__))
 
-    if opt["exam_compiler"]:
-        from .gui.exam_compiler import ExamCompiler
-        ExamCompiler().run()
-    else:
-        from .gui.mainwin import MainWin
-        MainWin(reset_settings=opt["reset"],
+    from .gui.mainwin import MainWin
+    MainWin(clear_settings=opt["clear"],
             monolingual=opt["monolingual"]).run()
 
 

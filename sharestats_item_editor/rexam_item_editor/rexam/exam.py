@@ -1,3 +1,4 @@
+import os
 import json
 import time
 
@@ -59,20 +60,28 @@ class Exam(object):
         """
         self.questions = []
         self._time_last_change = None
+        self._item_db_folder = None
         self.info = None
         self.json_filename = None
-        self._item_db = None
+        self.item_db = None
         if json_filename is not None:
             self.load(json_filename)
 
     @property
-    def item_database(self):
-        return self._item_db
+    def item_database_folder(self):
+        return self._item_db_folder
 
-    @item_database.setter
-    def item_database(self, v):
-        assert(isinstance(v, ItemDatabase))
-        self._item_db = v
+    @item_database_folder.setter
+    def item_database_folder(self, v):
+        if isinstance(v, str) and os.path.isdir(v):
+            self._item_db_folder = v
+            self.item_db = ItemDatabase(v,
+                                        files_first_level=True,
+                                        files_second_level=True,
+                                        check_for_bilingual_files=True)
+        else:
+            self._item_db_folder = None
+            self.item_db = None
 
     @staticmethod
     def time_stamp():
@@ -99,7 +108,8 @@ class Exam(object):
     def as_dict_list(self):
 
         return {"time" : self._time_last_change,
-             "names": [x.shared_name for x in self.questions],
+                "item_database_folder": self.item_database_folder,
+                "names": [x.shared_name for x in self.questions],
              "paths_l1": [x.path_l1 for x in self.questions],
              "paths_l2" : [x.path_l2 for x in self.questions],
              "hashes_l1": [x.hash_l1 for x in self.questions],
@@ -125,7 +135,7 @@ class Exam(object):
             fl.write(json.dumps(d, indent = 2))
 
     def load(self, json_filename):
-        self.json_filename = json_filename
+
         with open(json_filename, 'r', encoding=FILE_ENCODING) as fl:
             d = json.load(fl)
 
@@ -137,26 +147,34 @@ class Exam(object):
             self.info = d["info"]
         except:
             self.info = None
+        try:
+            self.item_database_folder = d["item_database_folder"]
+        except:
+            self.item_database_folder = None
+        try:
+            names = d["names"]
+        except:
+            names = []
 
         self.questions = []
-        for x in range(len(d["names"])):
-
+        for x in range(len(names)):
             self.questions.append(ExamQuestion(shared_name=d["names"][x],
                                                path_l1=d["paths_l1"][x],
                                                path_l2=d["paths_l2"][x],
                                                hash_l1=d["hashes_l1"][x],
                                                hash_l2=d["hashes_l2"][x]))
+        self.json_filename = json_filename
 
     def get_database_ids(self, rm_nones=False):
         """returns ids from item database or the question if not found
         takes into account the hashes!"""
 
-        if self._item_db is None:
+        if self.item_db is None:
             return []
 
         rtn = []
         for quest in self.questions:
-            idx = self._item_db.find(
+            idx = self.item_db.find(
                 hash_l1=quest.hash_l1 ,
                 hash_l2=quest.hash_l2,
                 shared_name=quest.shared_name,
@@ -170,7 +188,6 @@ class Exam(object):
                 rtn.append(None)
 
         return rtn
-
 
     def find_item(self, item):
         """returns question id first occurance if item"""
@@ -198,16 +215,14 @@ class Exam(object):
         else:
             return False
 
-    def markdown(self, use_l2=False):
-        if self._item_db is None:
+    def markdown(self, use_l2=False, mark_correct=True):
+        if self.item_db is None:
             return ""
 
-        old_tag = AnswerList.TAG_CORRECT
-        AnswerList.TAG_CORRECT = "* X"
         rtn = ""
         for cnt, db_idx in enumerate(self.get_database_ids(rm_nones=False)):
             if db_idx is not None:
-                db_entry = self._item_db.entries[db_idx]
+                db_entry = self.item_db.entries[db_idx]
             else:
                 db_entry = EntryNotFound(self.questions[cnt])
 
@@ -216,12 +231,46 @@ class Exam(object):
             else:
                 tmp = db_entry.item_l1
 
-            q_str = tmp.markdown(enumerator=cnt + 1, wrap_text_width=80)
+            if mark_correct:
+                mark = "**"
+            else:
+                mark = ""
+            q_str = tmp.markdown(enumerator=cnt + 1, wrap_text_width=80,
+                                 tag_mark_correct=False,
+                                 highlight_correct_char=mark)
             rtn += q_str + "\n\n"
 
-        AnswerList.TAG_CORRECT = old_tag
-
         return rtn.strip()
+
+    def rexam_code(self, use_l2=False):
+
+        code = "library(exams)\n\n"
+        code += "questions = c(\n"
+        for quest, db_id in zip(self.questions, self.get_database_ids(rm_nones=False)):
+            if use_l2:
+                p = quest.path_l2
+                h = quest.hash_l2
+            else:
+                p = quest.path_l1
+                h = quest.hash_l1
+
+            if db_id:
+                code += " "*6 + "'{}',\n".format(p)
+            else:
+                code += "#" + " " *5 + "'{}',  # CAN NOT FIND ITEM {} \n".format(p, h)
+
+        code = code.rstrip()[:-1] + "\n)\n"
+
+        code += """
+exams2pdf(questions,
+  encoding = 'UTF-8',
+  edir = {},
+  verbose = TRUE
+)
+""".format(self.item_database_folder)
+
+        return code
+
 
 
 class EntryNotFound(EntryItemDatabase):

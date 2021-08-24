@@ -26,7 +26,8 @@ from .mainwin import SSItemEditorMainWin
 def run():
 
     opt = cli("{} {}".format(APPNAME, __version__))
-    SSItemEditorMainWin(reset_settings=opt["reset"],
+
+    SSItemEditorMainWin(clear_settings=opt["clear"],
                         monolingual=opt["monolingual"]).run()
 
 if __name__ == "__main__":

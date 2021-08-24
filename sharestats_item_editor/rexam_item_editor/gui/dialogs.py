@@ -21,7 +21,7 @@ def ask_save(item_name, txt=None):
         layout = [[sg.Text(txt)], [sg.Text("")]]
     layout.extend([[sg.Text("There are unsaved changes in '{}'.".format(
         item_name))],
-              [sg.Save("Save item", key="save"),
+              [sg.Save("Save", key="save"),
                sg.Cancel("Dismiss changes")]])
     window = sg.Window("{}".format(item_name), layout, finalize=True,
                        modal=True, keep_on_top=True)

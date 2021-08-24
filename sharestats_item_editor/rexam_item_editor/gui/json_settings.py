@@ -44,7 +44,7 @@ class JSONSettings():
             settings = defaults
             saving_required = True
 
-        # check all defauls
+        # check all defaults
         for k in defaults:
             if k not in settings:
                 settings[k] = defaults[k]

@@ -6,8 +6,8 @@ base_dialogs.FrameMakeName = FrameMakeName
 
 class SSItemEditorMainWin(MainWin):
 
-    def __init__(self, reset_settings, monolingual=None):
-        super().__init__(reset_settings=reset_settings,
+    def __init__(self, clear_settings, monolingual=None):
+        super().__init__(clear_settings=clear_settings,
                          change_meta_info_button=True,
                          monolingual=monolingual)
 
