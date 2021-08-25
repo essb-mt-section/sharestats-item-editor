@@ -307,7 +307,7 @@ class MainWin(object):
 
         if restart == "Run Exam Compiler":
             from .exam_compiler import ExamCompiler
-            return ExamCompiler().run()
+            return ExamCompiler().run(database_folder=self.base_directory)
         elif restart:
             return MainWin().run()
 

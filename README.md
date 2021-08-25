@@ -79,6 +79,7 @@ Python 3.7+ and the following libraries (see [requirements.txt](requirements.txt
 
 Optional requirement:
 * rpy2 >=3.4
+* markdown >=3.0
 
 
 ## Rendering Rmd File (work in progress)

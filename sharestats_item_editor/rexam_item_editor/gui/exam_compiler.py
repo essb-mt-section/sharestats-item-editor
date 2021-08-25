@@ -207,18 +207,21 @@ class ExamCompiler(object):
         self.btn_save.update(disabled=not bool(len(name)))
         self.update_tables()
 
-    def run(self):
+    def run(self, database_folder=None):
 
         win = sg.Window("{} ({})".format("Exam Compiler", __version__),
                         self.layout, finalize=True,
                         return_keyboard_events=True,
                         enable_close_attempted_event=True)
 
-        if self.settings.last_exam_file:
-            try:
-                self.exam.load(self.settings.last_exam_file)
-            except:
-                pass
+        if isinstance(database_folder, str):
+            self.exam.item_database_folder = database_folder
+        else:
+            if self.settings.last_exam_file:
+                try:
+                    self.exam.load(self.settings.last_exam_file)
+                except:
+                    pass
 
         self.reset_gui()
 
