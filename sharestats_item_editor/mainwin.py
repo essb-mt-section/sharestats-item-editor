@@ -25,8 +25,8 @@ class SSItemEditorMainWin(MainWin):
             if new_meta is not None:
                 old_lang = ig.rexam_item.meta_info.language
                 ig.rexam_item.meta_info = new_meta
-                ig.ml_metainfo.update(value=new_meta.str_parameter +
-                                            new_meta.str_text)
+                ig.ml_metainfo.update(value=new_meta.str_parameter() +
+                                            new_meta.str_text())
                 ig.rexam_item.meta_info.sort_parameter()
                 ig.update_gui()
                 if old_lang != new_meta.language:
