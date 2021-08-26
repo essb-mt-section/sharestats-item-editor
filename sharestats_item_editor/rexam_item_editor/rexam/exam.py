@@ -5,7 +5,6 @@ import time
 from ..consts import FILE_ENCODING
 from .item_database import ItemDatabase, BiLingualRmdFilePair, EntryItemDatabase
 from .item import RmdFile, RExamItem
-from .item import AnswerList
 
 
 def _get_relpath_and_hash(item):
@@ -64,6 +63,7 @@ class Exam(object):
         self.info = None
         self.json_filename = None
         self.item_db = None
+        self.git_head = ""
         if json_filename is not None:
             self.load(json_filename)
 
@@ -105,23 +105,37 @@ class Exam(object):
                                            hash_l1=hash_l1,
                                            hash_l2=hash_l2))
 
-    def as_dict_list(self):
+    def reset_git_head(self):
+        if isinstance(self.item_db, ItemDatabase):
+            self.git_head = self.item_db.get_current_git_head_basedir()
+        else:
+            self.git_head = ""
 
+    def is_incorrect_git_head(self): # TODO GUI needs to check this after load
+        if len(self.git_head) and isinstance(self.item_db, ItemDatabase):
+            return self.git_head != self.item_db.get_current_git_head_basedir()
+        else:
+            return False
+
+    def as_dict_list(self):
         return {"time" : self._time_last_change,
                 "item_database_folder": self.item_database_folder,
+                "git_head": self.git_head,
                 "names": [x.shared_name for x in self.questions],
-             "paths_l1": [x.path_l1 for x in self.questions],
-             "paths_l2" : [x.path_l2 for x in self.questions],
-             "hashes_l1": [x.hash_l1 for x in self.questions],
-             "hashes_l2": [x.hash_l2 for x in self.questions]
-              }
+                "paths_l1": [x.path_l1 for x in self.questions],
+                "paths_l2" : [x.path_l2 for x in self.questions],
+                "hashes_l1": [x.hash_l1 for x in self.questions],
+                "hashes_l2": [x.hash_l2 for x in self.questions]}
 
-    def save(self, json_filename=None, info=None):
+    def save(self, json_filename=None, info=None, reset_git_head=True):
         if json_filename is None:
             if self.json_filename is None:
                 raise RuntimeError("Specify json_filename to save exam.")
             else:
                 json_filename = self.json_filename
+
+        if reset_git_head:
+            self.reset_git_head()
 
         print("Save {}".format(json_filename))
         if info is not None:
@@ -152,9 +166,16 @@ class Exam(object):
         except:
             self.item_database_folder = None
         try:
+            self.git_head = d["git_head"]
+        except:
+            self.git_head = ""
+        try:
             names = d["names"]
         except:
             names = []
+
+        if self.is_incorrect_git_head():
+            print("WARNING: incorrect git commit in database")
 
         self.questions = []
         for x in range(len(names)):

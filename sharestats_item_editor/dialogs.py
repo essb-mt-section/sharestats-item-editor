@@ -4,12 +4,13 @@ import PySimpleGUI as sg
 
 from . import taxonomy
 from .rexam_item_editor import consts
-from .rexam_item_editor.gui.dialogs import top_label
+from .rexam_item_editor.gui.gui_misc import labeled_frame
 from .rexam_item_editor.misc import splitstrip
 from .rexam_item_editor.rexam.item import ItemMetaInfo
 from .rexam_item_editor.rexam.rmd_file import SEP, TAG_L1, TAG_L2, TAG_BILINGUAL
 
 BILINGUAL = "Bilingual"
+
 
 class FrameMakeName(object):
 
@@ -60,10 +61,10 @@ class FrameMakeName(object):
                                 key="fln3", enable_events=True)
 
         self.frame = sg.Frame("Item Name(s)",[
-            [top_label([self.fln0, sg.Text(SEP)], "Uni"),
-             top_label([self.fln1, sg.Text(SEP)], "Topic"),
-             top_label([self.fln2, sg.Text(SEP)], "Counter"),
-             top_label(self.fln3, "Language")], [fr_names]
+            [labeled_frame([self.fln0, sg.Text(SEP)], "Uni"),
+             labeled_frame([self.fln1, sg.Text(SEP)], "Topic"),
+             labeled_frame([self.fln2, sg.Text(SEP)], "Counter"),
+             labeled_frame(self.fln3, "Language")], [fr_names]
         ])
 
     def update_names(self):

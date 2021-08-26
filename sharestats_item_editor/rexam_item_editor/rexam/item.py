@@ -386,11 +386,11 @@ class RExamItem(RmdFile):
             self.import_file(self.full_path)
 
     def hash(self):
-        """question id is based on the filename and file folder"""
+        """question id is based on the file content"""
 
         if self._hash is None:
-            txt = str(self.question) + str(self.solution) + str(self.meta_info)
-            self._hash = hashlib.md5(txt.encode()).hexdigest()  # calc only once
+            txt = "".join(self.text_array)
+            self._hash = hashlib.sha1(txt.encode()).hexdigest()  # calc only once
 
         return self._hash
 

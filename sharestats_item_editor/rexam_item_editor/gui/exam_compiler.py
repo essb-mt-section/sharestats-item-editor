@@ -8,17 +8,15 @@ except:
 
 from .. import __version__, APPNAME, consts
 from .json_settings import JSONSettings
-from .dialogs import top_label, ask_save
+from .dialogs import ask_save
 from ..rexam import exam
-
-sg.theme_add_new("mytheme", consts.SG_COLOR_THEME)
-sg.theme("mytheme")
+from .gui_misc import GUIBaseDirectory, labeled_frame, set_font
 
 
 class ExamCompiler(object):
     SHOW_HASHES = True
 
-    def __init__(self, settings=None):
+    def __init__(self, settings=None, font=None, font_size=9):
 
         if not isinstance(settings, JSONSettings):
             self.settings = JSONSettings(
@@ -29,11 +27,13 @@ class ExamCompiler(object):
         else:
             self.settings = settings
 
+
         self.exam = exam.Exam()
         self.exam.item_database_folder = getcwd()
 
-        self.txt_base_directory = sg.Text(self.exam.item_database_folder, size=(60, 1),
-                                          background_color=consts.COLOR_BKG_ACTIVE_INFO)
+        set_font(font, font_size)
+        self.gui_base_directory = GUIBaseDirectory(self.exam.item_database_folder)
+
         self.txt_exam = sg.Text("", size=(20, 1), background_color=consts.COLOR_BKG_ACTIVE_INFO)
 
         self.gui_db = GUIItemTable(show_l2=False,
@@ -53,21 +53,18 @@ class ExamCompiler(object):
         self.btn_save = sg.Button("Save", size=(12, 1), key="save_exam", disabled=True)
 
         self.layout = [
-            [top_label([self.txt_base_directory,
-                        sg.Button("change", size=(6, 1),
-                                  key="change_directory")],
-                       label="Database Directory", border_width=2),
-             top_label([self.txt_exam, self.btn_save,
-                        sg.Button("Load", size=(4, 1), key="load_exam"),
-                        sg.InputText(visible=False, enable_events=True, key='new_exam'),
-                        sg.FileSaveAs(button_text="New", file_types=(('json', '.json'),)),
-                        ],
-                        label="Exam", border_width=2),
-             top_label([self.cb_language2], label="Display", border_width=2),
-             top_label([sg.Button("Rexam code", size=(10, 1), key="btn_r_code"),
-                        sg.Button("Close", size=(10, 1), key="btn_close")], label="Window", border_width=2),
+            [self.gui_base_directory.frame,
+             labeled_frame([self.txt_exam, self.btn_save,
+                            sg.Button("Load", size=(4, 1), key="load_exam"),
+                            sg.InputText(visible=False, enable_events=True, key='new_exam'),
+                            sg.FileSaveAs(button_text="New", file_types=(('json', '.json'),)),
+                            ],
+                           label="Exam", border_width=2),
+             labeled_frame([self.cb_language2], label="Display", border_width=2),
+             labeled_frame([sg.Button("Rexam code", size=(10, 1), key="btn_r_code"),
+                            sg.Button("Close", size=(10, 1), key="btn_close")], label="Window", border_width=2),
              ],
-            [top_label([self.gui_db.table, self.gui_db.multiline], label="Database",  border_width=2)],
+            [labeled_frame([self.gui_db.table, self.gui_db.multiline], label="Database", border_width=2)],
             [
              sg.Button("add", size=(30, 2),
                        button_color= consts.COLOR_GREEN_BTN,
@@ -98,7 +95,7 @@ class ExamCompiler(object):
         """table with item_id, name, short question l1 ,
            short question l2"""
 
-        self.txt_base_directory.update(value=self.exam.item_database_folder)
+        self.gui_base_directory.update_folder(self.exam.item_database_folder)
         # exam
         if self.exam.item_db is not None:
             db_ids = self.exam.get_database_ids(rm_nones=False)
@@ -323,7 +320,7 @@ class ExamCompiler(object):
 class GUIItemTable(object):
     LANGUAGES = ("Dutch", "English")
 
-    def __init__(self, n_row, key, tooltip, max_lines = 1, font='Courier', font_size = 10,
+    def __init__(self, n_row, key, tooltip, max_lines = 1,
                  show_l2 = False, show_hash=True, short_hashes=True):
         self.max_lines = max_lines
         self.show_hash = show_hash
@@ -348,11 +345,11 @@ class GUIItemTable(object):
                               # alternating_row_color='lightyellow',
                               key=self.key_tab,
                               row_height=row_height,
-                              font='{} {}'.format(font, font_size),
                               vertical_scroll_only=False,
                               tooltip=tooltip)
-        h = floor(row_height * n_row/(1.4*font_size))
-        self.multiline = sg.Multiline(size=(80, h),  font='{} {}'.format(font, font_size),)
+
+        h = floor(row_height * n_row/(1.4*10))
+        self.multiline = sg.Multiline(size=(80, h))
 
 
     def update_headings(self):

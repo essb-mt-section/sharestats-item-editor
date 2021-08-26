@@ -2,7 +2,7 @@ import os
 from os import path
 from .. import misc
 from .rmd_file import RmdFile, CODE_L1, CODE_L2, TAG_L1, TAG_L2, TAG_BILINGUAL
-
+from .git_info import GitInfo
 
 class BiLingualRmdFilePair(object):
     """Two RMD Files: l1 and l2
@@ -120,6 +120,14 @@ class BiLingRmdFileList(object):
                                                    reference_language_code=reference_language))
 
         self.files = sorted(self.files, key=lambda x:x.shared_name())
+
+    def get_current_git_head_basedir(self):
+        """returns the current git head of the based directory"""
+        if self.base_directory is None:
+            return ""
+        else:
+            return GitInfo(self.base_directory).head
+
 
     def get_count(self):
 
