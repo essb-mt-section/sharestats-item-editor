@@ -36,7 +36,7 @@ Oliver Lindemann, Erasmus University Rotterdam, NL
 ## Installation
 
 Please, ensure that [Python 3](https://www.python.org/downloads/) is installed on your
-computer. If you install Python 3 on Windows, don't for get to [add Python the path](https://pychill.info/wp-content/uploads/2020/06/installation_python-1.jpg) environment variable.
+computer. If you install Python 3 on Windows, don't forget to [add Python the path](https://pychill.info/wp-content/uploads/2020/06/installation_python-1.jpg) environment variable.
 
 *ShareStats-Item-Editor* can be installed via the Pythons package manager 
 `pip`. Open a shell and call:
