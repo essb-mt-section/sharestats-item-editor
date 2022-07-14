@@ -127,11 +127,11 @@ def _find_all_chars(s, ch):
 
 if __name__ == "__main__":
 
-    a = [["oliver", "hhjk", "Lindemann"],
-         ["Frank", "okin asdfl asdf asdjh sadölfhokin asdfl asdf asdjh "
+    a = [["sdfsdr", "hhjk", "Rsydgfasds",
+         ["sd", "okin asdfl asdf asdjh sadölfhokin asdfl asdf asdjh "
                     "sadölfhokin asdfl asdf asdjh sadölfhokin asdfl asdf "
-                   "asdjh sadölfhokin asdfl asdf asdjh sadölfh ", "Helmer"],
-         ["Peter", 4.7, "Fonder"]]
+                   "asdjh sadölfhokin asdfl asdf asdjh sadölfh ", "fsda"],
+         ["asdf", 4.7, "asd"]]
 
     fm = TablePrinter(a, first_row_is_heading=False)
     txt = fm.text(column_width=[8, 20, 9])
