@@ -35,7 +35,7 @@ def rmd_replace_names(rmd_file_path, rename_list):
     return change_required
 
 
-def rename(path, source_chr=" ", destination_chr="-", folder=False, ):
+def rename(path, source_chr=" ", destination_chr="-", folder=False):
     # recursive function. First files then folder
     for (dirpath, dirnames, filenames) in os.walk(path):
         if folder:
