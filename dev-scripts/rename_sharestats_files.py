@@ -73,5 +73,5 @@ if __name__ == "__main__":
     print("Folder: {}".format(sys.argv[1]))
     rename(path = sys.argv[1],
             source_chr=" ",
-            destination_chr="-", )
+            destination_chr="-")
 
