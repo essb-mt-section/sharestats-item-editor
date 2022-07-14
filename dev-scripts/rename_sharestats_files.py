@@ -1,4 +1,5 @@
-"""replacing spaces for statsshare filename
+"""Replacing spaces (or other charater) of file/folder names and inside the Rmd files
+for the sharestats project
 
 Specify the <folder> as argument to run this script
 
